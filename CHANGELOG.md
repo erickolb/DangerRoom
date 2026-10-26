@@ -1,5 +1,9 @@
 # Changelog
 
+## α-025 · 2026-10-26
+
+- Change the Want List page heading to The Shopping List For Your Next Pulls.
+
 ## α-024 · 2026-10-26
 
 - Update the Want List empty state to Your Next Pulls and Which issue will you pull next?
