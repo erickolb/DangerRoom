@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-009', date: '2026-10-26', title: 'Quiet copy labels',
+  changes: ['Style tile copy identifiers as small, uppercase grey text.'],
+}, {
   version: 'α-008', date: '2026-10-26', title: 'Your cover, your collection',
   changes: [
     'Show an owned variant cover in search results instead of the standard artwork.',

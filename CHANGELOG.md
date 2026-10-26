@@ -1,5 +1,9 @@
 # Changelog
 
+## α-009 · 2026-10-26
+
+- Make comic tile copy identifiers small, uppercase, and grey.
+
 ## α-008 · 2026-10-26
 
 - Show saved owned variant artwork in search tiles, preferring the latest owned variant over the standard cover.
