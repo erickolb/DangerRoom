@@ -241,6 +241,96 @@ test('ratings migration preserves old inventory, starts unrated, and persists ha
   db = openDatabase(dir); repo = new Repository(db);
   try {
     assert.equal(repo.issue(42).user_rating, 2.5); assert.ok(repo.issue(42).read);
-    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 2);
+    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 3);
   } finally { db.close(); }
+});
+
+test('want list stores only high-level cover metadata and a local image without inventory or read records', async t => {
+  const h = await harness(t), key = editionsFor(raw)[1].key;
+  const result = await h.request('/api/wants','POST',{issue_id:42,edition_key:key});
+  assert.equal(result.status,200); assert.equal(result.data.added,true);
+  const wanted = (await h.request('/api/wants')).data.items;
+  assert.equal(wanted.length,1); assert.equal(wanted[0].edition.name,raw.variants[0].name);
+  assert.equal(wanted[0].resource_url,raw.resource_url); assert.ok(wanted[0].cover_file);
+  assert.deepEqual(await readFile(join(h.dir,'covers',wanted[0].cover_file)),original);
+  assert.deepEqual(Object.keys(wanted[0]).sort(),['issue_id','display_name','series','number','cover_date','resource_url','edition','cover_file','added_at'].sort());
+  assert.deepEqual(Object.keys(wanted[0].edition).sort(),['key','name','source_image'].sort());
+  assert.equal((await h.request('/api/collection')).data.items.length,0);
+  assert.equal((await h.request('/api/collection?view=read')).data.items.length,0);
+  assert.equal((await h.request('/api/issues/42')).status,404);
+  assert.equal(h.repo.db.prepare('SELECT count(*) AS n FROM issues').get().n,0);
+  assert.equal(h.repo.db.prepare('SELECT count(*) AS n FROM editions').get().n,0);
+});
+test('wanting duplicate covers is idempotent; standard and variant are distinct; owned exact cover is a silent no-op', async t => {
+  const h = await harness(t), key = editionsFor(raw)[1].key;
+  await h.request('/api/entries','POST',add('standard'));
+  const before = h.counts();
+  const ignored = await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
+  assert.deepEqual(ignored.data,{added:false,owned:true,wanted:false}); assert.equal(ignored.status,200);
+  assert.deepEqual(h.counts(),before);
+  assert.equal((await h.request('/api/wants','POST',{issue_id:42,edition_key:key})).data.added,true);
+  const downloaded = h.counts();
+  assert.equal((await h.request('/api/wants','POST',{issue_id:42,edition_key:key})).data.added,false);
+  assert.deepEqual(h.counts(),downloaded);
+  const details=(await h.request('/api/metron/issues/42')).data;
+  assert.equal(details.editions[0].owned,true); assert.equal(details.editions[0].wanted,false);
+  assert.equal(details.editions[1].owned,false); assert.equal(details.editions[1].wanted,true);
+  assert.equal((await h.request('/api/wants')).data.items.length,1);
+});
+test('acquiring one exact cover removes only that wanted cover and reuses its local image', async t => {
+  const h = await harness(t), key = editionsFor(raw)[1].key;
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:key});
+  const before=h.counts();
+  const result=await h.request('/api/entries','POST',add(key));
+  assert.equal(result.status,201);
+  const wanted=(await h.request('/api/wants')).data.items;
+  assert.equal(wanted.length,1); assert.equal(wanted[0].edition.key,'standard');
+  assert.deepEqual(h.counts(),before);
+  const again=await h.request('/api/wants','POST',{issue_id:42,edition_key:key});
+  assert.equal(again.data.added,false);assert.equal(again.data.owned,true);
+});
+test('reading and rating a wanted cover does not claim ownership or remove it; want-list removal preserves collection', async t => {
+  const h = await harness(t);
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
+  await h.request('/api/entries','POST',{...add('standard',false,false),rating:4.5});
+  assert.equal((await h.request('/api/wants')).data.items.length,1);
+  assert.equal((await h.request('/api/collection')).data.items.length,0);
+  const before=h.counts();
+  assert.equal((await h.request('/api/wants/42/standard','DELETE')).status,200);
+  assert.equal((await h.request('/api/wants/42/standard','DELETE')).status,200);
+  assert.equal((await h.request('/api/wants')).data.items.length,0);
+  const issue=(await h.request('/api/issues/42')).data;
+  assert.equal(issue.user_rating,4.5);assert.ok(issue.read);
+  assert.deepEqual(h.counts(),before);
+});
+test('want-list search and validation; failed artwork download does not save a wanted record', async t => {
+  const h = await harness(t);
+  assert.equal((await h.request('/api/wants','POST',{issue_id:42,edition_key:'forged'})).status,400);
+  const forged='variant-'+ 'a'.repeat(64);
+  assert.equal((await h.request('/api/wants','POST',{issue_id:42,edition_key:forged})).status,400);
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:editionsFor(raw)[1].key});
+  assert.equal((await h.request('/api/wants?q=Artist')).data.items.length,1);
+  assert.equal((await h.request('/api/wants?q=Batman')).data.items.length,0);
+  const bad=await harness(t,{imageFetch:async()=>new Response('Unavailable',{status:503})});
+  assert.equal((await bad.request('/api/wants','POST',{issue_id:42,edition_key:'standard'})).status,502);
+  assert.equal((await bad.request('/api/wants')).data.items.length,0);
+});
+test('want-list migration preserves inventory and ratings and persists wants through restart', async t => {
+  const dir=await mkdtemp(join(tmpdir(),'dangerroom-wants-migration-'));
+  t.after(()=>rm(dir,{recursive:true,force:true}));
+  let db=openDatabase(dir),repo=new Repository(db);
+  repo.save(essentialIssue(raw),editionsFor(raw)[0],null,{owned:true,read:true,rating:3.5});
+  db.exec('DROP TABLE wants; PRAGMA user_version=2;');db.close();
+  db=openDatabase(dir);repo=new Repository(db);
+  assert.equal(repo.wantList().length,0);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.collection('owned').length,1);
+  repo.addWant(essentialIssue(raw),editionsFor(raw)[1],null);db.close();
+  db=openDatabase(dir);repo=new Repository(db);
+  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,3);}finally{db.close();}
+});
+test('ownership wins a want-list race, even when a stale cover selection is submitted', async t => {
+  const h=await harness(t), issue=essentialIssue(raw),edition=editionsFor(raw)[0];
+  h.repo.save(issue,edition,null,{owned:true,read:false});
+  assert.deepEqual(h.repo.addWant(issue,edition,null),{added:false,owned:true,wanted:false});
+  assert.equal(h.repo.wantList().length,0);
 });

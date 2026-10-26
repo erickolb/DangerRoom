@@ -20,7 +20,9 @@ export function openDatabase(directory) {
     CREATE TABLE IF NOT EXISTS provider_state (key TEXT PRIMARY KEY, value INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS issue_ratings (issue_id INTEGER PRIMARY KEY REFERENCES issues(id),
       half_stars INTEGER NOT NULL CHECK(typeof(half_stars)='integer' AND half_stars BETWEEN 1 AND 10), rated_at TEXT NOT NULL);
-    PRAGMA user_version=2;`);
+    CREATE TABLE IF NOT EXISTS wants (issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
+      metadata TEXT NOT NULL, cover_file TEXT, added_at TEXT NOT NULL, PRIMARY KEY(issue_id,edition_key));
+    PRAGMA user_version=3;`);
   return db;
 }
 export class Repository {
@@ -40,7 +42,7 @@ export class Repository {
     if (!row) return null;
     return { ...JSON.parse(row.metadata), saved_at: row.saved_at,
       user_rating: (this.db.prepare('SELECT half_stars FROM issue_ratings WHERE issue_id=?').get(id)?.half_stars ?? 0) / 2 || null,
-      editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file })),
+      editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file, ...this.coverStatus(id, e.key) })),
       copies: this.db.prepare('SELECT * FROM copies WHERE issue_id=? ORDER BY added_at DESC,id').all(id),
       read: this.db.prepare('SELECT * FROM reads WHERE issue_id=?').get(id) || null };
   }
@@ -56,12 +58,45 @@ export class Repository {
       if (owned) {
         copyId = randomUUID();
         this.db.prepare('INSERT INTO copies VALUES (?,?,?,?)').run(copyId, issue.id, edition.key, now);
+        this.db.prepare('DELETE FROM wants WHERE issue_id=? AND edition_key=?').run(issue.id, edition.key);
       }
       if (rating !== undefined) this.writeRating(issue.id, rating, now);
       if (read || rating != null) this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(issue.id, edition.key, now);
       this.db.exec('COMMIT');
       return { issue: this.issue(issue.id), copy_id: copyId };
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
+  }
+  coverStatus(id, key) {
+    return { owned: Boolean(this.db.prepare('SELECT 1 FROM copies WHERE issue_id=? AND edition_key=? LIMIT 1').get(id,key)),
+      wanted: Boolean(this.db.prepare('SELECT 1 FROM wants WHERE issue_id=? AND edition_key=?').get(id,key)) };
+  }
+  want(id, key) {
+    const row = this.db.prepare('SELECT * FROM wants WHERE issue_id=? AND edition_key=?').get(id,key);
+    return row ? { ...JSON.parse(row.metadata), cover_file: row.cover_file, added_at: row.added_at } : null;
+  }
+  addWant(issue, edition, coverFile) {
+    // Deliberate allowlist: wants never create full inventory issues or editions.
+    const metadata = { issue_id: issue.id, display_name: issue.display_name,
+      series: { id: issue.series.id, name: issue.series.name, year_began: issue.series.year_began, volume: issue.series.volume },
+      number: issue.number, cover_date: issue.cover_date, resource_url: issue.resource_url,
+      edition: { key: edition.key, name: edition.name, source_image: edition.source_image } };
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const status = this.coverStatus(issue.id, edition.key);
+      let added = false;
+      if (!status.owned) added = Boolean(this.db.prepare('INSERT OR IGNORE INTO wants VALUES (?,?,?,?,?)').run(issue.id, edition.key, JSON.stringify(metadata), coverFile, new Date().toISOString()).changes);
+      this.db.exec('COMMIT');
+      return { added, ...this.coverStatus(issue.id,edition.key) };
+    } catch (error) { this.db.exec('ROLLBACK'); throw error; }
+  }
+  wantList(query = '') {
+    const needle = query.toLocaleLowerCase();
+    return this.db.prepare('SELECT * FROM wants ORDER BY added_at DESC,issue_id DESC,edition_key').all()
+      .map(row => ({ ...JSON.parse(row.metadata), cover_file: row.cover_file, added_at: row.added_at }))
+      .filter(row => !needle || [row.display_name,row.series.name,row.edition.name].join(' ').toLocaleLowerCase().includes(needle));
+  }
+  removeWant(id, key) {
+    this.db.prepare('DELETE FROM wants WHERE issue_id=? AND edition_key=?').run(id,key);
   }
   writeRating(id, rating, now) {
     if (rating === null) this.db.prepare('DELETE FROM issue_ratings WHERE issue_id=?').run(id);

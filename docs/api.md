@@ -12,6 +12,9 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | `GET /api/issues/:id` | Local metadata, saved editions/covers, copies, and read record. No Metron call. |
 | `PATCH /api/issues/:id/read` | `{read: boolean, edition_key}`. Mark read/unread independent of owned copies; a saved edition is required when setting true. |
 | `PATCH /api/issues/:id/rating` | `{rating: number|null, edition_key}`. 0.5–5 in half-star steps; `null` clears. A non-null rating atomically marks the issue read. `edition_key` must reference a saved edition when rating. All copies and variants share the score. Clearing it preserves read status. |
+| `GET /api/wants?q=…` | Lightweight wanted covers with local image filenames and official Metron links; no provider call. |
+| `POST /api/wants` | `{issue_id, edition_key}`. Resolve authoritative cover metadata, save its image, and store only a lightweight want. Idempotent; owned covers silently return `{added:false,owned:true,wanted:false}`. |
+| `DELETE /api/wants/:id/:edition_key` | Remove one exact wanted cover; idempotent, no effect on ownership/read/rating. |
 | `DELETE /api/copies/:uuid` | Remove exactly one copy. Read status and other copies are preserved. UI confirms this action. |
 | `GET /covers/:sha256.extension` | Locally stored cover. Only validated filenames and raster formats are served. |
 
@@ -22,6 +25,7 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 - `copies`: UUID per owned copy, issue and edition references, added timestamp. No quantity column or uniqueness constraint on issue/edition.
 - `reads`: one row per read issue, selected edition and original marked-read timestamp. No owned copy required.
 - `issue_ratings`: one row per issue, integer `half_stars` (1–10) and updated timestamp; exposed as `user_rating` (0.5–5 or null). Separate from the provider content-rating metadata. Schema version 2 adds this table without altering existing inventory.
+- `wants`: composite `(issue_id,edition_key)` identity, explicitly allowlisted high-level metadata JSON, local cover filename, added timestamp. Independent of the inventory tables. Schema version 3 adds this table without altering existing records. Saving ownership atomically deletes the matching want; the add-want transaction rechecks ownership to prevent stale/racing submissions.
 - `cache`: expiring provider search/detail payloads. Removed expired rows on cache writes.
 - `provider_state`: durable next-request and provider cooldown timestamps.
 

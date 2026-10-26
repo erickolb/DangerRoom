@@ -1,5 +1,13 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-004', date: '2026-10-25', title: 'Find your next cover',
+  changes: [
+    'Add a cover-specific Want List with lightweight local metadata, saved cover images, and links to each comic on Metron.',
+    'View, search, remove, and acquire wanted covers from their own screen.',
+    'Acquiring an exact cover removes its want; already-owned covers have a quietly disabled want-list option.',
+    'Add the shopping-list icon and creator credit.',
+  ],
+}, {
   version: 'α-003', date: '2026-10-25', title: 'Rate your reads',
   changes: [
     'Rate comics from half a star to five stars, in half-star steps, when adding them or from their details.',

@@ -1,5 +1,13 @@
 # Changelog
 
+## α-004 · 2026-10-25
+
+- Add an exact-cover Want List with lightweight local metadata and cover files, separate from inventory.
+- Browse/search wanted covers, open their Metron pages, remove wants, or add the selected cover to the collection.
+- Acquiring a cover cancels its want atomically; already-owned covers quietly disable the want-list action.
+- Include the shopping-list icon and attribution to Atif Arshad / Noun Project (CC BY 3.0).
+
+
 ## α-003 · 2026-10-25
 
 - Add personal five-star ratings with half-star increments on comic intake and details, displayed throughout the collection.

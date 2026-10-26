@@ -1,6 +1,6 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-003**.
+Chateau Lore comic inventory and reading journal. Current build: **α-004**.
 
 ## Run locally
 
@@ -33,9 +33,17 @@ Rate a comic with the five-star control in half-star steps (0.5–5), either whi
 
 A rating alone is enough to add a comic as read without claiming ownership. Adding more copies preserves its existing rating unless you explicitly select a new one. **Clear rating** removes the score and keeps read status. Explicitly marking unread keeps the score; saving a rating again marks it read. Existing collections migrate automatically and start unrated. No Metron requests are needed to rate saved issues.
 
+## Want List
+
+Use **Want this cover** after selecting a cover in the search picker, or on a read-only comic's details page. **Want List** in the main navigation opens its separate listing with local search and one-click removal. Clicking the cover/title opens the official Metron issue page in a new tab; wanted items have no local detail page. **Add to collection** opens the full intake picker with that exact cover preselected, fetching richer metadata only for collection intake.
+
+Wants are specific to a cover, unlike read status and ratings. Owning the standard cover does not stop you wanting a variant. Adding an owned copy removes only that exact want in the same database transaction; trying to want an owned cover does nothing, with the option slightly greyed out. Reading/rating alone does not claim ownership or remove a want. Duplicate wants share one list entry. Removing an owned copy does not automatically restore an old want.
+
+Only issue ID/name/number, series ID/name/start year/volume, cover date, official Metron URL, selected edition key/name/source image, a local cover filename, and added timestamp are stored in the wants table. Want-only entries create no inventory issue, edition, copy, reading, or rating records. The existing temporary provider lookup cache may contain the full API response while resolving variants. Images reuse the local original-file store, sufficient for thumbnails; an absent provider image displays as unavailable. Acquiring a cover reuses its file when the source URL matches. A failed image download does not save the want. This feature stores wants locally and does not modify Metron's wish list.
+
 ## Storage and API use
 
-- `data/dangerroom.sqlite`: issues, selected editions, individual copies, reading records, personal ratings, lookup cache, and provider cooldown state.
+- `data/dangerroom.sqlite`: issues, selected editions, individual copies, reading records, personal ratings, want-list records, lookup cache, and provider cooldown state.
 - `data/covers/`: original supplied image bytes, without thumbnail substitution, resizing, or recompression; SHA-256 filenames reuse identical files. Resolution depends on the image Metron actually supplies; no separate higher-resolution endpoint is documented. Covers are limited to 25 MB and validated as JPEG, PNG, WebP, or GIF.
 - A new cover must download successfully before the entry is saved. If Metron has no cover, the entry can be saved with an explicit unavailable-cover placeholder.
 - Search caches last 6 hours; issue-detail caches last 24 hours. Concurrent identical lookups share one request. Persistent saved metadata and covers are used for collection browsing with no Metron calls.
@@ -61,6 +69,7 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 - <a href="https://www.flaticon.com/free-icons/hero" title="hero icons">Hero icons created by Magnific - Flaticon</a>. `public/mask.png` is the header icon and favicon.
 - box add by Epic Icon Designs from <a href="https://thenounproject.com/browse/icons/term/box-add/" target="_blank" rel="noopener noreferrer" title="box add Icons">Noun Project</a> (CC BY 3.0). `public/box-add.png` is the ownership/add action icon.
 - Book check by Ardiansyah from <a href="https://thenounproject.com/browse/icons/term/book-check/" target="_blank" rel="noopener noreferrer" title="Book check Icons">Noun Project</a> (CC BY 3.0). `public/book-check.png` is the read action icon.
+- shopping list by Atif Arshad from <a href="https://thenounproject.com/browse/icons/term/shopping-list/" target="_blank" rel="noopener noreferrer" title="shopping list Icons">Noun Project</a> (CC BY 3.0). `public/shopping-list.png` is the Want List icon.
 - [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). Source icon files are retained unchanged; CSS inverts the action icons for contrast on dark controls.
 - Comic metadata and images: [Metron](https://metron.cloud). Cover artwork belongs to its respective rights holders.
 

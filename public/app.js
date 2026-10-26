@@ -34,6 +34,36 @@ function bindRatingPreview(form) {
   }));
 }
 
+function wantButton(edition, id) {
+  const disabled = !edition || edition.owned || edition.wanted;
+  const label = edition?.owned ? 'Already owned' : edition?.wanted ? 'On Want List' : 'Want this cover';
+  return `<button type="button" id="${id}" class="secondary want-action" ${disabled ? 'disabled' : ''}>${icon('shopping-list',true)} ${label}</button>`;
+}
+async function addWant(issueId, edition, button, onAdded) {
+  if (!edition || edition.owned || edition.wanted) return;
+  button.disabled = true;
+  try {
+    const result = await api('/wants', { method:'POST', body:JSON.stringify({issue_id:issueId,edition_key:edition.key}) });
+    Object.assign(edition, { owned:result.owned, wanted:result.wanted });
+    button.innerHTML = `${icon('shopping-list',true)} ${edition.owned ? 'Already owned' : 'On Want List'}`;
+    if (result.added) onAdded();
+  } catch (error) { button.disabled = false; const errorBox=button.closest('form')?.querySelector('.form-error'); if(errorBox)errorBox.textContent=error.message;else message(error.message,true); }
+}
+async function wantList(params, ticket) {
+  const q = params.get('q') || '';
+  app.innerHTML = `<div class="section-heading"><div><p class="eyebrow">A place for your next finds</p><h2>Want List</h2></div><a class="button secondary" href="#/">Find a comic →</a></div><p class="intro">The covers you’re looking for. Open a comic to see it on Metron.</p><form class="search-main collection-search" id="want-search"><label>Search your Want List<input type="search" name="q" value="${esc(q)}" placeholder="Find a series or cover…" maxlength="160"></label><button class="quiet">Find</button></form><div id="want-results"><p class="loading" role="status">Opening your Want List…</p></div>`;
+  $('#want-search').onsubmit = e => { e.preventDefault(); const p=new URLSearchParams(); const value=new FormData(e.target).get('q').trim(); if(value)p.set('q',value); const hash=`#/wants${p.size ? `?${p}` : ''}`; if(location.hash===hash)route();else location.hash=hash; };
+  const data = await api(`/wants?${new URLSearchParams({q})}`);
+  if (ticket !== generation) return;
+  $('#want-results').innerHTML = data.items.length ? `<p class="muted">${data.items.length} wanted cover${data.items.length===1?'':'s'}</p><div class="shelf">${data.items.map((row,index) => `<article class="comic-card want-card"><a class="comic-link" href="${esc(row.resource_url)}" target="_blank" rel="noopener noreferrer">${cover(localCover(row),row.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.series.year_began || '')} · Volume ${esc(row.series.volume || '—')}</p><h3>${esc(row.series.name)} #${esc(row.number)}</h3><p class="muted">${esc(row.edition.name)}</p><p class="muted">View on Metron ↗</p></div></a><div class="want-card-actions"><button data-want-add="${index}">${icon('box-add')} Add to collection</button><button class="quiet" data-want-remove="${index}">Remove from Want List</button></div></article>`).join('')}</div>` : `<div class="empty-state"><p class="eyebrow">${q?'No matches':'Your next finds'}</p><h3>${q?'No wanted covers match that search.':'Which cover will you find next?'}</h3><p>${q?'Try another series or cover name.':'Choose a cover in search and add it to your Want List.'}</p><a class="button" href="#/">Search comics →</a></div>`;
+  document.querySelectorAll('[data-want-add]').forEach(b => b.onclick=()=>{const row=data.items[Number(b.dataset.wantAdd)];choose(row.issue_id,null,row.edition.key);});
+  document.querySelectorAll('[data-want-remove]').forEach(b => b.onclick=async()=>{
+    b.disabled=true; const row=data.items[Number(b.dataset.wantRemove)];
+    try { await api(`/wants/${row.issue_id}/${row.edition.key}`,{method:'DELETE'});await route();message('Cover removed from your Want List.'); }
+    catch(error){b.disabled=false;message(error.message,true);}
+  });
+}
+
 function closeDialog() { dialogGeneration++; dialog.close(); }
 dialog.addEventListener('close', () => { dialogGeneration++; });
 async function route() {
@@ -42,6 +72,7 @@ async function route() {
   const { path, params } = routeData();
   document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === `#${path}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   try {
+    if (path === '/wants') return await wantList(params,ticket);
     if (path === '/changelog') return changelog();
     if (path === '/collection') { collectionView = params.get('view') === 'read' ? 'read' : 'owned'; return await collection(params, ticket); }
     const match = path.match(/^\/issues\/(\d+)$/);
@@ -84,8 +115,16 @@ async function choose(id, savedIssue = null, selectedKey = null) {
   try {
     const issue = savedIssue || await api(`/metron/issues/${id}`);
     if (token !== dialogGeneration || !dialog.open) return;
-    dialog.innerHTML = `<form id="add-form"><div class="dialog-heading"><div><p class="eyebrow">Add to your collection</p><h2 id="dialog-title">${esc(issue.display_name)}</h2></div><button type="button" class="quiet" id="close-dialog" aria-label="Close">×</button></div><p class="hint">Choose the cover that matches your comic.</p><div class="variant-grid">${issue.editions.map(e => `<label class="variant-choice"><input type="radio" name="edition" value="${esc(e.key)}" required ${e.key === selectedKey || (!selectedKey && issue.editions.length === 1) ? 'checked' : ''}>${cover(localCover(e) || e.source_image, e.name)}<span>${esc(e.name)}${e.upc ? `<br><small>UPC ${esc(e.upc)}</small>` : ''}</span></label>`).join('')}</div><fieldset class="status-options"><legend>Save as either, or both</legend><label class="status-choice"><input type="checkbox" name="owned" checked>${icon('box-add', true)} I own this copy</label><label class="status-choice"><input type="checkbox" name="read" ${issue.read ? 'checked' : ''}>${icon('book-check', true)} I’ve read this</label></fieldset>${ratingChoices()}<p class="hint">A rating marks this issue as read across every copy and variant. Leave the rating blank to keep any existing rating.</p><p class="hint">Each owned addition creates a separate copy, even for the same cover. Read status applies to the issue and is saved once.</p><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="quiet" id="cancel-add">Cancel</button><button type="submit">Save to collection</button></div></form>`;
+    dialog.innerHTML = `<form id="add-form"><div class="dialog-heading"><div><p class="eyebrow">Add to your collection</p><h2 id="dialog-title">${esc(issue.display_name)}</h2></div><button type="button" class="quiet" id="close-dialog" aria-label="Close">×</button></div><p class="hint">Choose the cover that matches your comic.</p><div class="variant-grid">${issue.editions.map(e => `<label class="variant-choice"><input type="radio" name="edition" value="${esc(e.key)}" required ${e.key === selectedKey || (!selectedKey && issue.editions.length === 1) ? 'checked' : ''}>${cover(localCover(e) || e.source_image, e.name)}<span>${esc(e.name)}${e.upc ? `<br><small>UPC ${esc(e.upc)}</small>` : ''}</span></label>`).join('')}</div><div class="want-picker-action">${wantButton(null,'picker-want')}</div><fieldset class="status-options"><legend>Save as either, or both</legend><label class="status-choice"><input type="checkbox" name="owned" checked>${icon('box-add', true)} I own this copy</label><label class="status-choice"><input type="checkbox" name="read" ${issue.read ? 'checked' : ''}>${icon('book-check', true)} I’ve read this</label></fieldset>${ratingChoices()}<p class="hint">A rating marks this issue as read across every copy and variant. Leave the rating blank to keep any existing rating.</p><p class="hint">Each owned addition creates a separate copy, even for the same cover. Read status applies to the issue and is saved once.</p><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="quiet" id="cancel-add">Cancel</button><button type="submit">Save to collection</button></div></form>`;
     $('#close-dialog').onclick = closeDialog; $('#cancel-add').onclick = closeDialog;
+    function selectedEdition() { return issue.editions.find(e => e.key === new FormData($('#add-form')).get('edition')); }
+    function updateWantButton() {
+      $('#picker-want').outerHTML = wantButton(selectedEdition(),'picker-want');
+      $('#picker-want').onclick = () => addWant(id,selectedEdition(),$('#picker-want'),()=>{closeDialog();message('Cover added to your Want List.');});
+    }
+    $('#add-form').querySelectorAll('[name=edition]').forEach(input => input.addEventListener('change',updateWantButton));
+    updateWantButton();
+
     bindRatingPreview($('#add-form'));
     $('#add-form').onsubmit = async e => {
       e.preventDefault();
@@ -95,7 +134,7 @@ async function choose(id, savedIssue = null, selectedKey = null) {
       try {
         await api('/entries', { method: 'POST', body: JSON.stringify({ issue_id: id, edition_key: data.get('edition'), owned: data.has('owned'), read: data.has('read'), ...(data.has('rating') ? { rating: Number(data.get('rating')) } : {}) }) });
         closeDialog();
-        if (savedIssue) await route();
+        if (savedIssue || routeData().path === '/wants') await route();
         message(data.has('owned') ? 'A separate owned copy was added to your collection.' : data.has('rating') ? 'Rating saved and comic marked as read.' : 'Comic marked as read.');
       } catch (error) { form.querySelector('.form-error').textContent = error.message; }
       finally { button.disabled = false; button.textContent = 'Save to collection'; }
@@ -118,7 +157,7 @@ async function detail(id, params, ticket) {
   if (ticket !== generation) return;
   const edition = issue.editions.find(e => e.key === params.get('edition')) || issue.editions[0];
   const from = params.get('from') === 'read' ? 'read' : 'owned';
-  app.innerHTML = `<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${cover(localCover(edition), issue.display_name)}${localCover(edition) ? `<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>` : ''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name || 'Comic')} · ${esc(issue.series.year_began || '')} · Volume ${esc(issue.series.volume || '—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title ? `<p class="intro">${esc(issue.title)}</p>` : ''}<p class="intro">${esc(edition.name)}</p><span class="badge">${issue.read ? 'Read' : 'Unread'}</span><form id="rating-form">${ratingChoices(issue.user_rating)}<p class="hint">Rating this issue marks it as read for all copies and variants.</p><div class="actions"><button type="submit">Save rating</button><button type="button" class="quiet" id="clear-rating" ${issue.user_rating === null ? 'disabled' : ''}>Clear rating</button></div><p class="form-error" role="alert"></p></form><dl class="metadata">${field('Cover date', date(issue.cover_date))}${field('Release date', date(issue.store_date))}${field('UPC · selected cover', edition.upc)}${field('SKU · selected cover', edition.sku)}${field('ISBN', issue.isbn)}${field('Pages', issue.page_count)}${field('Cover price', edition.price !== null ? `${edition.price_currency || 'Currency not supplied'} ${edition.price}` : null)}${field('Content rating', issue.rating?.name)}${field('Imprint', issue.imprint?.name)}${field('Read on', issue.read ? date(issue.read.read_at) : null)}</dl><div class="actions"><button id="add-copy">${icon('box-add')} Add another copy</button><button id="toggle-read" class="secondary">${icon('book-check', true)} ${issue.read ? 'Mark unread' : 'Mark as read'}</button></div>${issue.resource_url ? `<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>` : ''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned copies</h3>${issue.copies.length ? issue.copies.map(c => `<div class="copy-row"><div><strong>${esc(issue.editions.find(e => e.key === c.edition_key)?.name)}</strong><p class="muted">Added ${esc(date(c.added_at))} · Copy <code>${esc(c.id.slice(0, 8))}</code></p></div><button class="quiet" data-remove="${c.id}">Remove this copy</button></div>`).join('') : '<p class="muted">You haven’t added an owned copy of this issue.</p>'}</section>`;
+  app.innerHTML = `<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${cover(localCover(edition), issue.display_name)}${localCover(edition) ? `<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>` : ''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name || 'Comic')} · ${esc(issue.series.year_began || '')} · Volume ${esc(issue.series.volume || '—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title ? `<p class="intro">${esc(issue.title)}</p>` : ''}<p class="intro">${esc(edition.name)}</p><span class="badge">${issue.read ? 'Read' : 'Unread'}</span><form id="rating-form">${ratingChoices(issue.user_rating)}<p class="hint">Rating this issue marks it as read for all copies and variants.</p><div class="actions"><button type="submit">Save rating</button><button type="button" class="quiet" id="clear-rating" ${issue.user_rating === null ? 'disabled' : ''}>Clear rating</button></div><p class="form-error" role="alert"></p></form><dl class="metadata">${field('Cover date', date(issue.cover_date))}${field('Release date', date(issue.store_date))}${field('UPC · selected cover', edition.upc)}${field('SKU · selected cover', edition.sku)}${field('ISBN', issue.isbn)}${field('Pages', issue.page_count)}${field('Cover price', edition.price !== null ? `${edition.price_currency || 'Currency not supplied'} ${edition.price}` : null)}${field('Content rating', issue.rating?.name)}${field('Imprint', issue.imprint?.name)}${field('Read on', issue.read ? date(issue.read.read_at) : null)}</dl><div class="actions">${wantButton(edition,'detail-want')}<button id="add-copy">${icon('box-add')} Add another copy</button><button id="toggle-read" class="secondary">${icon('book-check', true)} ${issue.read ? 'Mark unread' : 'Mark as read'}</button></div>${issue.resource_url ? `<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>` : ''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned copies</h3>${issue.copies.length ? issue.copies.map(c => `<div class="copy-row"><div><strong>${esc(issue.editions.find(e => e.key === c.edition_key)?.name)}</strong><p class="muted">Added ${esc(date(c.added_at))} · Copy <code>${esc(c.id.slice(0, 8))}</code></p></div><button class="quiet" data-remove="${c.id}">Remove this copy</button></div>`).join('') : '<p class="muted">You haven’t added an owned copy of this issue.</p>'}</section>`;
   const ratingForm = $('#rating-form');
   bindRatingPreview(ratingForm);
   async function saveRating(value) {
@@ -137,6 +176,7 @@ async function detail(id, params, ticket) {
   };
   $('#clear-rating').onclick = () => saveRating(null);
 
+  $('#detail-want').onclick = () => addWant(Number(id),edition,$('#detail-want'),()=>message('Cover added to your Want List.'));
   $('#add-copy').onclick = () => choose(Number(id), issue, edition.key);
   $('#toggle-read').onclick = async e => {
     e.currentTarget.disabled = true;

@@ -13,6 +13,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']], ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']], ['/releases.js', ['releases.js', 'text/javascript; charset=utf-8']],
+  ['/shopping-list.png', ['shopping-list.png', 'image/png']],
   ['/mask.png', ['mask.png', 'image/png']], ['/box-add.png', ['box-add.png', 'image/png']], ['/book-check.png', ['book-check.png', 'image/png']],
 ]);
 async function body(req) {
@@ -47,7 +48,27 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured });
       if (req.method === 'GET' && url.pathname === '/api/search') return send(200, await metron.search(url.searchParams));
       let match = url.pathname.match(/^\/api\/metron\/issues\/(\d+)$/);
-      if (req.method === 'GET' && match) return send(200, await metron.issue(positiveId(match[1])));
+      if (req.method === 'GET' && match) {
+        const issue = await metron.issue(positiveId(match[1]));
+        issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));
+        return send(200, issue);
+      }
+      if (req.method === 'GET' && url.pathname === '/api/wants') return send(200, { items: repo.wantList((url.searchParams.get('q') || '').slice(0,160)) });
+      if (req.method === 'POST' && url.pathname === '/api/wants') {
+        const data = await body(req), id = positiveId(data.issue_id);
+        if (typeof data.edition_key !== 'string' || !/^(standard|variant-[a-f0-9]{64})$/.test(data.edition_key)) throw new AppError(400, 'Choose the exact cover first.');
+        const status = repo.coverStatus(id,data.edition_key);
+        if (status.owned || status.wanted) return send(200, { added: false, ...status });
+        const saved = repo.issue(id);
+        const issue = saved?.editions.some(e => e.key === data.edition_key) ? saved : await metron.issue(id);
+        const edition = issue.editions.find(e => e.key === data.edition_key);
+        if (!edition) throw new AppError(400, 'That cover is no longer in the Metron result. Choose a cover again.');
+        if (!issue.resource_url) throw new AppError(502, 'Metron did not provide a comic page link. Please try this comic again later.');
+        const coverFile = edition.cover_file || await covers.save(edition.source_image);
+        return send(200, repo.addWant(issue,edition,coverFile));
+      }
+      match = url.pathname.match(/^\/api\/wants\/(\d+)\/(standard|variant-[a-f0-9]{64})$/);
+      if (req.method === 'DELETE' && match) { repo.removeWant(positiveId(match[1]),match[2]); return send(200, { removed:true }); }
       if (req.method === 'GET' && url.pathname === '/api/collection') {
         const view = url.searchParams.get('view') || 'owned';
         if (!['owned', 'read'].includes(view)) throw new AppError(400, 'Choose owned comics or read comics.');
@@ -66,7 +87,8 @@ export function createApp(options = {}) {
         let edition = issue?.editions.find(e => e.key === data.edition_key);
         if (!edition) { issue = await metron.issue(id); edition = issue.editions.find(e => e.key === data.edition_key); }
         if (!edition) throw new AppError(400, 'That cover is no longer in the Metron result. Choose a cover again.');
-        const coverFile = edition.cover_file || await covers.save(edition.source_image);
+        const wanted = repo.want(id,edition.key);
+        const coverFile = edition.cover_file || (wanted?.edition.source_image === edition.source_image ? wanted.cover_file : null) || await covers.save(edition.source_image);
         const { editions, copies, read, saved_at, user_rating, ...metadata } = issue;
         return send(201, repo.save(metadata, edition, coverFile, data));
       }
