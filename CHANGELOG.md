@@ -1,5 +1,9 @@
 # Changelog
 
+## α-027 · 2026-10-26
+
+- Remove redundant Want List body Search Metron buttons; keep the header link.
+
 ## α-026 · 2026-10-26
 
 - Remove the introductory sentence beneath the Want List heading.
