@@ -1,5 +1,9 @@
 # Changelog
 
+## α-028 · 2026-10-26
+
+- Add the existing boxes icon, inverted to white, to My Collection in the header.
+
 ## α-027 · 2026-10-26
 
 - Remove redundant Want List body Search Metron buttons; keep the header link.
