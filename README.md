@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-014**.
+Comic inventory and reading journal. Current build: **α-015**.
 
 ## Run locally
 
@@ -77,7 +77,7 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 - box add by Epic Icon Designs from <a href="https://thenounproject.com/browse/icons/term/box-add/" target="_blank" rel="noopener noreferrer" title="box add Icons">Noun Project</a> (CC BY 3.0). `public/box-add.png` is the ownership/add action icon.
 - Book check by Ardiansyah from <a href="https://thenounproject.com/browse/icons/term/book-check/" target="_blank" rel="noopener noreferrer" title="Book check Icons">Noun Project</a> (CC BY 3.0). `public/book-check.png` is the read action icon.
 - shopping list by Atif Arshad from <a href="https://thenounproject.com/browse/icons/term/shopping-list/" target="_blank" rel="noopener noreferrer" title="shopping list Icons">Noun Project</a> (CC BY 3.0). `public/shopping-list.png` is the Want List icon.
-- [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). Source icon files are retained unchanged; CSS inverts the action icons for contrast on dark controls.
+- [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). The five Noun Project icons have their embedded attribution text removed from the bottom margin; creator credits and license links are retained here and in the app. Icon artwork and canvas sizes are unchanged. CSS inverts the icons for contrast on dark controls.
 - Comic metadata and images: [Metron](https://metron.cloud). Cover artwork belongs to its respective rights holders.
 
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults follow HeroesFeast and Quartermaster: dark plum, lavender accents, Georgia headings, system body text, rounded panels, and responsive controls.

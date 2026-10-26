@@ -1,5 +1,10 @@
 # Changelog
 
+## α-015 · 2026-10-26
+
+- Clear the embedded text strip below all five Noun Project icons without altering the artwork or canvas.
+- Preserve creator attributions and document the image modifications.
+
 ## α-014 · 2026-10-26
 
 - Rename the collection tabs to My Collection and Read and Rated Comics.

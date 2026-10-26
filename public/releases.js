@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-015', date: '2026-10-26', title: 'Clean icon artwork',
+  changes: ['Remove embedded text beneath the five Noun Project icons while preserving artwork, transparency, and creator credits.'],
+}, {
   version: 'α-014', date: '2026-10-26', title: 'Collection and reading',
   changes: ['Rename collection tabs to My Collection and Read and Rated Comics, with supplied boxes and star icons and creator credits.'],
 }, {
