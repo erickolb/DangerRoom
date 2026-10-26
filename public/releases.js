@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-020', date: '2026-10-26', title: 'Let the icons speak',
+  changes: ['Remove redundant Read and Unread labels from collection tiles; reading status remains on the icon.'],
+}, {
   version: 'α-019', date: '2026-10-26', title: 'In reading order',
   changes: ['Default collection views to series name, series start year, and numeric issue order, keeping covers and duplicate copies together.'],
 }, {

@@ -1,5 +1,9 @@
 # Changelog
 
+## α-020 · 2026-10-26
+
+- Remove redundant Read/Unread badges from collection tiles while retaining reading status icons.
+
 ## α-019 · 2026-10-26
 
 - Sort collection views by series name, start year, and numeric issue number, grouping variants and duplicate copies.
