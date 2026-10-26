@@ -110,20 +110,28 @@ function mountRating(container,ctx,state){
   function render(){
     if(displayed!==ctx.issue.user_rating){
       displayed=ctx.issue.user_rating;
-      container.innerHTML=`<form class="personal-rating-form">${ratingChoices(displayed ?? null)}<p class="hint">Rating this issue marks every copy and variant as read.</p><div class="actions"><button type="submit">Save rating</button><button type="button" class="quiet" data-clear-rating>Clear rating</button></div><p class="form-error" role="alert"></p></form>`;
+      container.innerHTML=`<form class="personal-rating-form">${ratingChoices(displayed ?? null)}<p class="hint">Rating this issue marks every copy and variant as read.</p><div class="actions"><button type="button" class="quiet" data-clear-rating>Clear rating</button></div><p class="form-error" role="alert"></p></form>`;
       const form=container.querySelector('form');bindRatingPreview(form);
-      form.onsubmit=e=>{e.preventDefault();const data=new FormData(form);if(!data.has('rating')){form.querySelector('.form-error').textContent='Choose a rating first.';return;}save(Number(data.get('rating')));};
+      form.onsubmit=e=>e.preventDefault();
+      form.querySelectorAll('[name=rating]').forEach(input=>input.addEventListener('click',()=>save(Number(input.value))));
       form.querySelector('[data-clear-rating]').onclick=()=>save(null);
     }
+    container.querySelectorAll('[name=rating]').forEach(input=>input.disabled=ctx.busy || !state.editionKey);
     container.querySelectorAll('button').forEach(b=>b.disabled=ctx.busy || !state.editionKey || b.hasAttribute('data-clear-rating') && ctx.issue.user_rating==null);
   }
   async function save(value){
-    if(ctx.busy)return;ctx.busy=true;ctx.notify();
+    if(ctx.busy || !state.editionKey)return;
+    container.querySelector('.form-error').textContent='';ctx.busy=true;ctx.notify();
     try{
       const fresh=ctx.saved?await api(`/issues/${ctx.issue.id}/rating`,{method:'PATCH',body:JSON.stringify({rating:value,edition_key:state.editionKey})})
         :(await api('/entries',{method:'POST',body:JSON.stringify({issue_id:ctx.issue.id,edition_key:state.editionKey,owned:false,read:true,rating:value})})).issue;
       ctx.sync(fresh);
-    }catch(error){container.querySelector('.form-error').textContent=error.message;}
+     }catch(error){
+      container.querySelectorAll('[name=rating]').forEach(input=>input.checked=Number(input.value)===ctx.issue.user_rating);
+      container.querySelectorAll('.rating-half').forEach((label,i)=>label.classList.toggle('filled',(i+1)/2<=(ctx.issue.user_rating||0)));
+      container.querySelector('.rating-value').textContent=ctx.issue.user_rating ? `${ctx.issue.user_rating} / 5` : 'Not rated';
+      container.querySelector('.form-error').textContent=error.message;
+    }
     finally{ctx.busy=false;ctx.notify();}
   }
   ctx.listeners.add(render);render();

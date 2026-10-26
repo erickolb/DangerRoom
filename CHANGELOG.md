@@ -1,5 +1,10 @@
 # Changelog
 
+## α-031 · 2026-10-26
+
+- Remove Save rating; clicking detail or cover-picker stars immediately saves the score.
+- Keep Clear rating, prevent overlapping requests, and restore the saved score on failure.
+
 ## α-030 · 2026-10-26
 
 - Center clipped star glyphs so both halves align correctly in rating controls.

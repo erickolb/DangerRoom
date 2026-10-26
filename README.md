@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-030**.
+Comic inventory and reading journal. Current build: **α-031**.
 
 ## Run locally
 
@@ -35,7 +35,7 @@ Use the collection icon with the small plus overlay to add another copy of the s
 
 Collection tiles show five grey stars when unrated. Hover or focus a half-star to preview a score and click to save immediately. Five-star ratings glow brighter. Ratings stay shared across copies and variants and automatically mark the issue read.
 
-Rate a comic with the five-star control in half-star steps (0.5–5), either while adding it or on its details page. The detail editor previews your selection until you press **Save rating**. Saving a rating automatically marks the issue as read. The same personal rating is displayed on every owned copy and variant, and in the Read collection; it is separate from Metron's content rating.
+Rate a comic with the five-star control in half-star steps (0.5–5), either while adding it or on its details page. The detail editor previews on hover and saves immediately when you click a half-star. Saving a rating automatically marks the issue as read. The same personal rating is displayed on every owned copy and variant, and in the Read collection; it is separate from Metron's content rating.
 
 A rating alone is enough to add a comic as read without claiming ownership. Adding more copies preserves its existing rating unless you explicitly select a new one. **Clear rating** removes the score and keeps read status. Explicitly marking unread keeps the score; saving a rating again marks it read. Existing collections migrate automatically and start unrated. No Metron requests are needed to rate saved issues.
 
