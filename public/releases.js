@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-010', date: '2026-10-26', title: 'DangerRoom for everyone',
+  changes: ['Use standalone DangerRoom branding throughout the header, footer, browser title, metadata, and documentation.'],
+}, {
   version: 'α-009', date: '2026-10-26', title: 'Quiet copy labels',
   changes: ['Style tile copy identifiers as small, uppercase grey text.'],
 }, {
@@ -56,6 +59,6 @@ export const releases = [{
     'Keep ownership and read status independent, with a separate inventory entry for every owned copy.',
     'Browse owned comics or read history and search your saved collection without contacting Metron.',
     'Save essential metadata and original-resolution cover files locally; cache lookups and respect Metron rate limits.',
-    'Add Chateau Lore styling, supplied app and action icons, collapsible credits, and a footer-linked changelog.',
+    'Add the default dark styling, supplied app and action icons, collapsible credits, and a footer-linked changelog.',
   ],
 }];

@@ -1,5 +1,9 @@
 # Changelog
 
+## α-010 · 2026-10-26
+
+- Use standalone DangerRoom branding in the app, page metadata, documentation, and release history.
+
 ## α-009 · 2026-10-26
 
 - Make comic tile copy identifiers small, uppercase, and grey.
@@ -55,4 +59,4 @@
 - Independent ownership and read status; one inventory entry per owned copy, including duplicates.
 - Owned and Read collection views, local search, issue details, and Deep Search on Metron.
 - Cached and paced provider requests with persistent rate-limit cooldowns.
-- Chateau Lore visual defaults, supplied icons and attributions, footer Credits, and an in-app changelog driven by `public/releases.js`.
+- Dark visual defaults, supplied icons and attributions, footer Credits, and an in-app changelog driven by `public/releases.js`.

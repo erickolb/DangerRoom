@@ -1,6 +1,6 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-009**.
+Comic inventory and reading journal. Current build: **α-010**.
 
 ## Run locally
 
