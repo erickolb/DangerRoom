@@ -1,6 +1,6 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-006**.
+Chateau Lore comic inventory and reading journal. Current build: **α-007**.
 
 ## Run locally
 
@@ -23,7 +23,7 @@ This MVP is a single personal collection, bound to loopback by default. It has n
 
 The default page centers comic search. Search by series name and optionally issue number or series start year, or enter a UPC in the expanded options. Search runs only when submitted and supports pagination.
 
-Open a search result's collection, Want List, or read icon to choose its exact cover. In the cover picker, toggle the icons to save immediately; there is no separate collection Save or Delete action. Active collection is green, Want List is amber, and read is purple. Buttons have tooltips and accessible names, and expose their active state to assistive technology.
+Open a search result's collection, Want List, or read icon to choose its exact cover. In the cover picker, toggle the icons to save immediately; there is no separate collection Save or Delete action. Active icons glow coral for collection, green for Want List, and violet for read, following a consistent left-to-right rainbow progression. Search tiles summarize each status across all covers of the issue; the cover picker still handles each exact cover. Buttons have tooltips and accessible names, and expose their active state to assistive technology.
 
 **My Collection** defaults to Owned comics. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
 
@@ -37,7 +37,7 @@ A rating alone is enough to add a comic as read without claiming ownership. Addi
 
 ## Want List
 
-Toggle the shopping-list icon after selecting a cover, or on a read-only comic's details page. **Want List** in the main navigation opens its separate listing with local search. Untoggle its amber shopping-list icon to remove the want, or toggle its collection icon on to acquire that exact cover, fetching collection metadata behind the scenes if needed. Inactive cards remain until navigation/refresh to allow re-toggling. Clicking the cover/title opens the official Metron issue page in a new tab; wanted items have no local detail page.
+Toggle the shopping-list icon after selecting a cover, or on a read-only comic's details page. **Want List** in the main navigation opens its separate listing with local search. Untoggle its green shopping-list icon to remove the want, or toggle its collection icon on to acquire that exact cover, fetching collection metadata behind the scenes if needed. Inactive cards remain until navigation/refresh to allow re-toggling. Clicking the cover/title opens the official Metron issue page in a new tab; wanted items have no local detail page.
 
 Wants are specific to a cover, unlike read status and ratings. Owning the standard cover does not stop you wanting a variant. Adding an owned copy removes only that exact want in the same database transaction; trying to want an owned cover does nothing, with the option slightly greyed out. Reading/rating alone does not claim ownership or remove a want. Duplicate wants share one list entry. Removing an owned copy does not automatically restore an old want.
 

@@ -1,5 +1,12 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-007', date: '2026-10-26', title: 'A spectrum of stories',
+  changes: [
+    'Highlight search tiles when any cover of an issue is owned, wanted, or read.',
+    'Give active icons a consistent left-to-right coral, green, and violet glow.',
+    'Keep the Want List cover picker available when another variant is already owned.',
+  ],
+}, {
   version: 'α-006', date: '2026-10-25', title: 'Covers in the cloud',
   changes: [
     'Support private AWS S3 image storage alongside local files, with stable cover URLs.',

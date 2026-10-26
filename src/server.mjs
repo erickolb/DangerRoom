@@ -49,7 +49,7 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured });
       if (req.method === 'GET' && url.pathname === '/api/search') {
         const result=await metron.search(url.searchParams);
-        result.results=result.results.map(row=>({...row,...repo.coverStatus(row.id,'standard'),read:Boolean(repo.issue(row.id)?.read)}));
+        result.results=result.results.map(row=>({...row,...repo.issueStatus(row.id)}));
         return send(200,result);
       }
       let match = url.pathname.match(/^\/api\/metron\/issues\/(\d+)$/);

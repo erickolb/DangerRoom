@@ -67,6 +67,11 @@ export class Repository {
       return { issue: this.issue(issue.id), copy_id: copyId };
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
+  issueStatus(id) {
+    return { owned: Boolean(this.db.prepare('SELECT 1 FROM copies WHERE issue_id=? LIMIT 1').get(id)),
+      wanted: Boolean(this.db.prepare('SELECT 1 FROM wants WHERE issue_id=? LIMIT 1').get(id)),
+      read: Boolean(this.db.prepare('SELECT 1 FROM reads WHERE issue_id=?').get(id)) };
+  }
   coverStatus(id, key) {
     return { owned: Boolean(this.db.prepare('SELECT 1 FROM copies WHERE issue_id=? AND edition_key=? LIMIT 1').get(id,key)),
       wanted: Boolean(this.db.prepare('SELECT 1 FROM wants WHERE issue_id=? AND edition_key=?').get(id,key)) };

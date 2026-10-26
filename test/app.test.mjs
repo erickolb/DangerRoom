@@ -354,7 +354,7 @@ test('search and picker states reflect live shared reading and exact-cover owner
   await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard'});
   await h.request('/api/wants','POST',{issue_id:42,edition_key:key});
   const search=(await h.request('/api/search?q=Test')).data.results[0];
-  assert.equal(search.owned,true);assert.equal(search.read,true);assert.equal(search.wanted,false);
+  assert.equal(search.owned,true);assert.equal(search.read,true);assert.equal(search.wanted,true);
   let picker=(await h.request('/api/metron/issues/42')).data;
   assert.equal(picker.saved,true);assert.ok(picker.read);assert.equal(picker.copies[0].id,added.data.copy_id);
   assert.equal(picker.editions[0].owned,true);assert.equal(picker.editions[1].wanted,true);
@@ -363,4 +363,22 @@ test('search and picker states reflect live shared reading and exact-cover owner
   await h.request(`/api/copies/${added.data.copy_id}`,'DELETE');
   picker=(await h.request('/api/metron/issues/42')).data;
   assert.equal(picker.editions[0].owned,false);assert.equal(picker.editions[1].wanted,true);assert.equal(picker.copies.length,0);
+});
+
+test('search tile status includes variant-only ownership and wants without changing picker cover states', async t => {
+  const h=await harness(t), key=editionsFor(raw)[1].key;
+  await h.request('/api/entries','POST',add(key));
+  let row=(await h.request('/api/search?q=Test')).data.results[0];
+  assert.equal(row.owned,true);assert.equal(row.wanted,false);assert.equal(row.read,false);
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
+  row=(await h.request('/api/search?q=Test')).data.results[0];
+  assert.equal(row.owned,true);assert.equal(row.wanted,true);
+  const picker=(await h.request('/api/metron/issues/42')).data;
+  assert.equal(picker.editions[0].owned,false);assert.equal(picker.editions[0].wanted,true);
+  assert.equal(picker.editions[1].owned,true);assert.equal(picker.editions[1].wanted,false);
+  const issue=(await h.request('/api/issues/42')).data;
+  await h.request(`/api/copies/${issue.copies[0].id}`,'DELETE');
+  await h.request('/api/wants/42/standard','DELETE');
+  row=(await h.request('/api/search?q=Test')).data.results[0];
+  assert.equal(row.owned,false);assert.equal(row.wanted,false);
 });

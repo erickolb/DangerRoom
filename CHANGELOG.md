@@ -1,5 +1,11 @@
 # Changelog
 
+## α-007 · 2026-10-26
+
+- Aggregate search tile ownership and wants across all variants, alongside issue-level read status.
+- Add consistent coral, green, and violet active glows from left to right.
+- Keep search Want List controls available when another cover is owned.
+
 
 ## α-006 — 2026-10-25
 
