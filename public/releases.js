@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-021', date: '2026-10-26', title: 'An orderly shelf',
+  changes: ['Hide standard-cover captions and show variant names in smaller italics on collection tiles.', 'Align ratings and action buttons along the bottom of each tile row, leaving spare space above the controls.'],
+}, {
   version: 'α-020', date: '2026-10-26', title: 'Let the icons speak',
   changes: ['Remove redundant Read and Unread labels from collection tiles; reading status remains on the icon.'],
 }, {

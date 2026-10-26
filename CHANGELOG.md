@@ -1,5 +1,10 @@
 # Changelog
 
+## α-021 · 2026-10-26
+
+- Hide standard cover captions and style variant names as smaller italic text on collection tiles.
+- Align ratings and buttons at the bottom of each row, placing spare space above them.
+
 ## α-020 · 2026-10-26
 
 - Remove redundant Read/Unread badges from collection tiles while retaining reading status icons.
