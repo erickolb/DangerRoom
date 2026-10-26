@@ -1,9 +1,8 @@
-const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'box-add' };
+const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'duplicate' };
 const names = { owned:'Add to collection', wanted:'Add to Want List', read:'Mark as read', extra:'Add another copy' };
-const plus = '<svg class="copy-plus" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8"/></svg>';
 export function actionButton(action, active = false, disabled = false) {
   const title = action === 'owned' && active ? 'Remove this copy from collection' : action === 'wanted' && active ? 'Remove from Want List' : action === 'read' && active ? 'Mark unread' : names[action];
-  return `<button type="button" class="comic-toggle ${action === 'extra' ? 'extra-copy' : ''}" data-action="${action}" aria-label="${names[action]}" title="${title}" ${action !== 'extra' ? `aria-pressed="${Boolean(active)}"` : ''} ${disabled ? 'disabled' : ''}><img class="icon" src="/${icons[action]}.png" alt="">${action === 'extra' ? plus : ''}</button>`;
+  return `<button type="button" class="comic-toggle ${action === 'extra' ? 'extra-copy' : ''}" data-action="${action}" aria-label="${names[action]}" title="${title}" ${action !== 'extra' ? `aria-pressed="${Boolean(active)}"` : ''} ${disabled ? 'disabled' : ''}><img class="icon" src="/${icons[action]}.png" alt=""></button>`;
 }
 export function context(issue, api, onError) {
   const ctx = { issue, editions:issue.editions || [], saved:issue.saved ?? Boolean(issue.saved_at), busy:false, listeners:new Set(), api,onError };

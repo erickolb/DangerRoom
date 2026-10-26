@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-033', date: '2026-10-26', title: 'Another copy',
+  changes: ['Use the supplied duplicate icon for adding another copy, removing embedded bottom text and retaining creator attribution.'],
+}, {
   version: 'α-032', date: '2026-10-26', title: 'A quieter clear control',
   changes: ['Replace Clear rating with an accessible circled X beside the score, visible only for saved ratings.'],
 }, {

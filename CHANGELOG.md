@@ -1,5 +1,9 @@
 # Changelog
 
+## α-033 · 2026-10-26
+
+- Use the supplied duplicate icon for adding another copy, with bottom text removed and creator credit retained.
+
 ## α-032 · 2026-10-26
 
 - Replace Clear rating with a circled X beside the score, shown only for saved ratings.
