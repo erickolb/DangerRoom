@@ -6,7 +6,7 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | --- | --- |
 | `GET /api/health` | Build label and whether Metron credentials are configured; no secret values. |
 | `GET /api/search?q=Batman&number=1&year=2024&page=1` | Cached provider issue search. `year` means series start year. `upc` can be used without `q`. |
-| `GET /api/metron/issues/:id` | Cached issue metadata and available cover selections. |
+| `GET /api/metron/issues/:id` | Cached provider issue metadata and cover selections, enriched with current local ownership/want flags, copy IDs, shared read status and personal rating. Local status is never cached as provider metadata. |
 | `POST /api/entries` | `{issue_id, edition_key, owned: boolean, read: boolean, rating?: number|null}`; at least one status flag true or a non-null rating. Fetch authoritative metadata, validate exact edition, persist cover, then atomically save the entry/status. Every `owned:true` request intentionally adds another distinct copy. |
 | `GET /api/collection?view=owned&q=…` | Local copy list, owned by default. Every copy is a separate item. `view=read` returns each read issue once. |
 | `GET /api/issues/:id` | Local metadata, saved editions/covers, copies, and read record. No Metron call. |
@@ -15,7 +15,7 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | `GET /api/wants?q=…` | Lightweight wanted covers with local image filenames and official Metron links; no provider call. |
 | `POST /api/wants` | `{issue_id, edition_key}`. Resolve authoritative cover metadata, save its image, and store only a lightweight want. Idempotent; owned covers silently return `{added:false,owned:true,wanted:false}`. |
 | `DELETE /api/wants/:id/:edition_key` | Remove one exact wanted cover; idempotent, no effect on ownership/read/rating. |
-| `DELETE /api/copies/:uuid` | Remove exactly one copy. Read status and other copies are preserved. UI confirms this action. |
+| `DELETE /api/copies/:uuid` | Remove exactly one copy. Read status and other copies are preserved. The UI triggers this by untoggling the icon, without a separate delete button or confirmation. Local metadata/covers remain available for re-addition. |
 | `GET /covers/:sha256.extension` | Locally stored cover. Only validated filenames and raster formats are served. |
 
 ## Tables

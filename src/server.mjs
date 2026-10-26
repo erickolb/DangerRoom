@@ -11,6 +11,7 @@ import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/actions.js', ['actions.js','text/javascript; charset=utf-8']],
   ['/', ['index.html', 'text/html; charset=utf-8']], ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']], ['/releases.js', ['releases.js', 'text/javascript; charset=utf-8']],
   ['/shopping-list.png', ['shopping-list.png', 'image/png']],
@@ -46,11 +47,17 @@ export function createApp(options = {}) {
       if (req.headers['sec-fetch-site'] === 'cross-site' && !['GET', 'HEAD'].includes(req.method)) throw new AppError(403, 'Cross-site changes are not allowed.');
       if (!['GET', 'HEAD'].includes(req.method) && req.headers.origin && new URL(req.headers.origin).host !== host.host) throw new AppError(403, 'Cross-site changes are not allowed.');
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured });
-      if (req.method === 'GET' && url.pathname === '/api/search') return send(200, await metron.search(url.searchParams));
+      if (req.method === 'GET' && url.pathname === '/api/search') {
+        const result=await metron.search(url.searchParams);
+        result.results=result.results.map(row=>({...row,...repo.coverStatus(row.id,'standard'),read:Boolean(repo.issue(row.id)?.read)}));
+        return send(200,result);
+      }
       let match = url.pathname.match(/^\/api\/metron\/issues\/(\d+)$/);
       if (req.method === 'GET' && match) {
         const issue = await metron.issue(positiveId(match[1]));
         issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));
+        const local=repo.issue(issue.id);
+        Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null});
         return send(200, issue);
       }
       if (req.method === 'GET' && url.pathname === '/api/wants') return send(200, { items: repo.wantList((url.searchParams.get('q') || '').slice(0,160)) });

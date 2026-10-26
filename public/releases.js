@@ -1,5 +1,13 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-005', date: '2026-10-25', title: 'Status at a glance',
+  changes: [
+    'Use icon-only collection, Want List, and read toggles with green, amber, and purple active states.',
+    'Save status changes immediately; untoggle collection to remove just that copy and toggle it back on to restore ownership.',
+    'Keep separate duplicate-copy controls and an icon for adding another copy, with accessible labels and tooltips.',
+    'Update shared read status across visible copies and variants without a page reload.',
+  ],
+}, {
   version: 'α-004', date: '2026-10-25', title: 'Find your next cover',
   changes: [
     'Add a cover-specific Want List with lightweight local metadata, saved cover images, and links to each comic on Metron.',

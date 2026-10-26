@@ -1,5 +1,13 @@
 # Changelog
 
+## α-005 · 2026-10-25
+
+- Replace collection, Want List, and read action text with icon-only toggles, using green, amber, and purple for active status.
+- Save toggles immediately; untoggle ownership to remove one copy, then re-toggle to restore it without a delete button or dialog.
+- Preserve distinct copy controls, add another copy with a plus-marked icon, and synchronize shared read state across visible copies.
+- Keep tooltips, accessible names, pressed states, keyboard access, and local metadata reuse.
+
+
 ## α-004 · 2026-10-25
 
 - Add an exact-cover Want List with lightweight local metadata and cover files, separate from inventory.

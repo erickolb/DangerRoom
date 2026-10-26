@@ -334,3 +334,33 @@ test('ownership wins a want-list race, even when a stale cover selection is subm
   assert.deepEqual(h.repo.addWant(issue,edition,null),{added:false,owned:true,wanted:false});
   assert.equal(h.repo.wantList().length,0);
 });
+
+test('un-toggling the last copy preserves reading and rating and can restore ownership entirely locally',async t=>{
+  const h=await harness(t);
+  const added=await h.request('/api/entries','POST',{...add('standard'),rating:4.5});
+  const before=h.counts(),oldId=added.data.copy_id;
+  await h.request(`/api/copies/${oldId}`,'DELETE');
+  assert.equal((await h.request('/api/collection')).data.items.length,0);
+  let issue=(await h.request('/api/issues/42')).data;
+  assert.ok(issue.read);assert.equal(issue.user_rating,4.5);assert.equal(issue.editions[0].owned,false);
+  const restored=await h.request('/api/entries','POST',add('standard'));
+  assert.equal(restored.status,201);assert.notEqual(restored.data.copy_id,oldId);
+  assert.equal(restored.data.issue.copies.length,1);assert.ok(restored.data.issue.read);assert.equal(restored.data.issue.user_rating,4.5);
+  assert.deepEqual(h.counts(),before);
+});
+test('search and picker states reflect live shared reading and exact-cover ownership after toggles',async t=>{
+  const h=await harness(t),key=editionsFor(raw)[1].key;
+  const added=await h.request('/api/entries','POST',add('standard'));
+  await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard'});
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:key});
+  const search=(await h.request('/api/search?q=Test')).data.results[0];
+  assert.equal(search.owned,true);assert.equal(search.read,true);assert.equal(search.wanted,false);
+  let picker=(await h.request('/api/metron/issues/42')).data;
+  assert.equal(picker.saved,true);assert.ok(picker.read);assert.equal(picker.copies[0].id,added.data.copy_id);
+  assert.equal(picker.editions[0].owned,true);assert.equal(picker.editions[1].wanted,true);
+  await h.request('/api/issues/42/read','PATCH',{read:false});
+  assert.equal((await h.request('/api/search?q=Test')).data.results[0].read,false);
+  await h.request(`/api/copies/${added.data.copy_id}`,'DELETE');
+  picker=(await h.request('/api/metron/issues/42')).data;
+  assert.equal(picker.editions[0].owned,false);assert.equal(picker.editions[1].wanted,true);assert.equal(picker.copies.length,0);
+});

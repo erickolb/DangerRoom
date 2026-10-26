@@ -1,6 +1,6 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-004**.
+Chateau Lore comic inventory and reading journal. Current build: **α-005**.
 
 ## Run locally
 
@@ -23,9 +23,11 @@ This MVP is a single personal collection, bound to loopback by default. It has n
 
 The default page centers comic search. Search by series name and optionally issue number or series start year, or enter a UPC in the expanded options. Search runs only when submitted and supports pagination.
 
-Choose **Choose & add**, select the matching cover, and select **I own this copy**, **I've read this**, or both. Each owned save creates a new UUID inventory entry, including an identical cover added twice. Read status belongs to the issue, independent of ownership, and marking read again does not duplicate the reading record. A previously read issue stays read when you later add an owned copy without checking Read; use **Mark unread** on its details to clear that status explicitly.
+Open a search result's collection, Want List, or read icon to choose its exact cover. In the cover picker, toggle the icons to save immediately; there is no separate collection Save or Delete action. Active collection is green, Want List is amber, and read is purple. Buttons have tooltips and accessible names, and expose their active state to assistive technology.
 
-**My Collection** defaults to Owned comics. **Read comics** lists read issues once each, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details show the selected edition, individual owned copies, read status, and **Deep Search on Metron**. Removing a copy does not remove another copy or the reading record. Adding another copy from local details requires no Metron lookup when its metadata and cover are already stored.
+**My Collection** defaults to Owned comics. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
+
+Use the collection icon with the small plus overlay to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue. **Read comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
 
 ## Personal ratings
 
@@ -35,7 +37,7 @@ A rating alone is enough to add a comic as read without claiming ownership. Addi
 
 ## Want List
 
-Use **Want this cover** after selecting a cover in the search picker, or on a read-only comic's details page. **Want List** in the main navigation opens its separate listing with local search and one-click removal. Clicking the cover/title opens the official Metron issue page in a new tab; wanted items have no local detail page. **Add to collection** opens the full intake picker with that exact cover preselected, fetching richer metadata only for collection intake.
+Toggle the shopping-list icon after selecting a cover, or on a read-only comic's details page. **Want List** in the main navigation opens its separate listing with local search. Untoggle its amber shopping-list icon to remove the want, or toggle its collection icon on to acquire that exact cover, fetching collection metadata behind the scenes if needed. Inactive cards remain until navigation/refresh to allow re-toggling. Clicking the cover/title opens the official Metron issue page in a new tab; wanted items have no local detail page.
 
 Wants are specific to a cover, unlike read status and ratings. Owning the standard cover does not stop you wanting a variant. Adding an owned copy removes only that exact want in the same database transaction; trying to want an owned cover does nothing, with the option slightly greyed out. Reading/rating alone does not claim ownership or remove a want. Duplicate wants share one list entry. Removing an owned copy does not automatically restore an old want.
 
