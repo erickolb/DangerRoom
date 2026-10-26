@@ -1,5 +1,9 @@
 # Changelog
 
+## α-013 · 2026-10-26
+
+- Reserve Find for local collection/list lookups and Search for Metron in interface labels and guidance.
+
 ## α-012 · 2026-10-26
 
 - Change the homepage heading to “Pull your next issue”.

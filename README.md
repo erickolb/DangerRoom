@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-012**.
+Comic inventory and reading journal. Current build: **α-013**.
 
 ## Run locally
 
@@ -20,6 +20,8 @@ Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a
 This MVP is a single personal collection, bound to loopback by default. It has no account/login system. Internet hosting and Docker deployment have not been configured.
 
 ## Use
+
+Terminology: **Find** looks within your collection or curated lists; **Search** queries Metron.
 
 The default page centers comic search. Search by series name and optionally issue number or series start year, or enter a UPC in the expanded options. Search runs only when submitted and supports pagination.
 
