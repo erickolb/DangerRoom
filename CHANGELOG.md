@@ -1,5 +1,9 @@
 # Changelog
 
+## α-023 · 2026-10-26
+
+- Update the Read and Rated Comics empty-state heading and add the requested comic-rating encouragement.
+
 ## α-022 · 2026-10-26
 
 - Hide the visible collection find label and tighten spacing below the mode buttons, retaining an accessible field name.

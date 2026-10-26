@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-023', date: '2026-10-26', title: 'Ready to launch discourse',
+  changes: ['Update the Read and Rated Comics empty state with a new heading and an invitation to rate a comic.'],
+}, {
   version: 'α-022', date: '2026-10-26', title: 'A tighter collection toolbar',
   changes: ['Hide the visible collection find-field label while preserving its accessible name, and reduce spacing below the mode buttons.'],
 }, {
