@@ -1,5 +1,9 @@
 # Changelog
 
+## α-022 · 2026-10-26
+
+- Hide the visible collection find label and tighten spacing below the mode buttons, retaining an accessible field name.
+
 ## α-021 · 2026-10-26
 
 - Hide standard cover captions and style variant names as smaller italic text on collection tiles.

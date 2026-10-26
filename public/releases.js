@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-022', date: '2026-10-26', title: 'A tighter collection toolbar',
+  changes: ['Hide the visible collection find-field label while preserving its accessible name, and reduce spacing below the mode buttons.'],
+}, {
   version: 'α-021', date: '2026-10-26', title: 'An orderly shelf',
   changes: ['Hide standard-cover captions and show variant names in smaller italics on collection tiles.', 'Align ratings and action buttons along the bottom of each tile row, leaving spare space above the controls.'],
 }, {
