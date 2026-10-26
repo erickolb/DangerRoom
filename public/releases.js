@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-016', date: '2026-10-26', title: 'Search with Metron',
+  changes: ['Add the official Metron logo in black to My Collection search buttons on a light background.'],
+}, {
   version: 'α-015', date: '2026-10-26', title: 'Clean icon artwork',
   changes: ['Remove embedded text beneath the five Noun Project icons while preserving artwork, transparency, and creator credits.'],
 }, {

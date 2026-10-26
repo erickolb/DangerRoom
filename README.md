@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-015**.
+Comic inventory and reading journal. Current build: **α-016**.
 
 ## Run locally
 
@@ -69,6 +69,8 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 [`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. Stay in α until the user announces a new phase. Keep the package prerelease suffix aligned. See [Changelog](CHANGELOG.md).
 
 ## Credits
+
+- Metron logo: [The Metron Project](https://github.com/Metron-Project/metron/blob/master/static/site/img/metron.svg); used on the collection page search buttons.
 
 - boxes by Pictogramma from <a href="https://thenounproject.com/browse/icons/term/boxes/" target="_blank" rel="noopener noreferrer" title="boxes Icons">Noun Project</a> (CC BY 3.0). `public/boxes.png` is the My Collection tab icon.
 - Star by MihiMihi from <a href="https://thenounproject.com/browse/icons/term/star/" target="_blank" rel="noopener noreferrer" title="Star Icons">Noun Project</a> (CC BY 3.0). `public/star.png` is the Read and Rated Comics tab icon.

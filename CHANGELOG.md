@@ -1,5 +1,9 @@
 # Changelog
 
+## α-016 · 2026-10-26
+
+- Add the official black Metron logo to collection-page Search Metron buttons, using a light button background for contrast.
+
 ## α-015 · 2026-10-26
 
 - Clear the embedded text strip below all five Noun Project icons without altering the artwork or canvas.
