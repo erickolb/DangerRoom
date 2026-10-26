@@ -1,5 +1,10 @@
 # Changelog
 
+## α-030 · 2026-10-26
+
+- Center clipped star glyphs so both halves align correctly in rating controls.
+- Preview the full hovered or focused score in the detail rating editor.
+
 ## α-029 · 2026-10-26
 
 - Remove the arrow from My Collection in the header.

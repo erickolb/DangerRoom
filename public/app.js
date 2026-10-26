@@ -28,11 +28,19 @@ function ratingDisplay(value) {
   return `<div class="rating-summary"><span class="display-stars" role="img" aria-label="${value} out of 5 stars">${Array.from({ length: 5 }, (_, i) => `<span aria-hidden="true" class="${value >= i + 1 ? 'full-star' : value >= i + 0.5 ? 'half-star' : 'empty-star'}">★</span>`).join('')}</span><span class="muted">${value} / 5</span></div>`;
 }
 function bindRatingPreview(form) {
-  form.querySelectorAll('[name=rating]').forEach(input => input.addEventListener('change', () => {
-    const value = Number(input.value);
-    form.querySelectorAll('.rating-half').forEach((label, i) => label.classList.toggle('filled', (i + 1) / 2 <= value));
-    form.querySelector('.rating-value').textContent = `${value} / 5`;
-  }));
+  const picker=form.querySelector('.rating-picker');
+  function preview(value){
+    form.querySelectorAll('.rating-half').forEach((label,i)=>label.classList.toggle('filled',(i+1)/2<=value));
+    form.querySelector('.rating-value').textContent=value ? `${value} / 5` : 'Not rated';
+  }
+  const restore=()=>preview(Number(form.querySelector('[name=rating]:checked')?.value)||0);
+  form.querySelectorAll('[name=rating]').forEach(input=>{
+    input.addEventListener('change',restore);
+    input.addEventListener('focus',()=>preview(Number(input.value)));
+    input.closest('label').addEventListener('mouseenter',()=>preview(Number(input.value)));
+  });
+  picker.addEventListener('mouseleave',restore);
+  picker.addEventListener('focusout',event=>{if(!picker.contains(event.relatedTarget))restore();});
 }
 
 async function wantList(params, ticket) {

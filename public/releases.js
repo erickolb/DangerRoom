@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-030', date: '2026-10-26', title: 'Two halves, one star',
+  changes: ['Center star glyphs within their clipping boxes so half-stars align correctly.', 'Preview all half-stars up to the hovered or focused score in the detail rating editor.'],
+}, {
   version: 'α-029', date: '2026-10-26', title: 'A simpler collection link',
   changes: ['Remove the arrow from the header My Collection button.'],
 }, {
