@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-017', date: '2026-10-26', title: 'An atom of navigation',
+  changes: ['Use the Metron atom mark without lettering, black on collection search buttons and white in the header.', 'Move collection Search Metron alongside the collection tabs and remove its arrow.'],
+}, {
   version: 'α-016', date: '2026-10-26', title: 'Search with Metron',
   changes: ['Add the official Metron logo in black to My Collection search buttons on a light background.'],
 }, {

@@ -15,4 +15,6 @@
 
 .tabs{flex-wrap:wrap}.tabs a{display:inline-flex;align-items:center;gap:9px}.tabs .icon{width:24px;height:24px;flex-shrink:0}
 
-.metron-logo{width:78px;height:22px;object-fit:contain;filter:brightness(0);flex-shrink:0}
+.metron-logo{width:24px;height:24px;object-fit:contain;filter:brightness(0);flex-shrink:0}
+
+.metron-nav{display:inline-flex;align-items:center;gap:8px}.metron-nav .metron-logo{filter:brightness(0) invert(1)}.tabs .metron-search{background:#d6adee;color:#21142d;border-color:transparent}.tabs .metron-search:hover{background:#e5c8f6}

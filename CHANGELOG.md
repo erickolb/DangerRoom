@@ -1,5 +1,10 @@
 # Changelog
 
+## α-017 · 2026-10-26
+
+- Use only the Metron atom mark, black in collection buttons and white in the header.
+- Align collection Search Metron with the two collection tabs and remove its arrow.
+
 ## α-016 · 2026-10-26
 
 - Add the official black Metron logo to collection-page Search Metron buttons, using a light button background for contrast.
