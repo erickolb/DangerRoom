@@ -7,6 +7,7 @@ import { Metron } from './metron.mjs';
 import { Covers } from './covers.mjs';
 import { AppError, positiveId } from './errors.mjs';
 import { releases } from '../public/releases.js';
+import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
@@ -22,7 +23,8 @@ async function body(req) {
   catch { throw new AppError(400, 'Invalid JSON data.'); }
 }
 function flags(data) {
-  if (typeof data.owned !== 'boolean' || typeof data.read !== 'boolean' || (!data.owned && !data.read)) throw new AppError(400, 'Choose ownership, read status, or both.');
+  if (Object.hasOwn(data, 'rating')) validateRating(data.rating);
+  if (typeof data.owned !== 'boolean' || typeof data.read !== 'boolean' || (!data.owned && !data.read && data.rating == null)) throw new AppError(400, 'Choose ownership, read status, or both.');
   if (typeof data.edition_key !== 'string' || data.edition_key.length > 100) throw new AppError(400, 'Choose the exact cover before saving.');
 }
 export function createApp(options = {}) {
@@ -65,7 +67,7 @@ export function createApp(options = {}) {
         if (!edition) { issue = await metron.issue(id); edition = issue.editions.find(e => e.key === data.edition_key); }
         if (!edition) throw new AppError(400, 'That cover is no longer in the Metron result. Choose a cover again.');
         const coverFile = edition.cover_file || await covers.save(edition.source_image);
-        const { editions, copies, read, saved_at, ...metadata } = issue;
+        const { editions, copies, read, saved_at, user_rating, ...metadata } = issue;
         return send(201, repo.save(metadata, edition, coverFile, data));
       }
       match = url.pathname.match(/^\/api\/issues\/(\d+)\/read$/);
@@ -73,6 +75,11 @@ export function createApp(options = {}) {
         const data = await body(req);
         if (typeof data.read !== 'boolean') throw new AppError(400, 'Read status must be true or false.');
         return send(200, repo.setRead(positiveId(match[1]), data.read, data.edition_key));
+      }
+      match = url.pathname.match(/^\/api\/issues\/(\d+)\/rating$/);
+      if (req.method === 'PATCH' && match) {
+        const data = await body(req);
+        return send(200, repo.setRating(positiveId(match[1]), data.rating, data.edition_key));
       }
       match = url.pathname.match(/^\/api\/copies\/([a-f0-9-]{36})$/);
       if (req.method === 'DELETE' && match) { repo.removeCopy(match[1]); return send(200, { removed: true }); }

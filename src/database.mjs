@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { AppError } from './errors.mjs';
+import { validateRating } from './ratings.mjs';
 
 export function openDatabase(directory) {
   mkdirSync(directory, { recursive: true });
@@ -17,7 +18,9 @@ export function openDatabase(directory) {
       FOREIGN KEY(issue_id,edition_key) REFERENCES editions(issue_id,key));
     CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, payload TEXT NOT NULL, expires_at INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS provider_state (key TEXT PRIMARY KEY, value INTEGER NOT NULL);
-    PRAGMA user_version=1;`);
+    CREATE TABLE IF NOT EXISTS issue_ratings (issue_id INTEGER PRIMARY KEY REFERENCES issues(id),
+      half_stars INTEGER NOT NULL CHECK(typeof(half_stars)='integer' AND half_stars BETWEEN 1 AND 10), rated_at TEXT NOT NULL);
+    PRAGMA user_version=2;`);
   return db;
 }
 export class Repository {
@@ -36,11 +39,13 @@ export class Repository {
     const row = this.db.prepare('SELECT * FROM issues WHERE id=?').get(id);
     if (!row) return null;
     return { ...JSON.parse(row.metadata), saved_at: row.saved_at,
+      user_rating: (this.db.prepare('SELECT half_stars FROM issue_ratings WHERE issue_id=?').get(id)?.half_stars ?? 0) / 2 || null,
       editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file })),
       copies: this.db.prepare('SELECT * FROM copies WHERE issue_id=? ORDER BY added_at DESC,id').all(id),
       read: this.db.prepare('SELECT * FROM reads WHERE issue_id=?').get(id) || null };
   }
-  save(issue, edition, coverFile, { owned, read }) {
+  save(issue, edition, coverFile, { owned, read, rating }) {
+    if (rating !== undefined) validateRating(rating);
     const now = new Date().toISOString();
     this.db.exec('BEGIN IMMEDIATE');
     try {
@@ -52,10 +57,29 @@ export class Repository {
         copyId = randomUUID();
         this.db.prepare('INSERT INTO copies VALUES (?,?,?,?)').run(copyId, issue.id, edition.key, now);
       }
-      if (read) this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(issue.id, edition.key, now);
+      if (rating !== undefined) this.writeRating(issue.id, rating, now);
+      if (read || rating != null) this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(issue.id, edition.key, now);
       this.db.exec('COMMIT');
       return { issue: this.issue(issue.id), copy_id: copyId };
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
+  }
+  writeRating(id, rating, now) {
+    if (rating === null) this.db.prepare('DELETE FROM issue_ratings WHERE issue_id=?').run(id);
+    else this.db.prepare('INSERT INTO issue_ratings VALUES (?,?,?) ON CONFLICT(issue_id) DO UPDATE SET half_stars=excluded.half_stars,rated_at=excluded.rated_at').run(id, rating * 2, now);
+  }
+  setRating(id, rating, editionKey) {
+    validateRating(rating);
+    const issue = this.issue(id);
+    if (!issue) throw new AppError(404, 'Comic not found in your collection.');
+    if (rating !== null && !issue.editions.some(e => e.key === editionKey)) throw new AppError(400, 'Choose a saved cover.');
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const now = new Date().toISOString();
+      this.writeRating(id, rating, now);
+      if (rating !== null) this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(id, editionKey, now);
+      this.db.exec('COMMIT');
+    } catch (error) { this.db.exec('ROLLBACK'); throw error; }
+    return this.issue(id);
   }
   setRead(id, read, editionKey) {
     const issue = this.issue(id);

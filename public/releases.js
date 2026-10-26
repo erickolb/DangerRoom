@@ -1,5 +1,12 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-003', date: '2026-10-25', title: 'Rate your reads',
+  changes: [
+    'Rate comics from half a star to five stars, in half-star steps, when adding them or from their details.',
+    'Saving a rating automatically marks the issue as read and shares the rating across every copy and cover variant.',
+    'Show personal ratings in Owned and Read collections; clear a rating without changing read status.',
+  ],
+}, {
   version: 'α-002', date: '2026-10-25', title: 'A new universe',
   changes: ['Change the default-page tagline to “Open up a whole new universe.”'],
 }, {

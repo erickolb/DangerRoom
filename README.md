@@ -1,6 +1,6 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-002**.
+Chateau Lore comic inventory and reading journal. Current build: **α-003**.
 
 ## Run locally
 
@@ -27,9 +27,15 @@ Choose **Choose & add**, select the matching cover, and select **I own this copy
 
 **My Collection** defaults to Owned comics. **Read comics** lists read issues once each, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details show the selected edition, individual owned copies, read status, and **Deep Search on Metron**. Removing a copy does not remove another copy or the reading record. Adding another copy from local details requires no Metron lookup when its metadata and cover are already stored.
 
+## Personal ratings
+
+Rate a comic with the five-star control in half-star steps (0.5–5), either while adding it or on its details page. The detail editor previews your selection until you press **Save rating**. Saving a rating automatically marks the issue as read. The same personal rating is displayed on every owned copy and variant, and in the Read collection; it is separate from Metron's content rating.
+
+A rating alone is enough to add a comic as read without claiming ownership. Adding more copies preserves its existing rating unless you explicitly select a new one. **Clear rating** removes the score and keeps read status. Explicitly marking unread keeps the score; saving a rating again marks it read. Existing collections migrate automatically and start unrated. No Metron requests are needed to rate saved issues.
+
 ## Storage and API use
 
-- `data/dangerroom.sqlite`: issues, selected editions, individual copies, reading records, lookup cache, and provider cooldown state.
+- `data/dangerroom.sqlite`: issues, selected editions, individual copies, reading records, personal ratings, lookup cache, and provider cooldown state.
 - `data/covers/`: original supplied image bytes, without thumbnail substitution, resizing, or recompression; SHA-256 filenames reuse identical files. Resolution depends on the image Metron actually supplies; no separate higher-resolution endpoint is documented. Covers are limited to 25 MB and validated as JPEG, PNG, WebP, or GIF.
 - A new cover must download successfully before the entry is saved. If Metron has no cover, the entry can be saved with an explicit unavailable-cover placeholder.
 - Search caches last 6 hours; issue-detail caches last 24 hours. Concurrent identical lookups share one request. Persistent saved metadata and covers are used for collection browsing with no Metron calls.

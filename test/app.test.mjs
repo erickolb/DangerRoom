@@ -168,3 +168,79 @@ test('cover MIME is validated from bytes; content-identical artwork shares stora
   assert.equal(a, b);
 });
 
+
+test('rating is shared across duplicate copies and variants and atomically marks the issue read', async t => {
+  const h = await harness(t);
+  const standard = await h.request('/api/entries', 'POST', add('standard'));
+  const key = editionsFor(raw)[1].key;
+  await h.request('/api/entries', 'POST', add(key));
+  await h.request('/api/entries', 'POST', add(key));
+  const before = h.counts();
+  assert.equal(standard.data.issue.user_rating, null);
+  const rated = await h.request('/api/issues/42/rating', 'PATCH', { rating: 3.5, edition_key: key });
+  assert.equal(rated.status, 200); assert.equal(rated.data.user_rating, 3.5); assert.ok(rated.data.read);
+  assert.equal(rated.data.read.edition_key, key);
+  assert.equal(rated.data.copies.length, 3);
+  const owned = (await h.request('/api/collection')).data.items;
+  assert.equal(owned.length, 3);
+  assert.ok(owned.every(row => row.issue.user_rating === 3.5 && row.issue.read));
+  assert.equal((await h.request('/api/collection?view=read')).data.items.length, 1);
+  const originalRead = rated.data.read;
+  await h.request('/api/issues/42/rating', 'PATCH', { rating: 5, edition_key: 'standard' });
+  assert.deepEqual((await h.request('/api/issues/42')).data.read, originalRead);
+  assert.equal((await h.request('/api/issues/42')).data.user_rating, 5);
+  assert.deepEqual(h.counts(), before);
+});
+test('rating on import works without owning or separately checking read; later copies inherit it', async t => {
+  const h = await harness(t);
+  const rated = await h.request('/api/entries', 'POST', { ...add('standard', false, false), rating: 0.5 });
+  assert.equal(rated.status, 201); assert.equal(rated.data.issue.user_rating, 0.5); assert.ok(rated.data.issue.read);
+  assert.equal((await h.request('/api/collection')).data.items.length, 0);
+  assert.equal((await h.request('/api/collection?view=read')).data.items[0].issue.user_rating, 0.5);
+  const added = await h.request('/api/entries', 'POST', add(editionsFor(raw)[1].key));
+  assert.equal(added.data.issue.user_rating, 0.5);
+  assert.equal(added.data.issue.copies.length, 1);
+});
+test('invalid ratings and invalid editions do not alter rating or read status', async t => {
+  const h = await harness(t);
+  await h.request('/api/entries', 'POST', add('standard'));
+  for (const rating of [-1, 0, 0.25, 1.1, 5.5, '3.5', true, {}, []]) {
+    assert.equal((await h.request('/api/issues/42/rating', 'PATCH', { rating, edition_key: 'standard' })).status, 400);
+    assert.equal((await h.request('/api/entries', 'POST', { ...add('standard'), rating })).status, 400);
+  }
+  assert.equal((await h.request('/api/issues/42/rating', 'PATCH', { edition_key: 'standard' })).status, 400);
+  assert.equal((await h.request('/api/issues/42/rating', 'PATCH', { rating: 4, edition_key: 'unknown' })).status, 400);
+  assert.equal((await h.request('/api/issues/999/rating', 'PATCH', { rating: 4, edition_key: 'standard' })).status, 404);
+  const issue = (await h.request('/api/issues/42')).data;
+  assert.equal(issue.user_rating, null); assert.equal(issue.read, null); assert.equal(issue.copies.length, 1);
+});
+test('clearing a rating keeps read status; manual unread keeps the rating; other issues are independent', async t => {
+  const h = await harness(t);
+  await h.request('/api/entries', 'POST', { ...add('standard'), rating: 4.5 });
+  h.repo.save({ ...essentialIssue(raw), id: 43 }, editionsFor(raw)[0], null, { owned: true, read: false });
+  const firstRead = (await h.request('/api/issues/42')).data.read;
+  assert.equal(h.repo.issue(43).user_rating, null); assert.equal(h.repo.issue(43).read, null);
+  const cleared = await h.request('/api/issues/42/rating', 'PATCH', { rating: null });
+  assert.equal(cleared.data.user_rating, null); assert.deepEqual(cleared.data.read, firstRead);
+  await h.request('/api/issues/42/rating', 'PATCH', { rating: 4.5, edition_key: 'standard' });
+  await h.request('/api/issues/42/read', 'PATCH', { read: false });
+  assert.equal((await h.request('/api/issues/42')).data.user_rating, 4.5);
+  assert.equal((await h.request('/api/issues/42')).data.read, null);
+  await h.request('/api/issues/42/rating', 'PATCH', { rating: 4.5, edition_key: 'standard' });
+  assert.ok((await h.request('/api/issues/42')).data.read);
+});
+test('ratings migration preserves old inventory, starts unrated, and persists half-stars across restarts', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'dangerroom-rating-migration-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  let db = openDatabase(dir), repo = new Repository(db);
+  repo.save(essentialIssue(raw), editionsFor(raw)[0], null, { owned: true, read: false });
+  db.exec('DROP TABLE issue_ratings; PRAGMA user_version=1;'); db.close();
+  db = openDatabase(dir); repo = new Repository(db);
+  assert.equal(repo.issue(42).user_rating, null); assert.equal(repo.collection('owned').length, 1);
+  repo.setRating(42, 2.5, 'standard'); db.close();
+  db = openDatabase(dir); repo = new Repository(db);
+  try {
+    assert.equal(repo.issue(42).user_rating, 2.5); assert.ok(repo.issue(42).read);
+    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 2);
+  } finally { db.close(); }
+});
