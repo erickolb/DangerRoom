@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-029', date: '2026-10-26', title: 'A simpler collection link',
+  changes: ['Remove the arrow from the header My Collection button.'],
+}, {
   version: 'α-028', date: '2026-10-26', title: 'Collection in the header',
   changes: ['Add the white boxes icon to the header My Collection button.'],
 }, {
