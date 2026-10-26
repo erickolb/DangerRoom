@@ -1,5 +1,10 @@
 # Changelog
 
+## α-008 · 2026-10-26
+
+- Show saved owned variant artwork in search tiles, preferring the latest owned variant over the standard cover.
+- Fall back to an owned standard image or provider artwork when no owned variant image remains.
+
 ## α-007 · 2026-10-26
 
 - Aggregate search tile ownership and wants across all variants, alongside issue-level read status.

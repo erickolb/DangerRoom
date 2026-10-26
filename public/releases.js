@@ -1,5 +1,12 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-008', date: '2026-10-26', title: 'Your cover, your collection',
+  changes: [
+    'Show an owned variant cover in search results instead of the standard artwork.',
+    'Prefer the most recently added owned variant when several covers are collected; fall back to an owned standard cover or Metron artwork.',
+    'Reuse saved cover images from local storage or S3 without additional Metron lookups.',
+  ],
+}, {
   version: 'α-007', date: '2026-10-26', title: 'A spectrum of stories',
   changes: [
     'Highlight search tiles when any cover of an issue is owned, wanted, or read.',

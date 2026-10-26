@@ -382,3 +382,20 @@ test('search tile status includes variant-only ownership and wants without chang
   row=(await h.request('/api/search?q=Test')).data.results[0];
   assert.equal(row.owned,false);assert.equal(row.wanted,false);
 });
+
+test('search thumbnails prefer owned variant artwork and fall back when its last copy is removed', async t => {
+  const h=await harness(t),key=editionsFor(raw)[1].key;
+  const search=async()=>(await h.request('/api/search?q=Test')).data.results[0];
+  assert.equal((await search()).cover_file,null);
+  const standard=(await h.request('/api/entries','POST',add('standard'))).data;
+  const variant=(await h.request('/api/entries','POST',add(key))).data;
+  const variantFile=variant.issue.editions.find(e=>e.key===key).cover_file;
+  assert.equal((await search()).cover_file,variantFile);
+  const duplicate=(await h.request('/api/entries','POST',add(key))).data;
+  await h.request(`/api/copies/${variant.copy_id}`,'DELETE');
+  assert.equal((await search()).cover_file,variantFile);
+  await h.request(`/api/copies/${duplicate.copy_id}`,'DELETE');
+  assert.equal((await search()).cover_file,standard.issue.editions[0].cover_file);
+  await h.request(`/api/copies/${standard.copy_id}`,'DELETE');
+  const row=await search();assert.equal(row.cover_file,null);assert.equal(row.image,raw.image);
+});

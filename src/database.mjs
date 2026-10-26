@@ -67,6 +67,12 @@ export class Repository {
       return { issue: this.issue(issue.id), copy_id: copyId };
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
+  ownedCover(id) {
+    return this.db.prepare(`SELECT e.cover_file, e.key AS edition_key FROM copies c
+      JOIN editions e ON e.issue_id=c.issue_id AND e.key=c.edition_key
+      WHERE c.issue_id=? AND e.cover_file IS NOT NULL
+      ORDER BY (e.key!='standard') DESC, c.added_at DESC, c.id DESC LIMIT 1`).get(id) || null;
+  }
   issueStatus(id) {
     return { owned: Boolean(this.db.prepare('SELECT 1 FROM copies WHERE issue_id=? LIMIT 1').get(id)),
       wanted: Boolean(this.db.prepare('SELECT 1 FROM wants WHERE issue_id=? LIMIT 1').get(id)),

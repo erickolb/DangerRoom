@@ -1,6 +1,6 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-007**.
+Chateau Lore comic inventory and reading journal. Current build: **α-008**.
 
 ## Run locally
 
@@ -23,7 +23,7 @@ This MVP is a single personal collection, bound to loopback by default. It has n
 
 The default page centers comic search. Search by series name and optionally issue number or series start year, or enter a UPC in the expanded options. Search runs only when submitted and supports pagination.
 
-Open a search result's collection, Want List, or read icon to choose its exact cover. In the cover picker, toggle the icons to save immediately; there is no separate collection Save or Delete action. Active icons glow coral for collection, green for Want List, and violet for read, following a consistent left-to-right rainbow progression. Search tiles summarize each status across all covers of the issue; the cover picker still handles each exact cover. Buttons have tooltips and accessible names, and expose their active state to assistive technology.
+Open a search result's collection, Want List, or read icon to choose its exact cover. In the cover picker, toggle the icons to save immediately; there is no separate collection Save or Delete action. Active icons glow coral for collection, green for Want List, and violet for read, following a consistent left-to-right rainbow progression. Search tiles show an owned variant thumbnail when available (the most recently added variant if several are owned), then an owned standard cover, then Metron artwork. Search tiles summarize each status across all covers of the issue; the cover picker still handles each exact cover. Buttons have tooltips and accessible names, and expose their active state to assistive technology.
 
 **My Collection** defaults to Owned comics. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
 
