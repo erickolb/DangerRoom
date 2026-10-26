@@ -1,5 +1,10 @@
 # Changelog
 
+## α-018 · 2026-10-26
+
+- Add immediate half-star ratings to collection tiles with grey unrated stars, hover/focus preview, and brighter five-star glow.
+- Match Search Metron styling to unselected collection tabs.
+
 ## α-017 · 2026-10-26
 
 - Use only the Metron atom mark, black in collection buttons and white in the header.

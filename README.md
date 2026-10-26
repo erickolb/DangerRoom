@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-017**.
+Comic inventory and reading journal. Current build: **α-018**.
 
 ## Run locally
 
@@ -32,6 +32,8 @@ Open a search result's collection, Want List, or read icon to choose its exact c
 Use the collection icon with the small plus overlay to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue. **Read and Rated Comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
 
 ## Personal ratings
+
+Collection tiles show five grey stars when unrated. Hover or focus a half-star to preview a score and click to save immediately. Five-star ratings glow brighter. Ratings stay shared across copies and variants and automatically mark the issue read.
 
 Rate a comic with the five-star control in half-star steps (0.5–5), either while adding it or on its details page. The detail editor previews your selection until you press **Save rating**. Saving a rating automatically marks the issue as read. The same personal rating is displayed on every owned copy and variant, and in the Read collection; it is separate from Metron's content rating.
 

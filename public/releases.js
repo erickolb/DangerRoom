@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-018', date: '2026-10-26', title: 'Rate from your shelf',
+  changes: ['Rate collection tiles in half-star steps with grey unrated stars and hover preview.', 'Save ratings immediately across copies and variants, marking the issue read; five stars glow brighter.', 'Match collection Search Metron to the unselected tabs.'],
+}, {
   version: 'α-017', date: '2026-10-26', title: 'An atom of navigation',
   changes: ['Use the Metron atom mark without lettering, black on collection search buttons and white in the header.', 'Move collection Search Metron alongside the collection tabs and remove its arrow.'],
 }, {

@@ -120,6 +120,30 @@ function mountRating(container,ctx,state){
   }
   ctx.listeners.add(render);render();
 }
+function mountTileRating(container,ctx,state){
+  function paint(value){
+    container.querySelectorAll('.tile-rating-half').forEach((button,i)=>button.classList.toggle('filled',(i+1)/2<=value));
+    container.classList.toggle('five-stars',value===5);
+  }
+  function render(){
+    container.innerHTML=`<div class="tile-rating-scale" role="group" aria-label="Rate this comic">${Array.from({length:10},(_,i)=>`<button type="button" class="tile-rating-half ${i%2?'right-half':''}" data-score="${(i+1)/2}" aria-label="Rate ${(i+1)/2} out of 5 stars" aria-pressed="${ctx.issue.user_rating===(i+1)/2}" title="${(i+1)/2} out of 5 stars" ${ctx.busy?'disabled':''}><span aria-hidden="true">★</span></button>`).join('')}</div>`;
+    paint(ctx.issue.user_rating||0);
+    container.querySelectorAll('button').forEach(button=>{
+      const value=Number(button.dataset.score);
+      button.onmouseenter=button.onfocus=()=>paint(value);
+      button.onclick=async()=>{
+        if(ctx.busy)return;ctx.busy=true;ctx.notify();
+        try{ctx.sync(await api(`/issues/${ctx.issue.id}/rating`,{method:'PATCH',body:JSON.stringify({rating:value,edition_key:state.editionKey})}));}
+        catch(error){ctx.onError(error.message);}
+        finally{ctx.busy=false;ctx.notify();}
+      };
+    });
+  }
+  container.onmouseleave=()=>paint(ctx.issue.user_rating||0);
+  container.onfocusout=event=>{if(!container.contains(event.relatedTarget))paint(ctx.issue.user_rating||0);};
+  ctx.listeners.add(render);render();
+}
+
 async function choose(id,savedIssue=null,selectedKey=null){
   const token=++dialogGeneration;
   dialog.innerHTML='<h2 id="dialog-title">Choose a cover</h2><p class="loading" role="status">Opening comic details…</p><button id="close-dialog" class="quiet">Close</button>';
@@ -148,14 +172,15 @@ async function collection(params,ticket){
   $('#collection-search').onsubmit=e=>{e.preventDefault();const p=new URLSearchParams({view});const q=new FormData(e.target).get('q').trim();if(q)p.set('q',q);const hash=`#/collection?${p}`;if(location.hash===hash)route();else location.hash=hash;};
   const data=await api(`/collection?${new URLSearchParams({view,q:query})}`);if(ticket!==generation)return;
   if(!data.items.length){$('#collection-results').innerHTML=`<div class="empty-state"><h3>${query?'No comics match.':view==='read'?'Your next story starts here.':'Make room for your first comic.'}</h3><p>Search Metron for a comic and toggle its collection or read icon.</p><a class="button" href="${esc(searchHref)}"><img class="metron-logo" src="/metron.svg" alt="">Search Metron</a></div>`;return;}
-  $('#collection-results').innerHTML=`<p class="muted" id="collection-count"></p><div class="shelf">${data.items.map((row,i)=>`<article class="comic-card" data-card="${i}"><a class="comic-link" href="#/issues/${row.issue.id}?${new URLSearchParams({edition:row.edition.key,from:view,...(view==='owned'?{copy:row.id}:{})})}">${cover(localCover(row.edition),row.issue.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.issue.publisher?.name||'Comic')} · ${esc(row.issue.series.year_began||'')}</p><h3>${esc(row.issue.series.name)} #${esc(row.issue.number)}</h3><p class="muted">${esc(row.edition.name)}</p>${view==='owned'?`<p class="copy-identifier">Copy ${esc(row.id.slice(0,8))}</p>`:''}<div data-card-status></div></div></a><div class="comic-actions card-toggles" data-card-actions></div></article>`).join('')}</div>`;
+  $('#collection-results').innerHTML=`<p class="muted" id="collection-count"></p><div class="shelf">${data.items.map((row,i)=>`<article class="comic-card" data-card="${i}"><a class="comic-link" href="#/issues/${row.issue.id}?${new URLSearchParams({edition:row.edition.key,from:view,...(view==='owned'?{copy:row.id}:{})})}">${cover(localCover(row.edition),row.issue.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.issue.publisher?.name||'Comic')} · ${esc(row.issue.series.year_began||'')}</p><h3>${esc(row.issue.series.name)} #${esc(row.issue.number)}</h3><p class="muted">${esc(row.edition.name)}</p>${view==='owned'?`<p class="copy-identifier">Copy ${esc(row.id.slice(0,8))}</p>`:''}<div data-card-status></div></div></a><div class="tile-rating" data-card-rating></div><div class="comic-actions card-toggles" data-card-actions></div></article>`).join('')}</div>`;
   const contexts=new Map(),states=[];
   for(const [i,row] of data.items.entries()){
     if(!contexts.has(row.issue.id))contexts.set(row.issue.id,context(row.issue,api,text=>message(text,true)));
     const ctx=contexts.get(row.issue.id),state=copyState(ctx,row.edition.key,view==='owned'?row.id:undefined);states.push({ctx,state});
     const card=document.querySelector(`[data-card="${i}"]`);
     bindToggles(card.querySelector('[data-card-actions]'),ctx,state);
-    ctx.listeners.add(()=>{card.querySelector('[data-card-status]').innerHTML=`<span class="badge">${ctx.issue.read?'Read':'Unread'}</span>${ratingDisplay(ctx.issue.user_rating)}`;card.classList.toggle('inactive-copy',view==='owned'&&!state.copyId);updateCount();});
+    mountTileRating(card.querySelector('[data-card-rating]'),ctx,state);
+    ctx.listeners.add(()=>{card.querySelector('[data-card-status]').innerHTML=`<span class="badge">${ctx.issue.read?'Read':'Unread'}</span>`;card.classList.toggle('inactive-copy',view==='owned'&&!state.copyId);updateCount();});
   }
   function updateCount(){const count=states.filter(({ctx,state})=>view==='owned'?state.copyId:ctx.issue.read).length;$('#collection-count').textContent=`${count} ${view==='owned'?(count===1?'owned copy':'owned copies'):(count===1?'read issue':'read issues')}`;}
   contexts.forEach(ctx=>ctx.notify());updateCount();
