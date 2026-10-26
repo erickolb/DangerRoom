@@ -1,5 +1,9 @@
 # Changelog
 
+## α-012 · 2026-10-26
+
+- Change the homepage heading to “Pull your next issue”.
+
 ## α-011 · 2026-10-26
 
 - Preserve collection search text when following Search comics or Find a comic into Metron search.

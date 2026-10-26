@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-012', date: '2026-10-26', title: 'Pull your next issue',
+  changes: ['Update the homepage heading to Pull your next issue.'],
+}, {
   version: 'α-011', date: '2026-10-26', title: 'Keep searching',
   changes: ['Carry collection search text into Metron search from the Search comics and Find a comic links.'],
 }, {
