@@ -32,3 +32,7 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 SQLite foreign keys enforce valid edition references. Mutations use prepared statements. A save transaction creates issue/edition and owned/read records together only after its cover downloads. Concurrent requests may create multiple intended copies, sharing the saved image. Copy deletion never triggers image deletion in this MVP.
 
 Status errors use `{error}`. HTTP 429 includes `Retry-After`. Provider credentials never reach browser responses, URLs, or logs. Images are fetched without authorization headers, only from approved Metron HTTPS media hosts; redirects are refused.
+
+## Cover storage locations (α-006)
+
+`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 4. See [S3 configuration and migration](s3.md).

@@ -22,7 +22,8 @@ export function openDatabase(directory) {
       half_stars INTEGER NOT NULL CHECK(typeof(half_stars)='integer' AND half_stars BETWEEN 1 AND 10), rated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS wants (issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
       metadata TEXT NOT NULL, cover_file TEXT, added_at TEXT NOT NULL, PRIMARY KEY(issue_id,edition_key));
-    PRAGMA user_version=3;`);
+    CREATE TABLE IF NOT EXISTS cover_objects (filename TEXT PRIMARY KEY, bucket TEXT NOT NULL, object_key TEXT NOT NULL);
+    PRAGMA user_version=4;`);
   return db;
 }
 export class Repository {

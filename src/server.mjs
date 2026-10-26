@@ -33,7 +33,7 @@ export function createApp(options = {}) {
   const dataDir = resolve(options.dataDir || process.env.DATA_DIR || join(root, 'data'));
   const db = openDatabase(dataDir), repo = new Repository(db);
   const metron = options.metron || new Metron(repo, { token: process.env.METRON_API_TOKEN, username: process.env.METRON_USERNAME, password: process.env.METRON_PASSWORD, ...options.metronOptions });
-  const covers = options.covers || new Covers(dataDir, options.imageFetch);
+  const covers = options.covers || new Covers(dataDir, options.imageFetch, { db, ...options.coverOptions });
   const hosts = new Set(['127.0.0.1', 'localhost', '[::1]', ...(process.env.ALLOWED_HOSTS || '').split(',').map(h => h.trim()).filter(Boolean)]);
   const server = createServer(async (req, res) => {
     const send = (status, value) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };

@@ -241,7 +241,7 @@ test('ratings migration preserves old inventory, starts unrated, and persists ha
   db = openDatabase(dir); repo = new Repository(db);
   try {
     assert.equal(repo.issue(42).user_rating, 2.5); assert.ok(repo.issue(42).read);
-    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 3);
+    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 4);
   } finally { db.close(); }
 });
 
@@ -326,7 +326,7 @@ test('want-list migration preserves inventory and ratings and persists wants thr
   assert.equal(repo.wantList().length,0);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.collection('owned').length,1);
   repo.addWant(essentialIssue(raw),editionsFor(raw)[1],null);db.close();
   db=openDatabase(dir);repo=new Repository(db);
-  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,3);}finally{db.close();}
+  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,4);}finally{db.close();}
 });
 test('ownership wins a want-list race, even when a stale cover selection is submitted', async t => {
   const h=await harness(t), issue=essentialIssue(raw),edition=editionsFor(raw)[0];

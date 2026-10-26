@@ -1,10 +1,10 @@
 # DangerRoom
 
-Chateau Lore comic inventory and reading journal. Current build: **α-005**.
+Chateau Lore comic inventory and reading journal. Current build: **α-006**.
 
 ## Run locally
 
-Requires Node.js 24 or later. No dependency installation or frontend build is needed.
+Requires Node.js 24 or later. Install dependencies with `pnpm install --frozen-lockfile`; no frontend build is needed.
 
 1. The ignored `.env` file is prepared locally. On another checkout, copy `.env.example` to `.env`.
 2. Sign in at [Metron](https://metron.cloud), open your account page, and find **API Tokens**. Create a token named **DangerRoom**.
@@ -12,7 +12,7 @@ Requires Node.js 24 or later. No dependency installation or frontend build is ne
 4. Run:
 
 ```sh
-npm start
+pnpm start
 ```
 
 Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a token the app opens and saved collection pages work, but uncached Metron searches do not. `HOST`, `PORT`, `DATA_DIR`, and optional `ALLOWED_HOSTS` are documented in `.env.example`.
@@ -51,15 +51,15 @@ Only issue ID/name/number, series ID/name/start year/volume, cover date, officia
 - Search caches last 6 hours; issue-detail caches last 24 hours. Concurrent identical lookups share one request. Persistent saved metadata and covers are used for collection browsing with no Metron calls.
 - Provider requests are serialized and paced at 3.1 seconds. Exhausted rate-limit headers and `Retry-After` persist a cooldown rather than repeatedly calling Metron. There is no crawling or background synchronization.
 - Metron credentials are server-only. DangerRoom uses only Metron GET endpoints and does not modify your Metron collection.
-- No AWS integration yet. Back up the entire `data/` directory and `.env` separately while the app is stopped. Covers are deliberately retained after copy removal; automatic file cleanup is deferred.
+- Optional private AWS S3 cover storage and a resumable local-to-S3 migration are documented in [S3 configuration](docs/s3.md). SQLite stays local. Back up the database, local covers, S3 objects, and configuration together; covers are deliberately retained after copy removal.
 
 See [Metron field inventory and initial local-data choices](docs/metron-fields.md) and [API and data model](docs/api.md).
 
 ## Checks and release history
 
 ```sh
-npm run check
-npm test
+pnpm run check
+pnpm test
 ```
 
 Tests use isolated temporary databases and simulated Metron responses, never your collection or API credentials. Live Metron verification requires the local token.

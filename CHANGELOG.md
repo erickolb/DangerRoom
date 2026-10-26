@@ -1,5 +1,11 @@
 # Changelog
 
+
+## α-006 — 2026-10-25
+
+- Add private S3 cover storage with per-image database locations and unchanged cover URLs.
+- Add verified, resumable local-to-S3 migration and deployment configuration documentation.
+
 ## α-005 · 2026-10-25
 
 - Replace collection, Want List, and read action text with icon-only toggles, using green, amber, and purple for active status.

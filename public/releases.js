@@ -1,5 +1,12 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-006', date: '2026-10-25', title: 'Covers in the cloud',
+  changes: [
+    'Support private AWS S3 image storage alongside local files, with stable cover URLs.',
+    'Add a resumable migration command that verifies uploads before updating database locations.',
+    'Document S3 configuration, scoped permissions, migration, and backups.',
+  ],
+}, {
   version: 'α-005', date: '2026-10-25', title: 'Status at a glance',
   changes: [
     'Use icon-only collection, Want List, and read toggles with green, amber, and purple active states.',
