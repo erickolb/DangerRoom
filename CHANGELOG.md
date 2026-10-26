@@ -1,5 +1,10 @@
 # Changelog
 
+## α-024 · 2026-10-26
+
+- Update the Want List empty state to Your Next Pulls and Which issue will you pull next?
+- Hide the visible find label and clarify the Want List field placeholder.
+
 ## α-023 · 2026-10-26
 
 - Update the Read and Rated Comics empty-state heading and add the requested comic-rating encouragement.
