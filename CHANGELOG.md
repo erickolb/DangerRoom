@@ -1,5 +1,9 @@
 # Changelog
 
+## α-011 · 2026-10-26
+
+- Preserve collection search text when following Search comics or Find a comic into Metron search.
+
 ## α-010 · 2026-10-26
 
 - Use standalone DangerRoom branding in the app, page metadata, documentation, and release history.

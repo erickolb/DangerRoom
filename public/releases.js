@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-011', date: '2026-10-26', title: 'Keep searching',
+  changes: ['Carry collection search text into Metron search from the Search comics and Find a comic links.'],
+}, {
   version: 'α-010', date: '2026-10-26', title: 'DangerRoom for everyone',
   changes: ['Use standalone DangerRoom branding throughout the header, footer, browser title, metadata, and documentation.'],
 }, {
