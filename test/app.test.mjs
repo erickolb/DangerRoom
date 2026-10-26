@@ -399,3 +399,20 @@ test('search thumbnails prefer owned variant artwork and fall back when its last
   await h.request(`/api/copies/${standard.copy_id}`,'DELETE');
   const row=await search();assert.equal(row.cover_file,null);assert.equal(row.image,raw.image);
 });
+
+test('collection defaults to series, start year, and numeric issue order with duplicates grouped', async t => {
+  const h=await harness(t);
+  const save=(id,name,year,number,key='standard')=>h.repo.save({id,series:{id:year,name,year_began:year,volume:1},number:String(number),display_name:`${name} #${number}`},{key,name:key},null,{owned:true,read:true});
+  save(101,'Absolute Green Arrow',2026,6);save(102,'Absolute Green Arrow',2026,2);
+  save(103,'Absolute Green Arrow',2026,10);save(104,'Absolute Green Arrow',2026,1);
+  save(105,'Absolute Green Arrow',2026,4);save(106,'Absolute Green Arrow',2026,5);save(107,'Absolute Green Arrow',2026,3);
+  save(102,'Absolute Green Arrow',2026,2);save(102,'Absolute Green Arrow',2026,2,'variant-z');
+  save(108,'Absolute Green Arrow',2025,12);save(109,'Batman',2024,1);
+  save(110,'Absolute Green Arrow',2026,'2.5');save(111,'Absolute Green Arrow',2026,'½');
+  for(const view of ['owned','read']){
+    const rows=(await h.request(`/api/collection?view=${view}`)).data.items;
+    assert.equal(rows[0].issue.id,108);assert.equal(rows.at(-1).issue.id,109);
+    const numbers=rows.filter(r=>r.issue.series.year_began===2026).map(r=>r.issue.number);
+    assert.deepEqual(numbers,view==='owned'?['½','1','2','2','2','2.5','3','4','5','6','10']:['½','1','2','2.5','3','4','5','6','10']);
+  }
+});

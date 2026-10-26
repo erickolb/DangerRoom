@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-019', date: '2026-10-26', title: 'In reading order',
+  changes: ['Default collection views to series name, series start year, and numeric issue order, keeping covers and duplicate copies together.'],
+}, {
   version: 'α-018', date: '2026-10-26', title: 'Rate from your shelf',
   changes: ['Rate collection tiles in half-star steps with grey unrated stars and hover preview.', 'Save ratings immediately across copies and variants, marking the issue read; five stars glow brighter.', 'Match collection Search Metron to the unselected tabs.'],
 }, {

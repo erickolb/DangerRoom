@@ -5,6 +5,25 @@ import { randomUUID } from 'node:crypto';
 import { AppError } from './errors.mjs';
 import { validateRating } from './ratings.mjs';
 
+const naturalOrder = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+function compareIssueNumber(a, b) {
+  const fraction = { '½': 0.5, '¼': 0.25, '¾': 0.75 };
+  const numeric = value => Object.hasOwn(fraction, value) ? fraction[value] : /^[-+]?\d+(?:\.\d+)?$/.test(value) ? Number(value) : null;
+  const x = numeric(String(a)), y = numeric(String(b));
+  return x !== null && y !== null ? x - y : naturalOrder.compare(String(a), String(b));
+}
+function collectionOrder(a, b) {
+  return naturalOrder.compare(a.issue.series.name, b.issue.series.name)
+    || (Number(a.issue.series.year_began) || 0) - (Number(b.issue.series.year_began) || 0)
+    || naturalOrder.compare(String(a.issue.series.volume ?? ''), String(b.issue.series.volume ?? ''))
+    || a.issue.series.id - b.issue.series.id
+    || compareIssueNumber(a.issue.number, b.issue.number)
+    || a.issue.id - b.issue.id
+    || naturalOrder.compare(a.edition.name, b.edition.name)
+    || naturalOrder.compare(a.edition.key, b.edition.key)
+    || a.date.localeCompare(b.date) || a.id.localeCompare(b.id);
+}
+
 export function openDatabase(directory) {
   mkdirSync(directory, { recursive: true });
   const db = new DatabaseSync(join(directory, 'dangerroom.sqlite'));
@@ -150,6 +169,6 @@ export class Repository {
       return { id: row.id || `read-${row.issue_id}`, date: row.date, issue,
         edition: issue.editions.find(e => e.key === row.edition_key) };
     }).filter(row => !needle || [row.issue.display_name, row.issue.series.name, row.issue.publisher?.name,
-      row.issue.number, row.edition.name, row.edition.upc, row.issue.isbn].filter(Boolean).join(' ').toLocaleLowerCase().includes(needle));
+      row.issue.number, row.edition.name, row.edition.upc, row.issue.isbn].filter(Boolean).join(' ').toLocaleLowerCase().includes(needle)).sort(collectionOrder);
   }
 }

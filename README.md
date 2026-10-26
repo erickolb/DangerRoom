@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-018**.
+Comic inventory and reading journal. Current build: **α-019**.
 
 ## Run locally
 
@@ -27,7 +27,7 @@ The default page centers comic search. Search by series name and optionally issu
 
 Open a search result's collection, Want List, or read icon to choose its exact cover. In the cover picker, toggle the icons to save immediately; there is no separate collection Save or Delete action. Active icons glow coral for collection, green for Want List, and violet for read, following a consistent left-to-right rainbow progression. Search tiles show an owned variant thumbnail when available (the most recently added variant if several are owned), then an owned standard cover, then Metron artwork. Search tiles summarize each status across all covers of the issue; the cover picker still handles each exact cover. Buttons have tooltips and accessible names, and expose their active state to assistive technology.
 
-**My Collection** defaults to My Collection. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
+**My Collection** defaults to My Collection. Collection views sort by series name, start year, and numeric issue number; variants and duplicate copies stay together. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
 
 Use the collection icon with the small plus overlay to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue. **Read and Rated Comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## α-019 · 2026-10-26
+
+- Sort collection views by series name, start year, and numeric issue number, grouping variants and duplicate copies.
+
 ## α-018 · 2026-10-26
 
 - Add immediate half-star ratings to collection tiles with grey unrated stars, hover/focus preview, and brighter five-star glow.
