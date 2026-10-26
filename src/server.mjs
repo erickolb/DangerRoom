@@ -11,6 +11,7 @@ import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/boxes.png', ['boxes.png', 'image/png']], ['/star.png', ['star.png', 'image/png']],
   ['/actions.js', ['actions.js','text/javascript; charset=utf-8']],
   ['/', ['index.html', 'text/html; charset=utf-8']], ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']], ['/releases.js', ['releases.js', 'text/javascript; charset=utf-8']],

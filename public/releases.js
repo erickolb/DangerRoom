@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-014', date: '2026-10-26', title: 'Collection and reading',
+  changes: ['Rename collection tabs to My Collection and Read and Rated Comics, with supplied boxes and star icons and creator credits.'],
+}, {
   version: 'α-013', date: '2026-10-26', title: 'Find here, search Metron',
   changes: ['Use Find for collection and curated-list lookups, and Search for Metron throughout navigation, forms, and guidance.'],
 }, {

@@ -1,5 +1,10 @@
 # Changelog
 
+## α-014 · 2026-10-26
+
+- Rename the collection tabs to My Collection and Read and Rated Comics.
+- Add the supplied boxes and star icons with creator credits in the app and README.
+
 ## α-013 · 2026-10-26
 
 - Reserve Find for local collection/list lookups and Search for Metron in interface labels and guidance.

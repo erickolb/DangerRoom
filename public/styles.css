@@ -12,3 +12,5 @@
 @media(max-width:700px){.card-toggles{padding:0 10px 14px;gap:6px}.comic-actions .comic-toggle{width:44px;height:44px;min-height:44px;flex-basis:44px}.card-info .comic-actions{gap:6px}.card-info .comic-actions .comic-toggle{width:44px}.personal-rating-form .actions{gap:8px}}
 
 .card-info .copy-identifier{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#a3a3a3}
+
+.tabs{flex-wrap:wrap}.tabs a{display:inline-flex;align-items:center;gap:9px}.tabs .icon{width:24px;height:24px;flex-shrink:0}
