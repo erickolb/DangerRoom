@@ -110,11 +110,11 @@ function mountRating(container,ctx,state){
   function render(){
     if(displayed!==ctx.issue.user_rating){
       displayed=ctx.issue.user_rating;
-      container.innerHTML=`<form class="personal-rating-form">${ratingChoices(displayed ?? null)}<p class="hint">Rating this issue marks every copy and variant as read.</p><div class="actions"><button type="button" class="quiet" data-clear-rating>Clear rating</button></div><p class="form-error" role="alert"></p></form>`;
+      container.innerHTML=`<form class="personal-rating-form">${ratingChoices(displayed ?? null).replace('</output>','</output>'+(displayed!=null?'<button type="button" class="clear-rating-icon" data-clear-rating aria-label="Clear rating" title="Clear rating"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg></button>':''))}<p class="hint">Rating this issue marks every copy and variant as read.</p><p class="form-error" role="alert"></p></form>`;
       const form=container.querySelector('form');bindRatingPreview(form);
       form.onsubmit=e=>e.preventDefault();
       form.querySelectorAll('[name=rating]').forEach(input=>input.addEventListener('click',()=>save(Number(input.value))));
-      form.querySelector('[data-clear-rating]').onclick=()=>save(null);
+      const clear=form.querySelector('[data-clear-rating]');if(clear)clear.onclick=()=>save(null);
     }
     container.querySelectorAll('[name=rating]').forEach(input=>input.disabled=ctx.busy || !state.editionKey);
     container.querySelectorAll('button').forEach(b=>b.disabled=ctx.busy || !state.editionKey || b.hasAttribute('data-clear-rating') && ctx.issue.user_rating==null);

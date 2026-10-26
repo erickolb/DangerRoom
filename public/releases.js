@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-032', date: '2026-10-26', title: 'A quieter clear control',
+  changes: ['Replace Clear rating with an accessible circled X beside the score, visible only for saved ratings.'],
+}, {
   version: 'α-031', date: '2026-10-26', title: 'Click to rate',
   changes: ['Save detail and cover-picker ratings immediately when a half-star is clicked; remove Save rating and retain Clear rating.', 'Prevent overlapping saves and restore the saved score if a request fails.'],
 }, {

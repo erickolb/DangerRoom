@@ -1,5 +1,9 @@
 # Changelog
 
+## α-032 · 2026-10-26
+
+- Replace Clear rating with a circled X beside the score, shown only for saved ratings.
+
 ## α-031 · 2026-10-26
 
 - Remove Save rating; clicking detail or cover-picker stars immediately saves the score.
