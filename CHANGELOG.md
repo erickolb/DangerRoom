@@ -1,5 +1,9 @@
 # Changelog
 
+## α-026 · 2026-10-26
+
+- Remove the introductory sentence beneath the Want List heading.
+
 ## α-025 · 2026-10-26
 
 - Change the Want List page heading to The Shopping List For Your Next Pulls.

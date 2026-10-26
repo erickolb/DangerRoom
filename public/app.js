@@ -37,7 +37,7 @@ function bindRatingPreview(form) {
 
 async function wantList(params, ticket) {
   const q = params.get('q') || '';
-  app.innerHTML = `<div class="section-heading"><div><p class="eyebrow">The Shopping List For Your Next Pulls</p><h2>Want List</h2></div><a class="button secondary" href="#/">Search Metron</a></div><p class="intro">The covers you’re looking for. Open a comic to see it on Metron.</p><form class="search-main collection-search" id="want-search"><label><span class="visually-hidden">Find in your Want List</span><input type="search" name="q" value="${esc(q)}" placeholder="Find a series or cover in your Want List" maxlength="160"></label><button class="quiet">Find</button></form><div id="want-results"><p class="loading" role="status">Opening your Want List…</p></div>`;
+  app.innerHTML = `<div class="section-heading"><div><p class="eyebrow">The Shopping List For Your Next Pulls</p><h2>Want List</h2></div><a class="button secondary" href="#/">Search Metron</a></div><form class="search-main collection-search" id="want-search"><label><span class="visually-hidden">Find in your Want List</span><input type="search" name="q" value="${esc(q)}" placeholder="Find a series or cover in your Want List" maxlength="160"></label><button class="quiet">Find</button></form><div id="want-results"><p class="loading" role="status">Opening your Want List…</p></div>`;
   $('#want-search').onsubmit = e => { e.preventDefault(); const p=new URLSearchParams(); const value=new FormData(e.target).get('q').trim(); if(value)p.set('q',value); const hash=`#/wants${p.size ? `?${p}` : ''}`; if(location.hash===hash)route();else location.hash=hash; };
   const data = await api(`/wants?${new URLSearchParams({q})}`);
   if (ticket !== generation) return;

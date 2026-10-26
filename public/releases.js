@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-026', date: '2026-10-26', title: 'A simpler Want List',
+  changes: ['Remove the introductory sentence beneath the Want List heading.'],
+}, {
   version: 'α-025', date: '2026-10-26', title: 'A shopping list for your pulls',
   changes: ['Update the Want List page heading to The Shopping List For Your Next Pulls.'],
 }, {
