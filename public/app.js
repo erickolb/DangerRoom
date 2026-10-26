@@ -38,7 +38,7 @@ function searchForm(params) {
   return `<form id="search-form" class="search-form"><div class="search-main"><label>Series name<input name="q" value="${esc(params.get('q') || '')}" placeholder="Find a series, from Batman to Saga…" maxlength="160" autocomplete="off" type="search"></label><button type="submit">Search Metron <span aria-hidden="true">→</span></button></div><details class="search-options" ${params.get('number') || params.get('year') || params.get('upc') ? 'open' : ''}><summary>Issue, year & barcode</summary><div class="fields"><label>Issue number<input name="number" value="${esc(params.get('number') || '')}" placeholder="e.g. 1 or ½" maxlength="30"></label><label>Series start year<input name="year" value="${esc(params.get('year') || '')}" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 2024"></label><label>UPC<input name="upc" value="${esc(params.get('upc') || '')}" inputmode="numeric" pattern="[0-9]{8,18}" placeholder="Full comic barcode"></label></div></details><p class="search-help">Search by series name, or use a UPC on its own.</p></form>`;
 }
 async function search(params, ticket) {
-  app.innerHTML = `<div class="hero"><span class="hero-mark" aria-hidden="true">✦</span><p class="eyebrow">One issue. A whole universe.</p><h2>Find your next addition.</h2><p class="intro">Find a comic, choose its cover, and make it yours.<br>Keep the stories you own and the ones you’ve read.</p>${searchForm(params)}</div>${!connected ? '<div class="connection">Connect Metron to start searching: add your API token to <code>METRON_API_TOKEN</code> in the local <code>.env</code> file and restart DangerRoom. <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer">Open Metron ↗</a></div>' : ''}<div id="search-results"></div>`;
+  app.innerHTML = `<div class="hero"><span class="hero-mark" aria-hidden="true">✦</span><p class="eyebrow">Open up a whole new universe.</p><h2>Find your next addition.</h2><p class="intro">Find a comic, choose its cover, and make it yours.<br>Keep the stories you own and the ones you’ve read.</p>${searchForm(params)}</div>${!connected ? '<div class="connection">Connect Metron to start searching: add your API token to <code>METRON_API_TOKEN</code> in the local <code>.env</code> file and restart DangerRoom. <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer">Open Metron ↗</a></div>' : ''}<div id="search-results"></div>`;
   $('#search-form').onsubmit = e => {
     e.preventDefault();
     const values = new URLSearchParams();
@@ -123,5 +123,3 @@ function changelog() {
 window.addEventListener('hashchange', route);
 try { connected = (await api('/health')).metron_configured; } catch { /* Search and collection report actionable failures. */ }
 await route();
-
-

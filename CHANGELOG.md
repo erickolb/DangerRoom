@@ -1,5 +1,9 @@
 # Changelog
 
+## α-002 · 2026-10-25
+
+- Change the default-page tagline to “Open up a whole new universe.”
+
 ## α-001 · 2026-10-25
 
 - Prominent Metron search with issue, series year, UPC, and pagination.

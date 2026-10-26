@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-002', date: '2026-10-25', title: 'A new universe',
+  changes: ['Change the default-page tagline to “Open up a whole new universe.”'],
+}, {
   version: 'α-001', date: '2026-10-25', title: 'The collection begins',
   changes: [
     'Search Metron by series, issue number, series year, or UPC and choose the exact cover before saving.',
