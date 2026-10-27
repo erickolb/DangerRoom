@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-042', date: '2026-10-26', title: 'Wine and scarlet',
+  changes: ['Shift the app to deep wine surfaces, scarlet accents, warm text, and rose borders while preserving distinct status colors and gold ratings.'],
+}, {
   version: 'α-041', date: '2026-10-26', title: 'Find the gaps',
   changes: ['Add Search Full Series on Metron below the owned-series shelf, carrying the series name into search.', 'Add a collection icon with a slashed-circle toggle to hide owned issues in search, including any owned variant; preserve it through searches and pagination.'],
 }, {

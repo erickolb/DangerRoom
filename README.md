@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-041**.
+Comic inventory and reading journal. Current build: **α-042**.
 
 ## Run locally
 
@@ -92,4 +92,4 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 - [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). The six Noun Project icons have their embedded attribution text removed from the bottom margin; creator credits and license links are retained here and in the app. Icon artwork and canvas sizes are unchanged. CSS inverts the icons for contrast on dark controls.
 - Comic metadata and images: [Metron](https://metron.cloud). Cover artwork belongs to its respective rights holders.
 
-These credits also appear in the footer's collapsed **Credits** section. The visual defaults follow HeroesFeast and Quartermaster: dark plum, lavender accents, Georgia headings, system body text, rounded panels, and responsive controls.
+These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.

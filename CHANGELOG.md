@@ -1,5 +1,10 @@
 # Changelog
 
+## α-042 · 2026-10-26
+
+- Replace the plum/lavender palette with deep wine surfaces, scarlet accents, warm text, and rose borders.
+- Preserve distinct action status colors and gold ratings.
+
 ## α-041 · 2026-10-26
 
 - Link from the owned-series shelf to a Metron search for the series name.
