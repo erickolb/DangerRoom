@@ -222,6 +222,10 @@ async function detail(id,params,ticket){
   for(const copy of issue.copies)rows.set(copy.id,{copy,state:copyState(ctx,copy.edition_key,copy.id)});
   const selectedCopy=params.has('copy')?params.get('copy'):issue.copies.find(c=>c.edition_key===edition.key)?.id;
   const state=rows.get(selectedCopy)?.state || copyState(ctx,edition.key,null);
+  ctx.listeners.add(()=>{
+    for(const row of rows.values())if(row.state.copyId&&!ctx.issue.copies.some(copy=>copy.id===row.state.copyId))row.state.copyId=null;
+    if(state.copyId&&!ctx.issue.copies.some(copy=>copy.id===state.copyId))state.copyId=null;
+  });
   app.innerHTML=`<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${localCover(edition)?`<button type="button" class="cover-zoom" id="open-cover-lightbox" aria-label="Open full-size cover image">${cover(localCover(edition),issue.display_name)}</button>`:cover(null,issue.display_name)}${localCover(edition)?`<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>`:''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name||'Comic')} · ${esc(issue.series.name)} · Volume ${esc(issue.series.volume||'—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title?`<p class="intro">${esc(issue.title)}</p>`:''}<p class="intro">${esc(edition.name)}</p><div class="comic-actions" id="detail-actions"></div><p class="hint rating-note">Toggle an icon to save its status. Use the duplicate icon for another copy.</p><div id="detail-rating"></div><dl class="metadata">${field('Publisher',issue.publisher?.name)}${field('Volume',issue.series.volume)}${field('Cover date',date(issue.cover_date))}${field('Release date',date(issue.store_date))}${field('UPC · selected cover',edition.upc)}${field('SKU · selected cover',edition.sku)}${field('ISBN',issue.isbn)}${field('Pages',issue.page_count)}${field('Cover price',edition.price!==null?`${edition.price_currency ? edition.price_currency+' ' : '$'}${edition.price}`:null)}${field('Content rating',issue.rating?.name)}${field('Imprint',issue.imprint?.name)}</dl>${issue.resource_url?`<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>`:''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned Copies</h3><div id="copy-rows"></div></section><section class="owned-series"><h3>Owned Issues In Series</h3><div id="owned-series-results"><p class="muted">Opening owned issues…</p></div></section>`;
   if(localCover(edition))$('#open-cover-lightbox').onclick=()=>openCoverImage(localCover(edition),`${issue.display_name} · ${edition.name}`);
   bindToggles($('#detail-actions'),ctx,state,{extra:true});mountRating($('#detail-rating'),ctx,state);
@@ -238,16 +242,32 @@ async function detail(id,params,ticket){
   }
   ctx.listeners.add(()=>{if(state.copyId){const p=new URLSearchParams(params);p.set('copy',state.copyId);history.replaceState(null,'',`#/issues/${id}?${p}`);}});
   let seriesGeneration=0;
+  let seriesUnbind=[];
   async function renderOwnedSeries(){
     if(ctx.busy)return;
     const request=++seriesGeneration;
     try{
       const data=await api(`/issues/${id}/owned-series`);
       if(ticket!==generation||request!==seriesGeneration)return;
-      $('#owned-series-results').innerHTML=data.items.length ? `<div class="shelf series-shelf">${data.items.map(row=>`<article class="comic-card"><a class="comic-link" href="#/issues/${row.issue.id}?${new URLSearchParams({edition:row.edition.key,from:'owned'})}" ${row.issue.id===issue.id?'aria-current="page"':''}>${cover(localCover(row.edition),row.issue.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.issue.series.year_began||'—')} · Volume ${esc(row.issue.series.volume??'—')}</p><h3>${esc(row.issue.series.name)} #${esc(row.issue.number)}</h3>${row.edition.key!=='standard'?`<p class="muted variant-caption">${esc(row.edition.name)}</p>`:''}<p class="muted">${row.copy_count} owned ${row.copy_count===1?'copy':'copies'}</p></div></a></article>`).join('')}</div>` : '<p class="muted">No owned issues in this series.</p>';
+      $('#owned-series-results').innerHTML=data.items.length ? `<div class="shelf series-shelf">${data.items.map((row,index)=>`<article class="comic-card collection-card" data-series-card="${index}"><a class="comic-link" href="#/issues/${row.issue.id}?${new URLSearchParams({edition:row.edition.key,from:'owned'})}" ${row.issue.id===issue.id?'aria-current="page"':''}>${cover(localCover(row.edition),row.issue.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.issue.series.year_began||'—')} · Volume ${esc(row.issue.series.volume??'—')}</p><h3>${esc(row.issue.series.name)} #${esc(row.issue.number)}</h3>${row.edition.key!=='standard'?`<p class="muted variant-caption">${esc(row.edition.name)}</p>`:''}<p class="muted" data-series-count>${row.copy_count} owned ${row.copy_count===1?'copy':'copies'}</p></div></a><div class="comic-actions card-toggles" data-series-actions></div></article>`).join('')}</div>` : '<p class="muted">No owned issues in this series.</p>';
+      seriesUnbind.forEach(fn=>fn());seriesUnbind=[];
+      data.items.forEach((row,index)=>{
+        const tileCtx=row.issue.id===issue.id ? ctx : context(row.issue,api,text=>message(text,true));
+        const tileState=row.issue.id===issue.id && row.edition.key===state.editionKey ? state : copyState(tileCtx,row.edition.key);
+        const card=document.querySelector(`[data-series-card="${index}"]`);
+        const reconcile=()=>{
+          if(tileState.copyId&&!tileCtx.issue.copies.some(copy=>copy.id===tileState.copyId))tileState.copyId=null;
+          const count=tileCtx.issue.copies.length;
+          card.querySelector('[data-series-count]').textContent=`${count} owned ${count===1?'copy':'copies'}`;
+          card.classList.toggle('inactive-copy',!tileState.copyId);
+        };
+        tileCtx.listeners.add(reconcile);reconcile();
+        seriesUnbind.push(()=>tileCtx.listeners.delete(reconcile));
+        seriesUnbind.push(bindToggles(card.querySelector('[data-series-actions]'),tileCtx,tileState));
+      });
     }catch(error){if(ticket===generation&&request===seriesGeneration)$('#owned-series-results').innerHTML=`<p class="form-error">${esc(error.message)}</p>`;}
   }
-  ctx.listeners.add(renderOwnedSeries);renderOwnedSeries();
+  renderOwnedSeries();
   ctx.listeners.add(renderCopies);renderCopies();
 }
 

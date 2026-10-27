@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-040', date: '2026-10-26', title: 'Manage your run',
+  changes: ['Add collection, Want List, and read toggles to Owned Issues In Series tiles, sharing status with the current detail page.', 'Keep untoggled tiles available for restoring ownership and update their copy counts immediately.'],
+}, {
   version: 'α-039', date: '2026-10-26', title: 'Dollars by default',
   changes: ['Display cover prices with $ when no currency is supplied.'],
 }, {

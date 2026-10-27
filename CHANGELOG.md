@@ -1,5 +1,9 @@
 # Changelog
 
+## α-040 · 2026-10-26
+
+- Add collection, want, and read toggles to Owned Issues In Series tiles with immediate copy counts and synchronized current-issue controls.
+
 ## α-039 · 2026-10-26
 
 - Assume dollars for display when a cover price has no supplied currency, using $.
