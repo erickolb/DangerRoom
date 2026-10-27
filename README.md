@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-051**.
+Comic inventory and reading journal. Current build: **α-052**.
 
 ## Run locally
 
@@ -43,7 +43,7 @@ When two or more issues in the exact Metron series run are rated, **Ratings In T
 
 **Reading Log** in the header opens a dated microjournal, newest date first and paginated by calendar month. Each entry has a small saved-cover thumbnail and issue link. Repeated readings, including multiple readings on the same date, remain separate entries. Each can be removed without changing read status, ratings, or ownership.
 
-Tapping a read icon opens **Mark As Read**. **Record in Reading Log** defaults off; turning it on enables a reading-date picker defaulted to today on your device. **OK** marks the issue read and optionally records the date; Cancel/Escape changes nothing. Dates are stored as calendar dates without UTC conversion. Clicking read again to mark unread prompts Yes/No when entries exist: Yes removes all entries for the issue across covers, No keeps them while marking unread, and Cancel leaves everything unchanged. Ratings remain intact. Rating a comic still marks it read without silently creating journal entries.
+Tapping a read icon opens **Mark As Read**. **Record in Reading Log** defaults off; the reading-date calendar is always visible and defaults to today on your device. Clicking a day automatically turns recording on; browsing months does not. **OK** marks the issue read and optionally records the date; Cancel/Escape changes nothing. Dates are stored as calendar dates without UTC conversion. Clicking read again to mark unread prompts Yes/No when entries exist: Yes removes all entries for the issue across covers, No keeps them while marking unread, and Cancel leaves everything unchanged. Ratings remain intact. Rating a comic still marks it read without silently creating journal entries.
 
 Comic details have a **Log a Reading** button for recording additional dates, plus an issue-wide **Reading Log Entries** section directly below the graph area (above the owned-series shelf when no graph is shown). Entries from every cover appear here, with individual removal controls. Adding a reading marks the issue read but never adds an owned copy. The existing cover and metadata are reused. A first read from Metron search imports its standard cover and essential metadata; saved issues need no provider calls.
 

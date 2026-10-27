@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-052', date: '2026-10-27', title: 'Choose a reading day',
+  changes: ['Keep the reading-date calendar visible in Mark As Read and Log a Reading dialogs.', 'Selecting a date automatically enables Record in Reading Log; browsing calendar months leaves the toggle unchanged.'],
+}, {
   version: 'α-051', date: '2026-10-27', title: 'Navigation in two rows',
   changes: ['Arrange header navigation in a 2×2 grid: My Collection and Search Metron above Want List and Reading Log.'],
 }, {

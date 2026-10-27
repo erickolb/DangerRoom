@@ -1,5 +1,10 @@
 # Changelog
 
+## α-052 · 2026-10-27
+
+- Replace the collapsed date picker with an always-visible reading calendar.
+- Automatically enable journal recording when a date is selected, preserving the off default until a date or toggle is clicked.
+
 ## α-051 · 2026-10-27
 
 - Arrange header navigation as My Collection / Search Metron above Want List / Reading Log in a 2×2 grid.
