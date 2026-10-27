@@ -1,5 +1,9 @@
 # Changelog
 
+## α-063 · 2026-10-27
+
+- Arrange Series Type and Series Name filters side by side, stacking on narrow screens.
+
 ## α-062 · 2026-10-27
 
 - Add exact Series Name multiselect filters using names on the current results page, combined with type and collection filters.

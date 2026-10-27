@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-063', date: '2026-10-27', title: 'Side-by-side filters',
+  changes: ['Place Series Type and Series Name filters side by side, stacking them on narrow screens.'],
+}, {
   version: 'α-062', date: '2026-10-27', title: 'Filter series names',
   changes: ['Add exact Series Name multiselect filtering alongside series types, preserving selections across searches and pages; Clear and or remove reset both.'],
 }, {
