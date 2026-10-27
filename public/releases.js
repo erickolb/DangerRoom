@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-061', date: '2026-10-27', title: 'Clear empty-result filters',
+  changes: ['Add an or remove link when filtered search results are empty, clearing series-type and not-in-collection filters while preserving the search.'],
+}, {
   version: 'α-060', date: '2026-10-27', title: 'Omnibus badge',
   changes: ['Show an OMNI badge for Omnibus titles throughout the app, matching TPB and HC with Omnibus alt text; omit issue numbers for Omnibus titles.'],
 }, {

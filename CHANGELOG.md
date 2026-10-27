@@ -1,5 +1,9 @@
 # Changelog
 
+## α-061 · 2026-10-27
+
+- Add an “or remove” link in empty filtered results to clear both filters while preserving the search.
+
 ## α-060 · 2026-10-27
 
 - Add the matching OMNI badge for Omnibus titles throughout the app, with Omnibus alt text; omit issue numbers for Omnibus titles.
