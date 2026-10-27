@@ -524,3 +524,19 @@ test('reading-log schema migration preserves old collection and logs persist aft
     assert.equal(new Repository(db).issueLog(42)[0].read_date,'2026-10-27');assert.equal(db.prepare('PRAGMA user_version').get().user_version,5);
   }finally{db.close();await rm(dir,{recursive:true,force:true});}
 });
+
+test('Mark As Read can atomically save an optional half-star rating with or without a log entry',async t=>{
+  const h=await harness(t);await h.request('/api/entries','POST',add('standard'));
+  let response=await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard',rating:3.5,log_date:'2026-10-27'});
+  assert.equal(response.status,200);assert.equal(response.data.user_rating,3.5);assert.ok(response.data.read);assert.equal(response.data.reading_log_count,1);assert.equal(response.data.copies.length,1);
+  await h.request('/api/issues/42/read','PATCH',{read:false});
+  response=await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard'});
+  assert.equal(response.data.user_rating,3.5);assert.equal(response.data.reading_log_count,1);
+  await h.request('/api/issues/42/read','PATCH',{read:false});
+  for(const rating of [0,5.5,2.2,'4'])assert.equal((await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard',rating})).status,400);
+  assert.equal(h.repo.issue(42).read,null);assert.equal(h.repo.issue(42).user_rating,3.5);
+  assert.equal((await h.request('/api/issues/42/read','PATCH',{read:false,rating:4})).status,400);
+  h.repo.db.exec("CREATE TRIGGER fail_read_rating_log BEFORE INSERT ON reading_log BEGIN SELECT RAISE(ABORT,'test failure'); END;");
+  assert.equal((await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard',rating:5,log_date:'2026-10-27'})).status,500);
+  assert.equal(h.repo.issue(42).read,null);assert.equal(h.repo.issue(42).user_rating,3.5);assert.equal(h.repo.issue(42).reading_log_count,1);
+});

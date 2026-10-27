@@ -1,5 +1,10 @@
 # Changelog
 
+## α-055 · 2026-10-27
+
+- Add optional half-star ratings to Mark As Read with the shared hover preview.
+- Save read status, rating, and optional journal entry in one transaction on OK.
+
 ## α-054 · 2026-10-27
 
 - Swap the header top row to Search Metron / My Collection.

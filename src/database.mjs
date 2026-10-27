@@ -174,7 +174,9 @@ export class Repository {
   removeLog(id) {
     if(!this.db.prepare('DELETE FROM reading_log WHERE id=?').run(id).changes)throw new AppError(404,'Reading log entry not found.');
   }
-  setRead(id, read, editionKey, {log_date,remove_log_entries=false}={}) {
+  setRead(id, read, editionKey, {log_date,remove_log_entries=false,rating}={}) {
+    if(rating!==undefined)validateRating(rating);
+    if(!read&&rating!==undefined)throw new AppError(400,'A rating can only be submitted while marking read.');
     if(log_date!==undefined)validateLogDate(log_date);
     if(typeof remove_log_entries!=='boolean'||(!read&&log_date!==undefined)||(read&&remove_log_entries))throw new AppError(400,'Invalid reading-log options.');
     const issue=this.issue(id);
@@ -185,6 +187,7 @@ export class Repository {
       if(read){
         const now=new Date().toISOString();
         this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(id,editionKey,now);
+        if(rating!==undefined)this.writeRating(id,rating,now);
         if(log_date!==undefined)this.writeLog(id,editionKey,log_date,now);
       }else{
         this.db.prepare('DELETE FROM reads WHERE issue_id=?').run(id);

@@ -12,6 +12,7 @@ import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/ratings.js', ['ratings.js', 'text/javascript; charset=utf-8']],
   ['/reading-log.js', ['reading-log.js', 'text/javascript; charset=utf-8']], ['/reading-log.png', ['reading-log.png', 'image/png']],
   ['/series-ratings.js', ['series-ratings.js', 'text/javascript; charset=utf-8']],
   ['/duplicate.png', ['duplicate.png', 'image/png']],
@@ -120,7 +121,7 @@ export function createApp(options = {}) {
       if (req.method === 'PATCH' && match) {
         const data = await body(req);
         if (typeof data.read !== 'boolean') throw new AppError(400, 'Read status must be true or false.');
-        return send(200, repo.setRead(positiveId(match[1]), data.read, data.edition_key, {log_date:data.log_date,remove_log_entries:data.remove_log_entries}));
+        return send(200, repo.setRead(positiveId(match[1]), data.read, data.edition_key, {log_date:data.log_date,remove_log_entries:data.remove_log_entries,rating:data.rating}));
       }
       match = url.pathname.match(/^\/api\/issues\/(\d+)\/rating$/);
       if (req.method === 'PATCH' && match) {

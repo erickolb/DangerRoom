@@ -55,3 +55,5 @@ Status errors use `{error}`. HTTP 429 includes `Retry-After`. Provider credentia
 | POST | `/api/entries` | Optional `log_date` is validated before provider/image requests and saved atomically with import and read status. |
 
 The UI asks about journal removal before marking unread when entries exist. Rating alone does not create a log entry. The monthly view and saved-issue journal changes make no Metron calls. The issue log section appears after the chart and includes all editions.
+
+Mark-as-read requests may additionally include `rating` (0.5–5 in half-star steps). When provided, the saved issue's read status, rating and optional `log_date` are committed together. Omitting `rating` preserves an existing score. Ratings cannot be submitted when marking unread. Unsaved-issue imports already support the same combined fields through `/api/entries`.
