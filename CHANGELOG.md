@@ -1,5 +1,9 @@
 # Changelog
 
+## α-049 · 2026-10-27
+
+- Display journal dates as square calendar badges with highlighted month strips and entries grouped to the right.
+
 ## α-048 · 2026-10-27
 
 - Add a dated, month-paginated Reading Log with thumbnails, issue links, repeated entries, and individual removal.

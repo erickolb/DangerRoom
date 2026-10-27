@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-049', date: '2026-10-27', title: 'Dates on the calendar',
+  changes: ['Group Reading Log entries beside square calendar-sheet badges, with the abbreviated month above the day in theme highlight colors.'],
+}, {
   version: 'α-048', date: '2026-10-27', title: 'Your reading journal',
   changes: ['Add a dated Reading Log with monthly navigation, thumbnails, issue links, repeated readings, and individual entry removal.', 'Add a header Reading Log link and a Log a Reading button on comic details, using the supplied attributed icon with embedded text removed.', 'Show Mark As Read with optional journal recording and a date picker; marking unread offers to keep or remove all issue log entries.', 'Show issue-wide Reading Log Entries beneath the series ratings graph, across all variants; removing entries preserves read status.'],
 }, {
