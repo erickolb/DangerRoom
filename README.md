@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-057**.
+Comic inventory and reading journal. Current build: **α-058**.
 
 ## Run locally
 
@@ -76,6 +76,8 @@ Only issue ID/name/number, series ID/name/start year/volume, cover date, officia
 - Optional private AWS S3 cover storage and a resumable local-to-S3 migration are documented in [S3 configuration](docs/s3.md). SQLite stays local. Back up the database, local covers, S3 objects, and configuration together; covers are deliberately retained after copy removal.
 
 See [Metron field inventory and initial local-data choices](docs/metron-fields.md) and [API and data model](docs/api.md).
+
+Use **Filters** beside the Metron results heading to select one or more series types. No selected types means all types; **Clear** resets only that filter. Apply combines the selected types with hide-owned on the current provider page, retaining the Metron total and pagination. Selections persist in the URL and through a new search. The complete series-type catalog is fetched on opening the dropdown and cached for 24 hours; if unavailable, types on the current results page remain selectable.
 
 ## Comic format
 

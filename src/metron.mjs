@@ -120,6 +120,17 @@ export class Metron {
     return {count:data.count,page:Number(filters.get('page')),next:Boolean(data.next),previous:Boolean(data.previous),results};
   }
 
+  async seriesTypes() {
+    const types=new Map();
+    for(let page=1;page<=10;page++){
+      const data=await this.get(`series_type/?page=${page}`,24*60*60*1000);
+      const rows=Array.isArray(data)?data:data.results;
+      if(!Array.isArray(rows))throw new AppError(502,'Metron returned an unexpected series-type list.');
+      for(const row of rows){const type=seriesType(row);if(type)types.set(type.id,type);}
+      if(!data.next)return [...types.values()].sort((a,b)=>a.name.localeCompare(b.name));
+    }
+    throw new AppError(502,'Metron returned too many series-type pages.');
+  }
   async issue(id) {
     const raw = await this.get(`issue/${positiveId(id)}/`, 24 * 60 * 60 * 1000);
     if (raw.id !== Number(id) || !raw.series?.name) throw new AppError(502, 'Metron returned incomplete comic data.');

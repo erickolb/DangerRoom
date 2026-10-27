@@ -12,6 +12,7 @@ import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/search-filters.js', ['search-filters.js', 'text/javascript; charset=utf-8']],
   ['/comic-title.js', ['comic-title.js', 'text/javascript; charset=utf-8']], ['/format-tpb.png', ['format-tpb.png', 'image/png']], ['/format-hc.png', ['format-hc.png', 'image/png']],
   ['/ratings.js', ['ratings.js', 'text/javascript; charset=utf-8']],
   ['/reading-log.js', ['reading-log.js', 'text/javascript; charset=utf-8']], ['/reading-log.png', ['reading-log.png', 'image/png']],
@@ -56,6 +57,7 @@ export function createApp(options = {}) {
       if (req.headers['sec-fetch-site'] === 'cross-site' && !['GET', 'HEAD'].includes(req.method)) throw new AppError(403, 'Cross-site changes are not allowed.');
       if (!['GET', 'HEAD'].includes(req.method) && req.headers.origin && new URL(req.headers.origin).host !== host.host) throw new AppError(403, 'Cross-site changes are not allowed.');
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured });
+      if(req.method==='GET'&&url.pathname==='/api/series-types')return send(200,{items:await metron.seriesTypes()});
       if (req.method === 'GET' && url.pathname === '/api/search') {
         const result=await metron.search(url.searchParams);
         result.results=result.results.map(row=>({...row,...repo.issueStatus(row.id),cover_file:repo.ownedCover(row.id)?.cover_file || null}));

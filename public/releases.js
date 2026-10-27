@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-058', date: '2026-10-27', title: 'Filter by series type',
+  changes: ['Add a Filters dropdown beside Metron search results with multi-select series-type checkboxes, Apply, and Clear.', 'Combine series-type filtering with hide-owned, retain selections across searches and pagination, and cache the full type list for 24 hours.'],
+}, {
   version: 'α-057', date: '2026-10-27', title: 'Format in the title',
   changes: ['Place white TPB and HC badges with transparent lettering between comic titles and issue numbers across the app, with Trade Paperback and Hardcover alt text.', 'Share title rendering across details, search, collections, wants, reading logs, cover selection, and lightboxes.', 'Reuse known series formats in search and cache one provider series lookup per unknown series.'],
 }, {

@@ -596,3 +596,13 @@ test('search format enrichment reuses locally stored type without provider serie
   h.repo.save({...essentialIssue(raw),series:{...essentialIssue(raw).series,series_type:{id:10,name:'Trade Paperback'}}},editionsFor(raw)[0],null,{owned:true,read:false});
   assert.equal((await h.request('/api/search?q=Test')).data.results[0].series.series_type.name,'Trade Paperback');
 });
+
+test('series-type catalog is cached and supports paginated or unpaginated provider lists',async t=>{
+  let calls=0;
+  const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async url=>{
+    calls++;if(url.endsWith('page=1'))return Response.json({next:'page2',results:[{id:10,name:'Trade Paperback'}]});
+    return Response.json({next:null,results:[{id:9,name:'Hardcover'},{id:10,name:'Trade Paperback'}]});
+  }}});
+  let response=await h.request('/api/series-types');assert.equal(response.status,200);assert.deepEqual(response.data.items,[{id:9,name:'Hardcover'},{id:10,name:'Trade Paperback'}]);assert.equal(calls,2);
+  response=await h.request('/api/series-types');assert.equal(response.status,200);assert.equal(calls,2);
+});

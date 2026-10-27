@@ -1,5 +1,10 @@
 # Changelog
 
+## α-058 · 2026-10-27
+
+- Add a results Filters dropdown with series-type checkboxes, Apply, and Clear.
+- Preserve multi-select filters across searches/pagination and combine them with hide-owned; cache the type catalog for 24 hours.
+
 ## α-057 · 2026-10-27
 
 - Add TPB/HC title badges with transparent lettering and expanded alt text throughout the app.
