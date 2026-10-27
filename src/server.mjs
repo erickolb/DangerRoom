@@ -84,6 +84,8 @@ export function createApp(options = {}) {
         if (!['owned', 'read'].includes(view)) throw new AppError(400, 'Choose owned comics or read comics.');
         return send(200, { view, items: repo.collection(view, (url.searchParams.get('q') || '').slice(0, 160)) });
       }
+      match = url.pathname.match(/^\/api\/issues\/(\d+)\/owned-series$/);
+      if (req.method === 'GET' && match) return send(200, { items: repo.ownedSeries(positiveId(match[1])) });
       match = url.pathname.match(/^\/api\/issues\/(\d+)$/);
       if (req.method === 'GET' && match) {
         const issue = repo.issue(positiveId(match[1]));

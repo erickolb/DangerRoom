@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-038', date: '2026-10-26', title: 'The rest of your run',
+  changes: ['Add Owned Issues In Series beneath Owned Copies on comic details, ordered by series year, volume, and issue number.', 'Group owned issues across same-title series runs, with one linked tile per issue and a copy count; use owned variant artwork when available.'],
+}, {
   version: 'α-037', date: '2026-10-26', title: 'Matching detail notes',
   changes: ['Style both detail instructions with the same small italic text and existing hint color.'],
 }, {

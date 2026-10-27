@@ -1,5 +1,10 @@
 # Changelog
 
+## α-038 · 2026-10-26
+
+- Capitalize Owned Copies and add Owned Issues In Series below it.
+- List owned issues across same-title series runs in year/volume/numeric order, grouping copies per issue and linking to the owned cover.
+
 ## α-037 · 2026-10-26
 
 - Match both comic detail instruction lines with small italic text in the existing hint color.

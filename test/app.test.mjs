@@ -416,3 +416,20 @@ test('collection defaults to series, start year, and numeric issue order with du
     assert.deepEqual(numbers,view==='owned'?['½','1','2','2','2','2.5','3','4','5','6','10']:['½','1','2','2.5','3','4','5','6','10']);
   }
 });
+
+test('owned-series lists owned issues across title runs in year/volume/numeric order, grouping copies and excluding read-only issues', async t => {
+  const h=await harness(t);
+  function save(id,seriesId,year,volume,number,{name='Test Heroes',key='standard',owned=true}={}){
+    return h.repo.save({id,series:{id:seriesId,name,year_began:year,volume},number:String(number),display_name:`${name} #${number}`},{key,name:key},key==='standard'?null:'a'.repeat(64)+'.png',{owned,read:true});
+  }
+  save(201,1,2024,2,10);save(202,1,2024,2,2);save(203,2,2023,1,8);
+  save(204,3,2024,1,12);save(205,4,2024,3,1);save(206,5,2022,1,1,{name:'Other Series'});
+  save(207,1,2024,2,3,{owned:false});save(202,1,2024,2,2);save(202,1,2024,2,2,{key:'variant-test'});
+  const response=await h.request('/api/issues/201/owned-series');assert.equal(response.status,200);
+  assert.deepEqual(response.data.items.map(row=>row.issue.id),[203,204,202,201,205]);
+  const duplicate=response.data.items.find(row=>row.issue.id===202);assert.equal(duplicate.copy_count,3);assert.equal(duplicate.edition.key,'variant-test');
+  assert.equal((await h.request('/api/issues/207/owned-series')).data.items.length,5);
+  assert.equal((await h.request('/api/issues/999/owned-series')).status,404);
+  const copies=h.repo.issue(202).copies;for(const copy of copies)h.repo.removeCopy(copy.id);
+  assert.equal((await h.request('/api/issues/201/owned-series')).data.items.some(row=>row.issue.id===202),false);
+});

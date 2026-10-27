@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-037**.
+Comic inventory and reading journal. Current build: **α-038**.
 
 ## Run locally
 
@@ -32,6 +32,8 @@ Open a search result's collection, Want List, or read icon to choose its exact c
 Use the duplicate icon to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue. **Read and Rated Comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
 
 Click a saved cover on its details page to open the full-resolution image in a lightbox. Close it with Escape, the close button, or a click outside the dialog. Images use the existing local/S3 storage route.
+
+Comic details include **Owned Issues In Series** below **Owned Copies**. It lists owned issues with the same series title across years/volumes in year, volume, and numeric issue order, once per issue with a copy count. Links open the owned cover, preferring saved variant artwork. This uses only local metadata.
 
 ## Personal ratings
 

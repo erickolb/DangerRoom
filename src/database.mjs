@@ -159,6 +159,22 @@ export class Repository {
   removeCopy(id) {
     if (!this.db.prepare('DELETE FROM copies WHERE id=?').run(id).changes) throw new AppError(404, 'Owned copy not found.');
   }
+  ownedSeries(id) {
+    const current=this.issue(id);
+    if(!current)throw new AppError(404,'Comic not found in your collection.');
+    const name=current.series.name.trim().normalize('NFKC').toLocaleLowerCase('en');
+    const groups=new Map();
+    for(const row of this.collection('owned')){
+      if(row.issue.series.name.trim().normalize('NFKC').toLocaleLowerCase('en')!==name)continue;
+      let entry=groups.get(row.issue.id);
+      if(!entry){entry={...row,copy_count:0};groups.set(row.issue.id,entry);}
+      entry.copy_count++;
+    }
+    return [...groups.values()].map(row=>{
+      const preferred=this.ownedCover(row.issue.id);
+      return {...row,edition:row.issue.editions.find(e=>e.key===preferred?.edition_key)||row.edition};
+    });
+  }
   collection(view, query = '') {
     const rows = view === 'read'
       ? this.db.prepare('SELECT issue_id,edition_key,read_at AS date FROM reads ORDER BY read_at DESC,issue_id DESC').all()

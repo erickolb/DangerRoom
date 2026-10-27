@@ -32,3 +32,5 @@
 .detail-layout .cover-zoom{display:block;width:100%;padding:0;border:0;border-radius:8px;background:transparent;cursor:zoom-in}.cover-lightbox{width:fit-content;max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);padding:16px;overflow:auto}.lightbox-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.lightbox-heading h2{font:400 1rem/1.4 Georgia,serif;margin:0}.lightbox-heading button{font-size:1.5rem;flex-shrink:0}#lightbox-image{display:block;width:auto;height:auto;max-width:100%;max-height:calc(100dvh - 140px);object-fit:contain;margin:auto}body:has(.cover-lightbox[open]){overflow:hidden}
 
 .rating-note{font-size:.65rem;color:#bcaacb;font-style:italic;line-height:1.5}
+
+.owned-series{margin-top:32px;border-top:1px solid #493653;padding-top:20px}.series-shelf{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.series-shelf .variant-caption{font-size:.72rem;font-style:italic}.series-shelf a[aria-current=page]{outline:1px solid #c293df;outline-offset:-1px}
