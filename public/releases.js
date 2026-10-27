@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-041', date: '2026-10-26', title: 'Find the gaps',
+  changes: ['Add Search Full Series on Metron below the owned-series shelf, carrying the series name into search.', 'Add a collection icon with a slashed-circle toggle to hide owned issues in search, including any owned variant; preserve it through searches and pagination.'],
+}, {
   version: 'α-040', date: '2026-10-26', title: 'Manage your run',
   changes: ['Add collection, Want List, and read toggles to Owned Issues In Series tiles, sharing status with the current detail page.', 'Keep untoggled tiles available for restoring ownership and update their copy counts immediately.'],
 }, {

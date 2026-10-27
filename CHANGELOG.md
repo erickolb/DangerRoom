@@ -1,5 +1,10 @@
 # Changelog
 
+## α-041 · 2026-10-26
+
+- Link from the owned-series shelf to a Metron search for the series name.
+- Add an accessible slashed-collection toggle that hides owned issues across any cover on each search page, retaining pagination and provider totals.
+
 ## α-040 · 2026-10-26
 
 - Add collection, want, and read toggles to Owned Issues In Series tiles with immediate copy counts and synchronized current-issue controls.

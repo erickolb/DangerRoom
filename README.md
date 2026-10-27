@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-040**.
+Comic inventory and reading journal. Current build: **α-041**.
 
 ## Run locally
 
@@ -34,6 +34,8 @@ Use the duplicate icon to add another copy of the selected cover. Every owned co
 Click a saved cover on its details page to open the full-resolution image in a lightbox. Close it with Escape, the close button, or a click outside the dialog. Images use the existing local/S3 storage route.
 
 Comic details include **Owned Issues In Series** below **Owned Copies**. It lists owned issues with the same series title across years/volumes in year, volume, and numeric issue order, once per issue with a copy count. Links open the owned cover, preferring saved variant artwork. This uses only local metadata.
+
+Use **Search Full Series on Metron** beneath the owned-series shelf to search that series by name. The slashed collection icon on Metron search hides issues owned in any variant. Filtering applies to each provider page; the total remains the Metron match count, and pagination stays available even when all issues on a page are hidden. The filter persists in the URL through searches and pagination.
 
 ## Personal ratings
 
