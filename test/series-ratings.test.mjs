@@ -11,7 +11,7 @@ test('series chart requires two ratings and labels recorded points and half-star
   assert.equal(seriesRatingChart({max_issue:6,points:[{number:2,rating:4}]}),'');
   const svg=seriesRatingChart({max_issue:6,points:[{number:2,rating:4},{number:5,rating:2}]});
   assert.equal((svg.match(/class="rating-dot"/g)||[]).length,2);
-  assert.match(svg,/Issue #2: 4 \/ 5/);assert.match(svg,/>0.0<|>0.5</);assert.match(svg,/>5.0</);assert.match(svg,/>Rating</text>/);
+  assert.match(svg,/Issue #2: 4 \/ 5/);assert.match(svg,/>0.0<|>0.5</);assert.match(svg,/>5.0</);assert.ok(svg.includes('>Rating</text>'));
   assert.deepEqual(ratingSegments([{number:1,rating:3},{number:2,rating:5}],2.5).filter(s=>s.solid).map(s=>[s.from,s.to]),[[1,1.5],[1.5,2.5]]);
 });
 
