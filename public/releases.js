@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-044', date: '2026-10-26', title: 'Ratings across your run',
+  changes: ['Show Ratings In This Series above the owned-series shelf when at least two issues have ratings.', 'Chart local issue ratings on a half-star scale with dots, solid rated bands, and dotted stepped bridges across missing ratings; use the latest locally saved issue for the range.'],
+}, {
   version: 'α-043', date: '2026-10-26', title: 'Changelog presentation',
   changes: ['Show only version, date, and change bullets for each changelog entry, omitting release titles.'],
 }, {

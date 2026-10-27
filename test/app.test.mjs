@@ -433,3 +433,15 @@ test('owned-series lists owned issues across title runs in year/volume/numeric o
   const copies=h.repo.issue(202).copies;for(const copy of copies)h.repo.removeCopy(copy.id);
   assert.equal((await h.request('/api/issues/201/owned-series')).data.items.some(row=>row.issue.id===202),false);
 });
+
+test('series ratings use saved issues, separate runs, include read-only ratings, and update after clearing',async t=>{
+  const h=await harness(t);
+  const save=(id,number,rating,seriesId=4)=>h.repo.save({id,series:{id:seriesId,name:'Test Heroes',year_began:2024,volume:1},number:String(number)},{key:'standard',name:'Standard cover'},null,{owned:false,read:true,...(rating!=null?{rating}:{})});
+  save(301,2,4);save(302,5,2);save(303,6,null);save(304,20,5,99);
+  let response=await h.request('/api/issues/301/series-ratings');assert.equal(response.status,200);
+  assert.deepEqual(response.data,{max_issue:6,points:[{number:2,rating:4},{number:5,rating:2}]});
+  await h.request('/api/issues/302/rating','PATCH',{rating:null});
+  response=await h.request('/api/issues/301/series-ratings');assert.equal(response.data.points.length,1);assert.equal(response.data.max_issue,6);
+  assert.equal((await h.request('/api/issues/999/series-ratings')).status,404);
+  assert.deepEqual(h.counts(),{lookups:0,downloads:0});
+});

@@ -11,6 +11,7 @@ import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/series-ratings.js', ['series-ratings.js', 'text/javascript; charset=utf-8']],
   ['/duplicate.png', ['duplicate.png', 'image/png']],
   ['/metron.svg', ['metron.svg', 'image/svg+xml']],
   ['/boxes.png', ['boxes.png', 'image/png']], ['/star.png', ['star.png', 'image/png']],
@@ -84,6 +85,8 @@ export function createApp(options = {}) {
         if (!['owned', 'read'].includes(view)) throw new AppError(400, 'Choose owned comics or read comics.');
         return send(200, { view, items: repo.collection(view, (url.searchParams.get('q') || '').slice(0, 160)) });
       }
+      match = url.pathname.match(/^\/api\/issues\/(\d+)\/series-ratings$/);
+      if (req.method === 'GET' && match) return send(200, repo.seriesRatings(positiveId(match[1])));
       match = url.pathname.match(/^\/api\/issues\/(\d+)\/owned-series$/);
       if (req.method === 'GET' && match) return send(200, { items: repo.ownedSeries(positiveId(match[1])) });
       match = url.pathname.match(/^\/api\/issues\/(\d+)$/);

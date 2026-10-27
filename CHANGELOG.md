@@ -1,5 +1,10 @@
 # Changelog
 
+## α-044 · 2026-10-26
+
+- Add a local-only series ratings graph when more than one issue is rated, above Owned Issues In Series.
+- Use a 0–5 half-star scale, rating dots, solid rated bands, and dotted stepped lines across gaps.
+
 ## α-043 · 2026-10-26
 
 - Omit release titles from the in-app changelog; retain version, date, and change bullets.

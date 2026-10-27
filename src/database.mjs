@@ -159,6 +159,15 @@ export class Repository {
   removeCopy(id) {
     if (!this.db.prepare('DELETE FROM copies WHERE id=?').run(id).changes) throw new AppError(404, 'Owned copy not found.');
   }
+  seriesRatings(id) {
+    const current=this.issue(id);
+    if(!current)throw new AppError(404,'Comic not found in your collection.');
+    const rows=this.db.prepare('SELECT i.metadata,r.half_stars FROM issues i LEFT JOIN issue_ratings r ON r.issue_id=i.id').all()
+      .map(row=>({...JSON.parse(row.metadata),half_stars:row.half_stars}))
+      .filter(row=>row.series.id===current.series.id && /^\d+(?:\.\d+)?$/.test(row.number) && Number(row.number)>0);
+    return { max_issue:Math.max(1,...rows.map(row=>Math.ceil(Number(row.number)))),
+      points:rows.filter(row=>row.half_stars!=null).map(row=>({number:Number(row.number),rating:row.half_stars/2})).sort((a,b)=>a.number-b.number) };
+  }
   ownedSeries(id) {
     const current=this.issue(id);
     if(!current)throw new AppError(404,'Comic not found in your collection.');

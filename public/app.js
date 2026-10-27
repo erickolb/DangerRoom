@@ -1,3 +1,4 @@
+import { seriesRatingChart } from './series-ratings.js';
 import { releases } from './releases.js';
 import { actionButton, context, copyState, bindToggles } from './actions.js';
 const $ = s => document.querySelector(s), app = $('#app'), notice = $('#notice'), dialog = $('#dialog');
@@ -229,7 +230,7 @@ async function detail(id,params,ticket){
     for(const row of rows.values())if(row.state.copyId&&!ctx.issue.copies.some(copy=>copy.id===row.state.copyId))row.state.copyId=null;
     if(state.copyId&&!ctx.issue.copies.some(copy=>copy.id===state.copyId))state.copyId=null;
   });
-  app.innerHTML=`<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${localCover(edition)?`<button type="button" class="cover-zoom" id="open-cover-lightbox" aria-label="Open full-size cover image">${cover(localCover(edition),issue.display_name)}</button>`:cover(null,issue.display_name)}${localCover(edition)?`<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>`:''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name||'Comic')} · ${esc(issue.series.name)} · Volume ${esc(issue.series.volume||'—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title?`<p class="intro">${esc(issue.title)}</p>`:''}<p class="intro">${esc(edition.name)}</p><div class="comic-actions" id="detail-actions"></div><p class="hint rating-note">Toggle an icon to save its status. Use the duplicate icon for another copy.</p><div id="detail-rating"></div><dl class="metadata">${field('Publisher',issue.publisher?.name)}${field('Volume',issue.series.volume)}${field('Cover date',date(issue.cover_date))}${field('Release date',date(issue.store_date))}${field('UPC · selected cover',edition.upc)}${field('SKU · selected cover',edition.sku)}${field('ISBN',issue.isbn)}${field('Pages',issue.page_count)}${field('Cover price',edition.price!==null?`${edition.price_currency ? edition.price_currency+' ' : '$'}${edition.price}`:null)}${field('Content rating',issue.rating?.name)}${field('Imprint',issue.imprint?.name)}</dl>${issue.resource_url?`<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>`:''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned Copies</h3><div id="copy-rows"></div></section><section class="owned-series"><h3>Owned Issues In Series</h3><div id="owned-series-results"><p class="muted">Opening owned issues…</p></div><a class="button quiet full-series-search" href="#/?${new URLSearchParams({q:issue.series.name})}"><img class="metron-logo" src="/metron.svg" alt="">Search Full Series on Metron</a></section>`;
+  app.innerHTML=`<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${localCover(edition)?`<button type="button" class="cover-zoom" id="open-cover-lightbox" aria-label="Open full-size cover image">${cover(localCover(edition),issue.display_name)}</button>`:cover(null,issue.display_name)}${localCover(edition)?`<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>`:''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name||'Comic')} · ${esc(issue.series.name)} · Volume ${esc(issue.series.volume||'—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title?`<p class="intro">${esc(issue.title)}</p>`:''}<p class="intro">${esc(edition.name)}</p><div class="comic-actions" id="detail-actions"></div><p class="hint rating-note">Toggle an icon to save its status. Use the duplicate icon for another copy.</p><div id="detail-rating"></div><dl class="metadata">${field('Publisher',issue.publisher?.name)}${field('Volume',issue.series.volume)}${field('Cover date',date(issue.cover_date))}${field('Release date',date(issue.store_date))}${field('UPC · selected cover',edition.upc)}${field('SKU · selected cover',edition.sku)}${field('ISBN',issue.isbn)}${field('Pages',issue.page_count)}${field('Cover price',edition.price!==null?`${edition.price_currency ? edition.price_currency+' ' : '$'}${edition.price}`:null)}${field('Content rating',issue.rating?.name)}${field('Imprint',issue.imprint?.name)}</dl>${issue.resource_url?`<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>`:''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned Copies</h3><div id="copy-rows"></div></section><section class="series-ratings" id="series-ratings" hidden><h3>Ratings In This Series</h3><div id="series-rating-chart"></div></section><section class="owned-series"><h3>Owned Issues In Series</h3><div id="owned-series-results"><p class="muted">Opening owned issues…</p></div><a class="button quiet full-series-search" href="#/?${new URLSearchParams({q:issue.series.name})}"><img class="metron-logo" src="/metron.svg" alt="">Search Full Series on Metron</a></section>`;
   if(localCover(edition))$('#open-cover-lightbox').onclick=()=>openCoverImage(localCover(edition),`${issue.display_name} · ${edition.name}`);
   bindToggles($('#detail-actions'),ctx,state,{extra:true});mountRating($('#detail-rating'),ctx,state);
   let unbind=[];
@@ -244,6 +245,18 @@ async function detail(id,params,ticket){
     [...rows.values()].forEach((row,i)=>unbind.push(bindToggles(document.querySelector(`[data-copy-actions="${i}"]`),ctx,row.state,{actions:['owned']})));
   }
   ctx.listeners.add(()=>{if(state.copyId){const p=new URLSearchParams(params);p.set('copy',state.copyId);history.replaceState(null,'',`#/issues/${id}?${p}`);}});
+  let chartGeneration=0;
+  async function renderSeriesRatings(){
+    if(ctx.busy)return;
+    const request=++chartGeneration;
+    try{
+      const data=await api(`/issues/${id}/series-ratings`);
+      if(ticket!==generation||request!==chartGeneration)return;
+      const section=$('#series-ratings');section.hidden=data.points.length<2;
+      $('#series-rating-chart').innerHTML=seriesRatingChart(data);
+    }catch{if(ticket===generation&&request===chartGeneration)$('#series-ratings').hidden=true;}
+  }
+  ctx.listeners.add(renderSeriesRatings);renderSeriesRatings();
   let seriesGeneration=0;
   let seriesUnbind=[];
   async function renderOwnedSeries(){
@@ -265,6 +278,7 @@ async function detail(id,params,ticket){
           card.classList.toggle('inactive-copy',!tileState.copyId);
         };
         tileCtx.listeners.add(reconcile);reconcile();
+        if(tileCtx!==ctx){tileCtx.listeners.add(renderSeriesRatings);seriesUnbind.push(()=>tileCtx.listeners.delete(renderSeriesRatings));}
         seriesUnbind.push(()=>tileCtx.listeners.delete(reconcile));
         seriesUnbind.push(bindToggles(card.querySelector('[data-series-actions]'),tileCtx,tileState));
       });
