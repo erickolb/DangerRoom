@@ -1,5 +1,9 @@
 # Changelog
 
+## α-037 · 2026-10-26
+
+- Match both comic detail instruction lines with small italic text in the existing hint color.
+
 ## α-036 · 2026-10-26
 
 - Add Publisher and Volume as the first metadata fields.

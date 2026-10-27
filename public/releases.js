@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-037', date: '2026-10-26', title: 'Matching detail notes',
+  changes: ['Style both detail instructions with the same small italic text and existing hint color.'],
+}, {
   version: 'α-036', date: '2026-10-26', title: 'Series at a glance',
   changes: ['Add Publisher and Volume at the top of comic metadata, and show publisher, series name, and volume in the detail header.'],
 }, {
