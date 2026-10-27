@@ -1,5 +1,9 @@
 # Changelog
 
+## α-054 · 2026-10-27
+
+- Swap the header top row to Search Metron / My Collection.
+
 ## α-053 · 2026-10-27
 
 - Change Want List count wording from wanted covers to wanted issues.

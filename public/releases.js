@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-054', date: '2026-10-27', title: 'Search first',
+  changes: ['Swap Search Metron and My Collection in the header top row.'],
+}, {
   version: 'α-053', date: '2026-10-27', title: 'Wanted issues',
   changes: ['Label Want List counts as wanted issues instead of wanted covers.'],
 }, {
