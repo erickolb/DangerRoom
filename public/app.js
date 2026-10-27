@@ -12,6 +12,7 @@ const date = value => value ? new Date(value.length > 10 ? value : `${value}T12:
 const cover = (src, title = '', cls = '') => src ? `<img class="cover ${cls}" src="${esc(src)}" alt="${esc(title)}" loading="lazy">` : '<div class="cover missing-cover">Cover unavailable</div>';
 const localCover = edition => edition?.cover_file ? `/covers/${edition.cover_file}` : null;
 const field = (label, value) => `<div><dt>${esc(label)}</dt><dd>${esc(value || 'Not supplied')}</dd></div>`;
+let pendingSeriesNameCheck = null;
 let connected = false, generation = 0, dialogGeneration = 0, collectionView = 'owned';
 $('#build-label').textContent = releases[0].version;
 async function api(path, options = {}) {
@@ -103,6 +104,7 @@ async function search(params, ticket) {
     const values = new URLSearchParams();
     for (const [key, value] of new FormData(e.target)) if (value.trim()) values.append(key, value.trim());
     if (!values.has('q') && !values.has('upc')) { message('Enter a series name or UPC to search.', true); return; }
+    pendingSeriesNameCheck=values.toString();
     const hash = `#/?${values}`;
     if (location.hash === hash) route(); else location.hash = hash;
   };
@@ -112,6 +114,14 @@ async function search(params, ticket) {
   try {
     const data = await api(`/search?${params}`);
     if (ticket !== generation) return;
+    if(pendingSeriesNameCheck===params.toString()){
+      pendingSeriesNameCheck=null;
+      const available=new Set(data.results.map(row=>row.series.name));
+      const retained=[...selectedSeriesNames(params)].filter(name=>available.has(name));
+      params.delete('series_name_filter');for(const name of retained)params.append('series_name_filter',name);
+      history.replaceState(null,'',`#/?${params}`);
+      document.querySelectorAll('#search-form input[name="series_name_filter"]').forEach(input=>{if(!available.has(input.value))input.remove();});
+    }
     const hideOwned=params.get('hide_owned')==='1';
     const seriesTypes=selectedSeriesTypes(params);
     const seriesNames=selectedSeriesNames(params);

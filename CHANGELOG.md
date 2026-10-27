@@ -1,5 +1,9 @@
 # Changelog
 
+## α-064 · 2026-10-27
+
+- Clear Series Name selections absent from newly submitted search results; retain matching names, other filters, and pagination behavior.
+
 ## α-063 · 2026-10-27
 
 - Arrange Series Type and Series Name filters side by side, stacking on narrow screens.

@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-064', date: '2026-10-27', title: 'Release stale name filters',
+  changes: ['Automatically clear Series Name selections absent from a submitted search’s results, retaining matching selections and other filters. Pagination preserves selections.'],
+}, {
   version: 'α-063', date: '2026-10-27', title: 'Side-by-side filters',
   changes: ['Place Series Type and Series Name filters side by side, stacking them on narrow screens.'],
 }, {
