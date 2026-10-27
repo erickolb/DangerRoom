@@ -1,5 +1,9 @@
 # Changelog
 
+## α-067 · 2026-10-27
+
+- Remove the redundant Search Metron link from the changelog body.
+
 ## α-066 · 2026-10-27
 
 - Move This Month into the bottom of the reading log month picker.

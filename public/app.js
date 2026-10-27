@@ -350,7 +350,7 @@ async function detail(id,params,ticket){
 }
 
 function changelog() {
-  app.innerHTML = `<a class="back-link" href="#/">← Search Metron</a><div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.map(r => `<article class="release"><p class="eyebrow"><span class="build-version">${esc(r.version)}</span> · <time datetime="${r.date}">${esc(date(r.date))}</time></p><ul>${r.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul></article>`).join('')}`;
+  app.innerHTML = `<div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.map(r => `<article class="release"><p class="eyebrow"><span class="build-version">${esc(r.version)}</span> · <time datetime="${r.date}">${esc(date(r.date))}</time></p><ul>${r.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul></article>`).join('')}`;
 }
 document.addEventListener('click',event=>{
   const dropdown=$('#results-filter');if(dropdown?.open&&!dropdown.contains(event.target))dropdown.open=false;

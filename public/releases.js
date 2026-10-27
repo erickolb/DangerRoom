@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-067', date: '2026-10-27', title: 'Simplify changelog navigation',
+  changes: ['Remove the redundant Search Metron link from the changelog body.'],
+}, {
   version: 'α-066', date: '2026-10-27', title: 'This month in the picker',
   changes: ['Move This Month to a button at the bottom of the reading log month picker.'],
 }, {
