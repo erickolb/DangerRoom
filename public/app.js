@@ -51,7 +51,7 @@ async function wantList(params, ticket) {
   $('#want-search').onsubmit = e => { e.preventDefault(); const p=new URLSearchParams(); const value=new FormData(e.target).get('q').trim(); if(value)p.set('q',value); const hash=`#/wants${p.size ? `?${p}` : ''}`; if(location.hash===hash)route();else location.hash=hash; };
   const data = await api(`/wants?${new URLSearchParams({q})}`);
   if (ticket !== generation) return;
-  $('#want-results').innerHTML = data.items.length ? `<p class="muted" id="want-count">${data.items.length} wanted cover${data.items.length===1?'':'s'}</p><div class="shelf">${data.items.map((row,index) => `<article class="comic-card want-card"><a class="comic-link" href="${esc(row.resource_url)}" target="_blank" rel="noopener noreferrer">${cover(localCover(row),row.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.series.year_began || '')} · Volume ${esc(row.series.volume || '—')}</p><h3>${esc(row.series.name)} #${esc(row.number)}</h3><p class="muted">${esc(row.edition.name)}</p><p class="muted">View on Metron ↗</p></div></a><div class="comic-actions card-toggles" data-want-actions="${index}"></div></article>`).join('')}</div>` : `<div class="empty-state"><p class="eyebrow">${q?'No matches':'Your Next Pulls'}</p><h3>${q?'No wanted covers match.':'Which issue will you pull next?'}</h3><p>${q?'Try another series or cover name.':'Search Metron, choose a cover, and add it to your Want List.'}</p></div>`;
+  $('#want-results').innerHTML = data.items.length ? `<p class="muted" id="want-count">${data.items.length} wanted issue${data.items.length===1?'':'s'}</p><div class="shelf">${data.items.map((row,index) => `<article class="comic-card want-card"><a class="comic-link" href="${esc(row.resource_url)}" target="_blank" rel="noopener noreferrer">${cover(localCover(row),row.display_name)}<div class="card-info"><p class="eyebrow">${esc(row.series.year_began || '')} · Volume ${esc(row.series.volume || '—')}</p><h3>${esc(row.series.name)} #${esc(row.number)}</h3><p class="muted">${esc(row.edition.name)}</p><p class="muted">View on Metron ↗</p></div></a><div class="comic-actions card-toggles" data-want-actions="${index}"></div></article>`).join('')}</div>` : `<div class="empty-state"><p class="eyebrow">${q?'No matches':'Your Next Pulls'}</p><h3>${q?'No wanted covers match.':'Which issue will you pull next?'}</h3><p>${q?'Try another series or cover name.':'Search Metron, choose a cover, and add it to your Want List.'}</p></div>`;
   const wantStates=[];
   data.items.forEach((row,index)=>{
     const ctx=context({id:row.issue_id,...row,editions:[{...row.edition,cover_file:row.cover_file,owned:false,wanted:true}],copies:[],read:null,user_rating:null,saved:false},api,text=>message(text,true));
@@ -59,7 +59,7 @@ async function wantList(params, ticket) {
     wantStates.push(ctx);
     const controls=document.querySelector(`[data-want-actions="${index}"]`);
     bindToggles(controls,ctx,state,{actions:['owned','wanted']});
-    ctx.listeners.add(()=>{const count=wantStates.filter(c=>c.editions[0].wanted).length;$('#want-count').textContent=`${count} wanted cover${count===1?'':'s'}`;controls.closest('.comic-card').classList.toggle('inactive-copy',!ctx.editions[0].wanted);});
+    ctx.listeners.add(()=>{const count=wantStates.filter(c=>c.editions[0].wanted).length;$('#want-count').textContent=`${count} wanted issue${count===1?'':'s'}`;controls.closest('.comic-card').classList.toggle('inactive-copy',!ctx.editions[0].wanted);});
   });
 }
 const lightbox=$('#cover-lightbox');

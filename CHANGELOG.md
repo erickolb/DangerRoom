@@ -1,5 +1,9 @@
 # Changelog
 
+## α-053 · 2026-10-27
+
+- Change Want List count wording from wanted covers to wanted issues.
+
 ## α-052 · 2026-10-27
 
 - Replace the collapsed date picker with an always-visible reading calendar.

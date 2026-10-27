@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-053', date: '2026-10-27', title: 'Wanted issues',
+  changes: ['Label Want List counts as wanted issues instead of wanted covers.'],
+}, {
   version: 'α-052', date: '2026-10-27', title: 'Choose a reading day',
   changes: ['Keep the reading-date calendar visible in Mark As Read and Log a Reading dialogs.', 'Selecting a date automatically enables Record in Reading Log; browsing calendar months leaves the toggle unchanged.'],
 }, {
