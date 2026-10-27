@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-047', date: '2026-10-26', title: 'Label the rating axis',
+  changes: ['Label the graph Y-axis Rating and reserve space beside the half-star tick labels.'],
+}, {
   version: 'α-046', date: '2026-10-26', title: 'Single section dividers',
   changes: ['Remove the final owned-copy row border so adjacent detail sections have one divider.'],
 }, {

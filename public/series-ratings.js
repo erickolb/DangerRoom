@@ -15,7 +15,7 @@ export function seriesRatingChart(data){
   if(data.points.length<2)return '';
   const start=Math.min(1,...data.points.map(p=>p.number));
   const end=Math.max(data.max_issue,...data.points.map(p=>p.number));
-  const width=900,height=340,left=52,right=20,top=20,bottom=46;
+  const width=900,height=340,left=72,right=20,top=20,bottom=46;
   const x=n=>left+(n-start)/Math.max(1,end-start)*(width-left-right),y=n=>top+(5-n)/5*(height-top-bottom);
   const segments=ratingSegments(data.points,end);
   let marks='';
@@ -33,5 +33,5 @@ export function seriesRatingChart(data){
   });
   for(const point of data.points)marks+=`<circle class="rating-dot" cx="${x(point.number)}" cy="${y(point.rating)}" r="5"><title>Issue #${point.number}: ${point.rating} / 5</title></circle>`;
   const description=data.points.map(p=>`Issue ${p.number}: ${p.rating} out of 5`).join('; ');
-  return `<svg class="series-rating-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Series ratings, from issue 1 to ${data.max_issue}. ${description}"><text x="${width/2}" y="${height-4}" text-anchor="middle">Issue number</text>${marks}</svg><p class="hint rating-note">Dots are recorded ratings. Solid lines mark rated issues; dotted lines bridge unrated issues. Range uses locally saved issues in this series run.</p>`;
+  return `<svg class="series-rating-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Series ratings, from issue 1 to ${data.max_issue}. ${description}"><text transform="translate(18 ${top+(height-top-bottom)/2}) rotate(-90)" text-anchor="middle">Rating</text><text x="${width/2}" y="${height-4}" text-anchor="middle">Issue number</text>${marks}</svg><p class="hint rating-note">Dots are recorded ratings. Solid lines mark rated issues; dotted lines bridge unrated issues. Range uses locally saved issues in this series run.</p>`;
 }

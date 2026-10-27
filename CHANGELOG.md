@@ -1,5 +1,9 @@
 # Changelog
 
+## α-047 · 2026-10-26
+
+- Label the graph Y-axis Rating with room beside its numeric ticks.
+
 ## α-046 · 2026-10-26
 
 - Remove the final copy-row border to avoid duplicate dividers between detail sections.
