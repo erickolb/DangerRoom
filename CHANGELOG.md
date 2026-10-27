@@ -1,5 +1,9 @@
 # Changelog
 
+## α-050 · 2026-10-27
+
+- Hide Reading Log Next month navigation when viewing the current month.
+
 ## α-049 · 2026-10-27
 
 - Display journal dates as square calendar badges with highlighted month strips and entries grouped to the right.

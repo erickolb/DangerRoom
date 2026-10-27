@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-050', date: '2026-10-27', title: 'Stay in the current month',
+  changes: ['Hide Next month on the Reading Log when viewing the current calendar month.'],
+}, {
   version: 'α-049', date: '2026-10-27', title: 'Dates on the calendar',
   changes: ['Group Reading Log entries beside square calendar-sheet badges, with the abbreviated month above the day in theme highlight colors.'],
 }, {
