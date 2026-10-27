@@ -1,5 +1,9 @@
 # Changelog
 
+## α-046 · 2026-10-26
+
+- Remove the final copy-row border to avoid duplicate dividers between detail sections.
+
 ## α-045 · 2026-10-26
 
 - Remove graph lead-in before #1 and extra tail past the latest known issue.
