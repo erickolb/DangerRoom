@@ -1,5 +1,9 @@
 # Changelog
 
+## α-062 · 2026-10-27
+
+- Add exact Series Name multiselect filters using names on the current results page, combined with type and collection filters.
+
 ## α-061 · 2026-10-27
 
 - Add an “or remove” link in empty filtered results to clear both filters while preserving the search.

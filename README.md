@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-061**.
+Comic inventory and reading journal. Current build: **α-062**.
 
 ## Run locally
 
@@ -115,3 +115,5 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 - Comic metadata and images: [Metron](https://metron.cloud). Cover artwork belongs to its respective rights holders.
 
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
+
+The Filters dropdown also offers **Series Name** checkboxes for exact title matching. Names are gathered from the current results page, with active selections retained across pages. Selecting a name includes all runs with that exact name; multiple names are combined, then narrowed by type and hide-owned filters. Clear resets both dropdown selections.

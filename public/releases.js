@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-062', date: '2026-10-27', title: 'Filter series names',
+  changes: ['Add exact Series Name multiselect filtering alongside series types, preserving selections across searches and pages; Clear and or remove reset both.'],
+}, {
   version: 'α-061', date: '2026-10-27', title: 'Clear empty-result filters',
   changes: ['Add an or remove link when filtered search results are empty, clearing series-type and not-in-collection filters while preserving the search.'],
 }, {
