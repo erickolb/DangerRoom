@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-060', date: '2026-10-27', title: 'Omnibus badge',
+  changes: ['Show an OMNI badge for Omnibus titles throughout the app, matching TPB and HC with Omnibus alt text; omit issue numbers for Omnibus titles.'],
+}, {
   version: 'α-059', date: '2026-10-27', title: 'Search controls together',
   changes: ['Move the not-in-collection toggle beside Filters in the Metron results toolbar.'],
 }, {

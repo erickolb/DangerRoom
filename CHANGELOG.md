@@ -1,5 +1,9 @@
 # Changelog
 
+## α-060 · 2026-10-27
+
+- Add the matching OMNI badge for Omnibus titles throughout the app, with Omnibus alt text; omit issue numbers for Omnibus titles.
+
 ## α-059 · 2026-10-27
 
 - Move the not-in-collection toggle beside Filters in the Metron results toolbar.

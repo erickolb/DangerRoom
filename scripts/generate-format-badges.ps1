@@ -1,5 +1,5 @@
 Add-Type -AssemblyName System.Drawing
-foreach($text in @('TPB','HC')){
+foreach($text in @('TPB','HC','OMNI')){
   $letters=[System.Drawing.Drawing2D.GraphicsPath]::new()
   $family=[System.Drawing.FontFamily]::new('Arial Black')
   $letters.AddString($text,$family,0,60,[System.Drawing.PointF]::new(0,0),[System.Drawing.StringFormat]::GenericTypographic)
