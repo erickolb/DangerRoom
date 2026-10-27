@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-066', date: '2026-10-27', title: 'This month in the picker',
+  changes: ['Move This Month to a button at the bottom of the reading log month picker.'],
+}, {
   version: 'α-065', date: '2026-10-27', title: 'Pick a reading month',
   changes: ['Replace the reading log month text entry with a month grid and year navigation picker, consistent across browsers.'],
 }, {

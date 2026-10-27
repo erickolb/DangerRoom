@@ -1,5 +1,9 @@
 # Changelog
 
+## α-066 · 2026-10-27
+
+- Move This Month into the bottom of the reading log month picker.
+
 ## α-065 · 2026-10-27
 
 - Replace the reading log month entry with a month-and-year picker widget.

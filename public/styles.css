@@ -66,3 +66,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .results-filter-panel{width:580px}.filter-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}.filter-columns>div{min-width:0}@media(max-width:600px){.filter-columns{grid-template-columns:1fr;gap:12px}}
 
 .month-picker{position:relative}.month-picker>summary{list-style:none;cursor:pointer}.month-picker>summary::-webkit-details-marker{display:none}.month-picker-panel{position:absolute;top:calc(100% + 8px);left:0;z-index:5;width:280px;max-width:calc(100vw - 64px);padding:16px;background:#2b141e;border:1px solid #895064;border-radius:8px;box-shadow:0 10px 24px #10040788}.month-picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.month-picker-grid button[aria-pressed=true]{background:var(--accent,#ef6575);color:#fff;border-color:#ef6575}
+
+.month-picker-today{width:100%;margin-top:12px}
