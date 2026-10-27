@@ -1,5 +1,9 @@
 # Changelog
 
+## α-039 · 2026-10-26
+
+- Assume dollars for display when a cover price has no supplied currency, using $.
+
 ## α-038 · 2026-10-26
 
 - Capitalize Owned Copies and add Owned Issues In Series below it.
