@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-057', date: '2026-10-27', title: 'Format in the title',
+  changes: ['Place white TPB and HC badges with transparent lettering between comic titles and issue numbers across the app, with Trade Paperback and Hardcover alt text.', 'Share title rendering across details, search, collections, wants, reading logs, cover selection, and lightboxes.', 'Reuse known series formats in search and cache one provider series lookup per unknown series.'],
+}, {
   version: 'α-056', date: '2026-10-27', title: 'Capture the comic format',
   changes: ['Store Metron series_type ID and name on new collection imports and Want List entries, and display it as Format on comic details.', 'Add a cache-only, backed-up backfill utility for older saved records without changing names, issue numbers, covers, or personal collection data.'],
 }, {

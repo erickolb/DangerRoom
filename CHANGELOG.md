@@ -1,5 +1,10 @@
 # Changelog
 
+## α-057 · 2026-10-27
+
+- Add TPB/HC title badges with transparent lettering and expanded alt text throughout the app.
+- Use one shared title renderer and cached series-type enrichment for search results.
+
 ## α-056 · 2026-10-27
 
 - Retain series_type ID/name on collection imports and lightweight wants; show Format on details.

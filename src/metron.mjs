@@ -104,11 +104,22 @@ export class Metron {
   async search(params) {
     const filters = searchFilters(params);
     const data = await this.get(`issue/?${filters}`, 6 * 60 * 60 * 1000);
-    return { count: data.count, page: Number(filters.get('page')), next: Boolean(data.next), previous: Boolean(data.previous), results: data.results.map(r => ({
-      id: r.id, display_name: r.issue || `${r.series.name} #${r.number}`, series: r.series,
-      number: r.number, cover_date: r.cover_date, image: imageURL(r.image),
-    })) };
+    const pending=new Map();
+    const results=await Promise.all(data.results.map(async r=>{
+      let type=seriesType(r.series.series_type)||seriesType(r.series_type)||seriesType(this.repo.knownSeriesType?.(r.series.id));
+      if(!type){
+        if(!pending.has(r.series.id))pending.set(r.series.id,this.get(`series/${positiveId(r.series.id)}/`,24*60*60*1000).then(series=>{
+          if(series.id!==r.series.id)throw new AppError(502,'Metron returned unexpected series data.');
+          return seriesType(series.series_type);
+        }));
+        type=await pending.get(r.series.id);
+      }
+      return {id:r.id,display_name:r.issue||`${r.series.name} #${r.number}`,series:{...r.series,series_type:type},
+        number:r.number,cover_date:r.cover_date,image:imageURL(r.image)};
+    }));
+    return {count:data.count,page:Number(filters.get('page')),next:Boolean(data.next),previous:Boolean(data.previous),results};
   }
+
   async issue(id) {
     const raw = await this.get(`issue/${positiveId(id)}/`, 24 * 60 * 60 * 1000);
     if (raw.id !== Number(id) || !raw.series?.name) throw new AppError(502, 'Metron returned incomplete comic data.');

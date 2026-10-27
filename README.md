@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-056**.
+Comic inventory and reading journal. Current build: **α-057**.
 
 ## Run locally
 
@@ -79,7 +79,7 @@ See [Metron field inventory and initial local-data choices](docs/metron-fields.m
 
 ## Comic format
 
-New imports retain Metron's `series.series_type` as an `id`/`name` object, or null if absent. Lightweight wants also retain it. Comic details display **Format**, such as Trade Paperback or Limited Series. Titles, numbering, and series volume retain their existing meanings.
+New imports retain Metron's `series.series_type` as an `id`/`name` object, or null if absent. Lightweight wants also retain it. Comic details display **Format**, such as Trade Paperback or Limited Series. TPB and HC formats display as white PNG lozenges with transparent block lettering between the title and number throughout the app. Their image alt text spells out Trade Paperback and Hardcover. Stored names, numbers, and series volume retain their existing meanings. Search reuses types in inventory, wants, and retained detail cache first; unknown series use one shared series-detail lookup cached for 24 hours. Badge PNGs are prebuilt; `scripts/generate-format-badges.ps1` regenerates them from code on Windows.
 
 For older records, stop the app and preview `pnpm run backfill:series-types --dry-run`, then run `pnpm run backfill:series-types`. This operator utility uses retained issue-detail cache entries (even expired entries still present in SQLite), never calls Metron, and creates a consistent SQLite backup under `DATA_DIR/backups/` before updating missing types. It also reuses types already stored on other issues in the same series. If any series cannot be resolved, no records are updated; preserve or obtain the missing detail data before rerunning. Only series_type fields in issue/Want List JSON are changed. Existing types are preserved, and rerunning after success makes no changes. Restart the app afterward.
 

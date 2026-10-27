@@ -576,3 +576,23 @@ test('offline backfill refuses incomplete cache and rolls back if a record chang
   plan=planSeriesTypeBackfill(h.repo.db);h.repo.db.prepare('UPDATE issues SET metadata=? WHERE id=43').run(JSON.stringify({...other,title:'Changed later'}));
   assert.throws(()=>applySeriesTypeBackfill(h.repo.db,plan),/changed/);assert.equal(h.repo.issue(42).series.series_type,undefined);
 });
+
+test('search badges resolve missing types once per series and cache them across requests',async t=>{
+  let seriesCalls=0;
+  const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async url=>{
+    if(url.includes('/api/series/4/')){seriesCalls++;return Response.json({id:4,series_type:{id:10,name:'Trade Paperback'}});}
+    const series={id:4,name:'Test Heroes',volume:1,year_began:2025};
+    return Response.json({count:2,next:null,previous:null,results:[{id:42,series,number:'1'},{id:43,series,number:'2'}]});
+  }}});
+  let result=await h.request('/api/search?q=Test');assert.equal(result.status,200);assert.equal(result.data.results.length,2);assert.equal(seriesCalls,1);
+  assert.ok(result.data.results.every(row=>row.series.series_type.name==='Trade Paperback'));
+  result=await h.request('/api/search?q=Heroes');assert.equal(result.status,200);assert.equal(seriesCalls,1);
+});
+test('search format enrichment reuses locally stored type without provider series calls',async t=>{
+  const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async url=>{
+    assert.ok(!url.includes('/api/series/'));
+    return Response.json({count:1,next:null,previous:null,results:[{id:42,series:{id:4,name:'Test Heroes',volume:1,year_began:2025},number:'1'}]});
+  }}});
+  h.repo.save({...essentialIssue(raw),series:{...essentialIssue(raw).series,series_type:{id:10,name:'Trade Paperback'}}},editionsFor(raw)[0],null,{owned:true,read:false});
+  assert.equal((await h.request('/api/search?q=Test')).data.results[0].series.series_type.name,'Trade Paperback');
+});

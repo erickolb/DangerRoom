@@ -100,6 +100,16 @@ export class Repository {
       WHERE c.issue_id=? AND e.cover_file IS NOT NULL
       ORDER BY (e.key!='standard') DESC, c.added_at DESC, c.id DESC LIMIT 1`).get(id) || null;
   }
+  knownSeriesType(id) {
+    const row=this.db.prepare(`SELECT json_extract(metadata,'$.series.series_type') AS type FROM issues
+      WHERE json_extract(metadata,'$.series.id')=? AND json_type(metadata,'$.series.series_type')='object'
+      UNION ALL SELECT json_extract(metadata,'$.series.series_type') AS type FROM wants
+      WHERE json_extract(metadata,'$.series.id')=? AND json_type(metadata,'$.series.series_type')='object'
+      UNION ALL SELECT json_extract(payload,'$.series.series_type') AS type FROM cache
+      WHERE key GLOB 'issue/[0-9]*' AND json_valid(payload) AND json_extract(payload,'$.series.id')=?
+        AND json_type(payload,'$.series.series_type')='object' LIMIT 1`).get(id,id,id);
+    return row ? JSON.parse(row.type) : null;
+  }
   issueStatus(id) {
     return { owned: Boolean(this.db.prepare('SELECT 1 FROM copies WHERE issue_id=? LIMIT 1').get(id)),
       wanted: Boolean(this.db.prepare('SELECT 1 FROM wants WHERE issue_id=? LIMIT 1').get(id)),
