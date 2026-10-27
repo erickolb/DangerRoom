@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-055**.
+Comic inventory and reading journal. Current build: **α-056**.
 
 ## Run locally
 
@@ -76,6 +76,12 @@ Only issue ID/name/number, series ID/name/start year/volume, cover date, officia
 - Optional private AWS S3 cover storage and a resumable local-to-S3 migration are documented in [S3 configuration](docs/s3.md). SQLite stays local. Back up the database, local covers, S3 objects, and configuration together; covers are deliberately retained after copy removal.
 
 See [Metron field inventory and initial local-data choices](docs/metron-fields.md) and [API and data model](docs/api.md).
+
+## Comic format
+
+New imports retain Metron's `series.series_type` as an `id`/`name` object, or null if absent. Lightweight wants also retain it. Comic details display **Format**, such as Trade Paperback or Limited Series. Titles, numbering, and series volume retain their existing meanings.
+
+For older records, stop the app and preview `pnpm run backfill:series-types --dry-run`, then run `pnpm run backfill:series-types`. This operator utility uses retained issue-detail cache entries (even expired entries still present in SQLite), never calls Metron, and creates a consistent SQLite backup under `DATA_DIR/backups/` before updating missing types. It also reuses types already stored on other issues in the same series. If any series cannot be resolved, no records are updated; preserve or obtain the missing detail data before rerunning. Only series_type fields in issue/Want List JSON are changed. Existing types are preserved, and rerunning after success makes no changes. Restart the app afterward.
 
 ## Checks and release history
 

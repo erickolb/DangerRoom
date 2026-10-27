@@ -1,5 +1,10 @@
 # Changelog
 
+## α-056 · 2026-10-27
+
+- Retain series_type ID/name on collection imports and lightweight wants; show Format on details.
+- Add a backed-up offline backfill from retained issue-detail cache, preserving all other saved data.
+
 ## α-055 · 2026-10-27
 
 - Add optional half-star ratings to Mark As Read with the shared hover preview.

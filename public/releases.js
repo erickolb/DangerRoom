@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-056', date: '2026-10-27', title: 'Capture the comic format',
+  changes: ['Store Metron series_type ID and name on new collection imports and Want List entries, and display it as Format on comic details.', 'Add a cache-only, backed-up backfill utility for older saved records without changing names, issue numbers, covers, or personal collection data.'],
+}, {
   version: 'α-055', date: '2026-10-27', title: 'Rate as you read',
   changes: ['Add optional half-star ratings with the shared hover preview to Mark As Read.', 'Save read status, optional rating, and optional dated log entry atomically when OK is pressed.'],
 }, {

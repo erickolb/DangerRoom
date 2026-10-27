@@ -116,7 +116,7 @@ export class Repository {
   addWant(issue, edition, coverFile) {
     // Deliberate allowlist: wants never create full inventory issues or editions.
     const metadata = { issue_id: issue.id, display_name: issue.display_name,
-      series: { id: issue.series.id, name: issue.series.name, year_began: issue.series.year_began, volume: issue.series.volume },
+      series: { id: issue.series.id, name: issue.series.name, year_began: issue.series.year_began, volume: issue.series.volume, series_type: issue.series.series_type || null },
       number: issue.number, cover_date: issue.cover_date, resource_url: issue.resource_url,
       edition: { key: edition.key, name: edition.name, source_image: edition.source_image } };
     this.db.exec('BEGIN IMMEDIATE');

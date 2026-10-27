@@ -9,7 +9,8 @@ Verified against the official [IssueReadSerializer and nested variant serializer
 | Issue `id`, `number`, `alt_number`, `title`, `name` (issue/story titles) | Save locally. The series/year/number form the collection display name. |
 | Publisher and imprint IDs/names | Save locally. |
 | Series `id`, `name`, `volume`, `year_began`, `language` | Save locally for identification and edition disambiguation. |
-| Series `sort_name`, `alt_names`, `series_type`, `genres` | Metron. |
+| Series `series_type` (`id`, `name`) | Save locally for new collection imports and lightweight wants as of α-056; displayed as Format on details. Backfill older records from retained issue-detail cache where available. |
+| Series `sort_name`, `alt_names`, `genres` | Metron. |
 | `cover_date`, `store_date` | Save locally. |
 | `image` | Download the original supplied image for each selected edition; retain its source URL. |
 | Variant `name`, `image`, `upc`, `sku`, `price` | Save the selected variant's exact values and original cover locally. Never substitute the standard cover's identifiers. |

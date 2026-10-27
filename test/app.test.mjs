@@ -1,3 +1,4 @@
+import {planSeriesTypeBackfill,applySeriesTypeBackfill} from '../scripts/backfill-series-types.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
@@ -11,7 +12,7 @@ import { editionsFor, essentialIssue, searchFilters } from '../src/metron.mjs';
 import { Covers } from '../src/covers.mjs';
 
 const original = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ2kAAAAASUVORK5CYII=', 'base64');
-const raw = { id: 42, series: { id: 4, name: 'Test Heroes', volume: 2, year_began: 2024, language: 'en' },
+const raw = { id: 42, series: { id: 4, name: 'Test Heroes', volume: 2, year_began: 2024, language: 'en', series_type: {id:11,name:'Limited Series'} },
   number: '1', title: 'First light', cover_date: '2024-01-01', store_date: '2023-11-22',
   publisher: { id: 1, name: 'Test Press' }, imprint: null, page: 32, price: '3.99', price_currency: 'USD',
   upc: '12345678901200111', sku: 'BASE', isbn: '', image: 'https://static.metron.cloud/media/base.png',
@@ -539,4 +540,39 @@ test('Mark As Read can atomically save an optional half-star rating with or with
   h.repo.db.exec("CREATE TRIGGER fail_read_rating_log BEFORE INSERT ON reading_log BEGIN SELECT RAISE(ABORT,'test failure'); END;");
   assert.equal((await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard',rating:5,log_date:'2026-10-27'})).status,500);
   assert.equal(h.repo.issue(42).read,null);assert.equal(h.repo.issue(42).user_rating,3.5);assert.equal(h.repo.issue(42).reading_log_count,1);
+});
+
+test('series type is retained on inventory and lightweight wants, without changing names or numbering',async t=>{
+  const h=await harness(t);
+  const wanted=(await h.request('/api/wants','POST',{issue_id:42,edition_key:editionsFor(raw)[1].key}));assert.equal(wanted.status,200);
+  assert.deepEqual((await h.request('/api/wants')).data.items[0].series.series_type,raw.series.series_type);
+  const added=(await h.request('/api/entries','POST',add('standard'))).data.issue;
+  assert.deepEqual(added.series.series_type,raw.series.series_type);assert.equal(added.series.volume,2);assert.equal(added.number,'1');assert.equal(added.display_name,'Test Heroes (2024) #1');
+  const tpb=essentialIssue({...raw,series:{...raw.series,series_type:{id:10,name:'Trade Paperback',unwanted:'not stored'}}});
+  assert.deepEqual(tpb.series.series_type,{id:10,name:'Trade Paperback'});
+  assert.equal(essentialIssue({...raw,series:{...raw.series,series_type:null}}).series.series_type,null);
+});
+test('offline series-type backfill changes only missing type fields and preserves inventory and journals',async t=>{
+  const h=await harness(t),legacy=essentialIssue(raw);delete legacy.series.series_type;
+  h.repo.save(legacy,editionsFor(raw)[0],'a'.repeat(64)+'.png',{owned:true,read:true,rating:4,log_date:'2026-10-27'});
+  h.repo.addWant(legacy,editionsFor(raw)[1],'b'.repeat(64)+'.png');
+  const before=h.repo.issue(42),wantBefore=h.repo.want(42,editionsFor(raw)[1].key),logsBefore=h.repo.issueLog(42);
+  h.repo.cachePut('issue/42/',raw,1);h.repo.db.exec('UPDATE cache SET expires_at=0;');
+  const plan=planSeriesTypeBackfill(h.repo.db);assert.equal(plan.issueUpdates.length,1);assert.equal(plan.wantUpdates.length,1);assert.deepEqual(plan.missingSeries,[]);
+  applySeriesTypeBackfill(h.repo.db,plan);
+  const after=h.repo.issue(42),wantAfter=h.repo.want(42,editionsFor(raw)[1].key);
+  assert.deepEqual(after,{...before,series:{...before.series,series_type:raw.series.series_type}});
+  assert.deepEqual(wantAfter,{...wantBefore,series:{...wantBefore.series,series_type:raw.series.series_type}});
+  assert.deepEqual(h.repo.issueLog(42),logsBefore);assert.deepEqual(h.counts(),{lookups:0,downloads:0});
+  assert.equal(planSeriesTypeBackfill(h.repo.db).issueUpdates.length,0);assert.equal(planSeriesTypeBackfill(h.repo.db).wantUpdates.length,0);
+});
+test('offline backfill refuses incomplete cache and rolls back if a record changed after planning',async t=>{
+  const h=await harness(t),legacy=essentialIssue(raw);delete legacy.series.series_type;
+  h.repo.save(legacy,editionsFor(raw)[0],null,{owned:true,read:false});
+  const other={...legacy,id:43,series:{...legacy.series,id:999}};h.repo.save(other,editionsFor(raw)[0],null,{owned:true,read:false});
+  h.repo.cachePut('issue/42/',raw,100000);
+  let plan=planSeriesTypeBackfill(h.repo.db);assert.deepEqual(plan.missingSeries,[999]);assert.throws(()=>applySeriesTypeBackfill(h.repo.db,plan));assert.equal(h.repo.issue(42).series.series_type,undefined);
+  h.repo.cachePut('issue/43/',{...raw,id:43,series:{...raw.series,id:999}},100000);
+  plan=planSeriesTypeBackfill(h.repo.db);h.repo.db.prepare('UPDATE issues SET metadata=? WHERE id=43').run(JSON.stringify({...other,title:'Changed later'}));
+  assert.throws(()=>applySeriesTypeBackfill(h.repo.db,plan),/changed/);assert.equal(h.repo.issue(42).series.series_type,undefined);
 });

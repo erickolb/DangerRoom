@@ -20,9 +20,13 @@ export function editionsFor(raw) {
     return { key: `variant-${createHash('sha256').update(JSON.stringify(identity)).digest('hex')}`, name: v.name || 'Unnamed variant', source_image: imageURL(v.image), upc: v.upc || '', sku: v.sku || '', price: v.price ?? null, price_currency: v.price_currency || '' };
   })];
 }
+export function seriesType(value) {
+  return value && Number.isSafeInteger(value.id) && value.id>0 && typeof value.name==='string' && value.name.trim()
+    ? {id:value.id,name:value.name.trim()} : null;
+}
 export function essentialIssue(raw) {
   return {
-    id: positiveId(raw.id), series: { id: raw.series.id, name: raw.series.name, volume: raw.series.volume, year_began: raw.series.year_began, language: raw.series.language || null },
+    id: positiveId(raw.id), series: { id: raw.series.id, name: raw.series.name, volume: raw.series.volume, year_began: raw.series.year_began, language: raw.series.language || null, series_type: seriesType(raw.series.series_type) },
     display_name: `${raw.series.name}${raw.series.year_began ? ` (${raw.series.year_began})` : ''} #${raw.number}`,
     number: String(raw.number), alt_number: raw.alt_number || '', title: raw.title || '', name: raw.name || [],
     publisher: raw.publisher || null, imprint: raw.imprint || null,
