@@ -1,3 +1,4 @@
+import { validateLogDate } from './reading-log.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
@@ -11,6 +12,7 @@ import { validateRating } from './ratings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/reading-log.js', ['reading-log.js', 'text/javascript; charset=utf-8']], ['/reading-log.png', ['reading-log.png', 'image/png']],
   ['/series-ratings.js', ['series-ratings.js', 'text/javascript; charset=utf-8']],
   ['/duplicate.png', ['duplicate.png', 'image/png']],
   ['/metron.svg', ['metron.svg', 'image/svg+xml']],
@@ -29,6 +31,7 @@ async function body(req) {
   catch { throw new AppError(400, 'Invalid JSON data.'); }
 }
 function flags(data) {
+  if(Object.hasOwn(data,'log_date'))validateLogDate(data.log_date);
   if (Object.hasOwn(data, 'rating')) validateRating(data.rating);
   if (typeof data.owned !== 'boolean' || typeof data.read !== 'boolean' || (!data.owned && !data.read && data.rating == null)) throw new AppError(400, 'Choose ownership, read status, or both.');
   if (typeof data.edition_key !== 'string' || data.edition_key.length > 100) throw new AppError(400, 'Choose the exact cover before saving.');
@@ -61,7 +64,7 @@ export function createApp(options = {}) {
         const issue = await metron.issue(positiveId(match[1]));
         issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));
         const local=repo.issue(issue.id);
-        Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null});
+        Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null,reading_log_count:local?.reading_log_count || 0});
         return send(200, issue);
       }
       if (req.method === 'GET' && url.pathname === '/api/wants') return send(200, { items: repo.wantList((url.searchParams.get('q') || '').slice(0,160)) });
@@ -104,14 +107,20 @@ export function createApp(options = {}) {
         if (!edition) throw new AppError(400, 'That cover is no longer in the Metron result. Choose a cover again.');
         const wanted = repo.want(id,edition.key);
         const coverFile = edition.cover_file || (wanted?.edition.source_image === edition.source_image ? wanted.cover_file : null) || await covers.save(edition.source_image);
-        const { editions, copies, read, saved_at, user_rating, ...metadata } = issue;
+        const { editions, copies, read, saved_at, user_rating, reading_log_count, ...metadata } = issue;
         return send(201, repo.save(metadata, edition, coverFile, data));
       }
+      if(req.method==='GET'&&url.pathname==='/api/reading-log')return send(200,{month:url.searchParams.get('month'),items:repo.readingLog(url.searchParams.get('month'))});
+      match=url.pathname.match(/^\/api\/reading-log\/([a-f0-9-]{36})$/);
+      if(req.method==='DELETE'&&match){repo.removeLog(match[1]);return send(200,{removed:true});}
+      match=url.pathname.match(/^\/api\/issues\/(\d+)\/reading-log$/);
+      if(req.method==='GET'&&match)return send(200,{items:repo.issueLog(positiveId(match[1]))});
+      if(req.method==='POST'&&match){const data=await body(req);validateLogDate(data.log_date);return send(201,repo.setRead(positiveId(match[1]),true,data.edition_key,{log_date:data.log_date}));}
       match = url.pathname.match(/^\/api\/issues\/(\d+)\/read$/);
       if (req.method === 'PATCH' && match) {
         const data = await body(req);
         if (typeof data.read !== 'boolean') throw new AppError(400, 'Read status must be true or false.');
-        return send(200, repo.setRead(positiveId(match[1]), data.read, data.edition_key));
+        return send(200, repo.setRead(positiveId(match[1]), data.read, data.edition_key, {log_date:data.log_date,remove_log_entries:data.remove_log_entries}));
       }
       match = url.pathname.match(/^\/api\/issues\/(\d+)\/rating$/);
       if (req.method === 'PATCH' && match) {

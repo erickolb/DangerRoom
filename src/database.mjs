@@ -1,3 +1,4 @@
+import { validateLogDate, validateMonth } from './reading-log.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -42,7 +43,11 @@ export function openDatabase(directory) {
     CREATE TABLE IF NOT EXISTS wants (issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
       metadata TEXT NOT NULL, cover_file TEXT, added_at TEXT NOT NULL, PRIMARY KEY(issue_id,edition_key));
     CREATE TABLE IF NOT EXISTS cover_objects (filename TEXT PRIMARY KEY, bucket TEXT NOT NULL, object_key TEXT NOT NULL);
-    PRAGMA user_version=4;`);
+    CREATE TABLE IF NOT EXISTS reading_log (id TEXT PRIMARY KEY, issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
+      read_date TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(issue_id,edition_key) REFERENCES editions(issue_id,key));
+    CREATE INDEX IF NOT EXISTS reading_log_date ON reading_log(read_date DESC,created_at DESC);
+    CREATE INDEX IF NOT EXISTS reading_log_issue ON reading_log(issue_id);
+    PRAGMA user_version=5;`);
   return db;
 }
 export class Repository {
@@ -61,12 +66,14 @@ export class Repository {
     const row = this.db.prepare('SELECT * FROM issues WHERE id=?').get(id);
     if (!row) return null;
     return { ...JSON.parse(row.metadata), saved_at: row.saved_at,
+      reading_log_count: this.db.prepare('SELECT COUNT(*) AS count FROM reading_log WHERE issue_id=?').get(id).count,
       user_rating: (this.db.prepare('SELECT half_stars FROM issue_ratings WHERE issue_id=?').get(id)?.half_stars ?? 0) / 2 || null,
       editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file, ...this.coverStatus(id, e.key) })),
       copies: this.db.prepare('SELECT * FROM copies WHERE issue_id=? ORDER BY added_at DESC,id').all(id),
       read: this.db.prepare('SELECT * FROM reads WHERE issue_id=?').get(id) || null };
   }
-  save(issue, edition, coverFile, { owned, read, rating }) {
+  save(issue, edition, coverFile, { owned, read, rating, log_date }) {
+    if(log_date!==undefined)validateLogDate(log_date);
     if (rating !== undefined) validateRating(rating);
     const now = new Date().toISOString();
     this.db.exec('BEGIN IMMEDIATE');
@@ -81,7 +88,8 @@ export class Repository {
         this.db.prepare('DELETE FROM wants WHERE issue_id=? AND edition_key=?').run(issue.id, edition.key);
       }
       if (rating !== undefined) this.writeRating(issue.id, rating, now);
-      if (read || rating != null) this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(issue.id, edition.key, now);
+      if (read || rating != null || log_date!==undefined) this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(issue.id, edition.key, now);
+      if(log_date!==undefined)this.writeLog(issue.id,edition.key,log_date,now);
       this.db.exec('COMMIT');
       return { issue: this.issue(issue.id), copy_id: copyId };
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
@@ -147,13 +155,43 @@ export class Repository {
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
     return this.issue(id);
   }
-  setRead(id, read, editionKey) {
-    const issue = this.issue(id);
-    if (!issue) throw new AppError(404, 'Comic not found in your collection.');
-    if (read) {
-      if (!issue.editions.some(e => e.key === editionKey)) throw new AppError(400, 'Choose a saved cover.');
-      this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(id, editionKey, new Date().toISOString());
-    } else this.db.prepare('DELETE FROM reads WHERE issue_id=?').run(id);
+  writeLog(id,editionKey,readDate,now) {
+    const entryId=randomUUID();
+    this.db.prepare('INSERT INTO reading_log VALUES (?,?,?,?,?)').run(entryId,id,editionKey,readDate,now);
+    return entryId;
+  }
+  readingLog(month) {
+    validateMonth(month);
+    return this.db.prepare('SELECT * FROM reading_log WHERE read_date>=? AND read_date<=? ORDER BY read_date DESC,created_at DESC,id DESC').all(month+'-01',month+'-31').map(row=>{
+      const issue=this.issue(row.issue_id);
+      return {...row,issue,edition:issue.editions.find(edition=>edition.key===row.edition_key)};
+    });
+  }
+  issueLog(id) {
+    if(!this.issue(id))throw new AppError(404,'Comic not found in your collection.');
+    return this.db.prepare('SELECT * FROM reading_log WHERE issue_id=? ORDER BY read_date DESC,created_at DESC,id DESC').all(id);
+  }
+  removeLog(id) {
+    if(!this.db.prepare('DELETE FROM reading_log WHERE id=?').run(id).changes)throw new AppError(404,'Reading log entry not found.');
+  }
+  setRead(id, read, editionKey, {log_date,remove_log_entries=false}={}) {
+    if(log_date!==undefined)validateLogDate(log_date);
+    if(typeof remove_log_entries!=='boolean'||(!read&&log_date!==undefined)||(read&&remove_log_entries))throw new AppError(400,'Invalid reading-log options.');
+    const issue=this.issue(id);
+    if(!issue)throw new AppError(404,'Comic not found in your collection.');
+    if(read&&!issue.editions.some(e=>e.key===editionKey))throw new AppError(400,'Choose a saved cover.');
+    this.db.exec('BEGIN IMMEDIATE');
+    try{
+      if(read){
+        const now=new Date().toISOString();
+        this.db.prepare('INSERT OR IGNORE INTO reads VALUES (?,?,?)').run(id,editionKey,now);
+        if(log_date!==undefined)this.writeLog(id,editionKey,log_date,now);
+      }else{
+        this.db.prepare('DELETE FROM reads WHERE issue_id=?').run(id);
+        if(remove_log_entries)this.db.prepare('DELETE FROM reading_log WHERE issue_id=?').run(id);
+      }
+      this.db.exec('COMMIT');
+    }catch(error){this.db.exec('ROLLBACK');throw error;}
     return this.issue(id);
   }
   removeCopy(id) {

@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-047**.
+Comic inventory and reading journal. Current build: **α-048**.
 
 ## Run locally
 
@@ -29,7 +29,7 @@ Open a search result's collection, Want List, or read icon to choose its exact c
 
 **My Collection** defaults to My Collection. Collection views sort by series name, start year, and numeric issue number; variants and duplicate copies stay together. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
 
-Use the duplicate icon to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue. **Read and Rated Comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
+Use the duplicate icon to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue and open the reading-date dialog before marking read. **Read and Rated Comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
 
 Click a saved cover on its details page to open the full-resolution image in a lightbox. Close it with Escape, the close button, or a click outside the dialog. Images use the existing local/S3 storage route.
 
@@ -38,6 +38,16 @@ Comic details include **Owned Issues In Series** below **Owned Copies**. It list
 Use **Search Full Series on Metron** beneath the owned-series shelf to search that series by name. The slashed collection icon on Metron search hides issues owned in any variant. Filtering applies to each provider page; the total remains the Metron match count, and pagination stays available even when all issues on a page are hidden. The filter persists in the URL through searches and pagination.
 
 When two or more issues in the exact Metron series run are rated, **Ratings In This Series** appears above the owned shelf. It charts numeric positive issue numbers up to the highest locally saved issue, including read-only entries. The chart starts at #1 and ends at the latest locally known issue. Dots represent ratings; solid bands span ±0.5 issue around each dot, clipped to that range. Transitions between consecutive rated issues are solid; dotted lines indicate only missing ratings. Dotted gaps use the next available rating, and the final score continues to the end. Nonnumeric issue labels are omitted. No Metron calls are made.
+
+## Reading Log
+
+**Reading Log** in the header opens a dated microjournal, newest date first and paginated by calendar month. Each entry has a small saved-cover thumbnail and issue link. Repeated readings, including multiple readings on the same date, remain separate entries. Each can be removed without changing read status, ratings, or ownership.
+
+Tapping a read icon opens **Mark As Read**. **Record in Reading Log** defaults off; turning it on enables a reading-date picker defaulted to today on your device. **OK** marks the issue read and optionally records the date; Cancel/Escape changes nothing. Dates are stored as calendar dates without UTC conversion. Clicking read again to mark unread prompts Yes/No when entries exist: Yes removes all entries for the issue across covers, No keeps them while marking unread, and Cancel leaves everything unchanged. Ratings remain intact. Rating a comic still marks it read without silently creating journal entries.
+
+Comic details have a **Log a Reading** button for recording additional dates, plus an issue-wide **Reading Log Entries** section directly below the graph area (above the owned-series shelf when no graph is shown). Entries from every cover appear here, with individual removal controls. Adding a reading marks the issue read but never adds an owned copy. The existing cover and metadata are reused. A first read from Metron search imports its standard cover and essential metadata; saved issues need no provider calls.
+
+Existing collections migrate to schema 5 with an empty journal: no historical dates are inferred from read flags. SQLite and covers are backed up as described above.
 
 ## Personal ratings
 
@@ -80,6 +90,8 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 
 ## Credits
 
+- manual guide by Idad Muchlisin Ro Is from <a href="https://thenounproject.com/browse/icons/term/manual-guide/" target="_blank" rel="noopener noreferrer" title="manual guide Icons">Noun Project</a> (CC BY 3.0). `public/reading-log.png` is the Reading Log icon; its bottom text strip is cleared.
+
 - duplicate by Yafet bouchagra from <a href="https://thenounproject.com/browse/icons/term/duplicate/" target="_blank" rel="noopener noreferrer" title="duplicate Icons">Noun Project</a> (CC BY 3.0). `public/duplicate.png` is the add-another-copy icon.
 
 - Metron logo: [The Metron Project](https://github.com/Metron-Project/metron/blob/master/static/site/img/metron.svg); atom mark extracted without lettering, used on collection search buttons and in the header.
@@ -91,7 +103,7 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 - box add by Epic Icon Designs from <a href="https://thenounproject.com/browse/icons/term/box-add/" target="_blank" rel="noopener noreferrer" title="box add Icons">Noun Project</a> (CC BY 3.0). `public/box-add.png` is the ownership/add action icon.
 - Book check by Ardiansyah from <a href="https://thenounproject.com/browse/icons/term/book-check/" target="_blank" rel="noopener noreferrer" title="Book check Icons">Noun Project</a> (CC BY 3.0). `public/book-check.png` is the read action icon.
 - shopping list by Atif Arshad from <a href="https://thenounproject.com/browse/icons/term/shopping-list/" target="_blank" rel="noopener noreferrer" title="shopping list Icons">Noun Project</a> (CC BY 3.0). `public/shopping-list.png` is the Want List icon.
-- [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). The six Noun Project icons have their embedded attribution text removed from the bottom margin; creator credits and license links are retained here and in the app. Icon artwork and canvas sizes are unchanged. CSS inverts the icons for contrast on dark controls.
+- [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). The seven Noun Project icons have their embedded attribution text removed from the bottom margin; creator credits and license links are retained here and in the app. Icon artwork and canvas sizes are unchanged. CSS inverts the icons for contrast on dark controls.
 - Comic metadata and images: [Metron](https://metron.cloud). Cover artwork belongs to its respective rights holders.
 
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.

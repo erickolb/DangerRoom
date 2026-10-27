@@ -1,3 +1,4 @@
+import { localToday, shiftMonth, changeRead, cancelReadDialog } from './reading-log.js';
 import { seriesRatingChart } from './series-ratings.js';
 import { releases } from './releases.js';
 import { actionButton, context, copyState, bindToggles } from './actions.js';
@@ -78,10 +79,11 @@ function closeDialog() { dialogGeneration++; dialog.close(); }
 dialog.addEventListener('close', () => { dialogGeneration++; });
 async function route() {
   const ticket = ++generation;
-  message(''); closeDialog(); if(lightbox.open)lightbox.close();
+  message(''); cancelReadDialog(); closeDialog(); if(lightbox.open)lightbox.close();
   const { path, params } = routeData();
   document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === `#${path}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   try {
+    if(path==='/reading-log')return await readingLogPage(params,ticket);
     if (path === '/wants') return await wantList(params,ticket);
     if (path === '/changelog') return changelog();
     if (path === '/collection') { collectionView = params.get('view') === 'read' ? 'read' : 'owned'; return await collection(params, ticket); }
@@ -92,6 +94,21 @@ async function route() {
     if (ticket !== generation) return;
     app.innerHTML = `<a href="#/">← Search Metron</a><div class="empty-state"><h2>Couldn’t open this page</h2><p>${esc(e.message)}</p></div>`;
   }
+}
+
+async function readingLogPage(params,ticket){
+  const month=params.get('month')||localToday().slice(0,7);
+  const data=await api(`/reading-log?${new URLSearchParams({month})}`);if(ticket!==generation)return;
+  const previous=shiftMonth(month,-1),next=shiftMonth(month,1);
+  const label=new Date(`${month}-15T12:00:00`).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const groups=new Map();for(const entry of data.items){if(!groups.has(entry.read_date))groups.set(entry.read_date,[]);groups.get(entry.read_date).push(entry);}
+  app.innerHTML=`<div class="section-heading"><div><p class="eyebrow">Your reading microjournal</p><h2>Reading Log</h2></div><span class="count">${data.items.length} ${data.items.length===1?'entry':'entries'}</span></div><nav class="log-month-nav" aria-label="Reading log month"><a class="button quiet" href="#/reading-log?month=${previous}">← Previous month</a><label><span class="visually-hidden">Reading log month</span><input id="log-month" type="month" value="${month}" min="0001-01" max="9999-12"></label><a class="button quiet" href="#/reading-log?month=${next}">Next month →</a><a class="nav-link" href="#/reading-log">This month</a></nav><h3>${esc(label)}</h3>${data.items.length?[...groups].map(([day,entries])=>`<section class="log-day"><h3>${esc(date(day))}</h3><ul class="reading-entries">${entries.map(entry=>`<li><a class="reading-entry-link" href="#/issues/${entry.issue_id}?${new URLSearchParams({edition:entry.edition_key})}">${cover(localCover(entry.edition),entry.issue.display_name)}<span>${esc(entry.issue.display_name)}</span></a><button type="button" class="quiet log-remove" data-remove-entry="${entry.id}" aria-label="Remove reading log entry for ${esc(entry.issue.display_name)} on ${esc(date(day))}" title="Remove log entry">×</button></li>`).join('')}</ul></section>`).join(''):'<div class="empty-state"><h3>No reading log entries this month.</h3><p>Use the read icon or Log a Reading on a comic’s details page to record a reading date.</p></div>'}`;
+  $('#log-month').onchange=event=>{if(event.target.value)location.hash=`#/reading-log?${new URLSearchParams({month:event.target.value})}`;};
+  app.querySelectorAll('[data-remove-entry]').forEach(button=>button.onclick=async()=>{
+    button.disabled=true;
+    try{await api(`/reading-log/${button.dataset.removeEntry}`,{method:'DELETE'});if(ticket===generation)await route();}
+    catch(error){message(error.message,true);button.disabled=false;}
+  });
 }
 
 function searchForm(params) {
@@ -117,7 +134,17 @@ async function search(params, ticket) {
     const hideOwned=params.get('hide_owned')==='1';
     const visible=hideOwned?data.results.filter(row=>!row.owned):data.results;
     $('#search-results').innerHTML = `<div class="results"><div class="section-heading"><div><p class="eyebrow">From Metron</p><h2>Search results</h2></div><span class="count">${Number(data.count).toLocaleString()} issue${data.count === 1 ? '' : 's'} on Metron</span></div>${hideOwned?`<p class="muted">${visible.length} unowned issue${visible.length===1?'':'s'} on this page. Owned issues in any cover are hidden.</p>`:''}${visible.length ? `<div class="shelf">${visible.map(r => `<article class="comic-card">${cover(localCover(r) || r.image, r.display_name)}<div class="card-info"><p class="eyebrow">${esc(r.series.year_began || '')} · Volume ${esc(r.series.volume || '—')}</p><h3>${esc(r.series.name)} #${esc(r.number)}</h3><p class="muted">${esc(date(r.cover_date))}</p><div class="comic-actions" data-choose="${r.id}">${actionButton('owned',r.owned)}${actionButton('wanted',r.wanted)}${actionButton('read',r.read)}</div></div></article>`).join('')}</div>` : hideOwned&&data.results.length ? '<div class="empty-state"><h3>You own every issue on this page.</h3><p>Show owned issues or continue to the next page to look for gaps.</p></div>' : '<div class="empty-state"><h3>No issues found</h3><p>Try another series name or adjust the issue number and year.</p></div>'}<div class="pagination">${data.previous ? '<button class="quiet" id="previous">← Previous</button>' : ''}<span class="muted">Page ${data.page}</span>${data.next ? '<button class="quiet" id="next">Next →</button>' : ''}</div></div>`;
-    document.querySelectorAll('[data-choose]').forEach(group => group.querySelectorAll('button').forEach(b => b.onclick = () => choose(Number(group.dataset.choose))));
+    document.querySelectorAll('[data-choose]').forEach(group => group.querySelectorAll('button').forEach(b => b.onclick = async()=>{
+      const id=Number(group.dataset.choose);
+      if(b.dataset.action!=='read')return choose(id);
+      b.disabled=true;
+      try{
+        const issue=await api(`/metron/issues/${id}`);if(ticket!==generation)return;
+        const ctx=context(issue,api,text=>message(text,true));
+        const key=issue.read?.edition_key||issue.editions.find(e=>e.key==='standard')?.key||issue.editions[0]?.key;
+        await changeRead(ctx,copyState(ctx,key));if(ticket===generation)await route();
+      }catch(error){message(error.message,true);}finally{b.disabled=false;}
+    }));
     for (const [id, delta] of [['previous', -1], ['next', 1]]) if ($(`#${id}`)) $(`#${id}`).onclick = () => { const p = new URLSearchParams(params); p.set('page', String(data.page + delta)); location.hash = `#/?${p}`; };
   } catch (e) { if (ticket === generation) { $('#search-results').innerHTML = ''; message(e.message, true); } }
   finally { if (ticket === generation) button.disabled = false; }
@@ -230,7 +257,7 @@ async function detail(id,params,ticket){
     for(const row of rows.values())if(row.state.copyId&&!ctx.issue.copies.some(copy=>copy.id===row.state.copyId))row.state.copyId=null;
     if(state.copyId&&!ctx.issue.copies.some(copy=>copy.id===state.copyId))state.copyId=null;
   });
-  app.innerHTML=`<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${localCover(edition)?`<button type="button" class="cover-zoom" id="open-cover-lightbox" aria-label="Open full-size cover image">${cover(localCover(edition),issue.display_name)}</button>`:cover(null,issue.display_name)}${localCover(edition)?`<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>`:''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name||'Comic')} · ${esc(issue.series.name)} · Volume ${esc(issue.series.volume||'—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title?`<p class="intro">${esc(issue.title)}</p>`:''}<p class="intro">${esc(edition.name)}</p><div class="comic-actions" id="detail-actions"></div><p class="hint rating-note">Toggle an icon to save its status. Use the duplicate icon for another copy.</p><div id="detail-rating"></div><dl class="metadata">${field('Publisher',issue.publisher?.name)}${field('Volume',issue.series.volume)}${field('Cover date',date(issue.cover_date))}${field('Release date',date(issue.store_date))}${field('UPC · selected cover',edition.upc)}${field('SKU · selected cover',edition.sku)}${field('ISBN',issue.isbn)}${field('Pages',issue.page_count)}${field('Cover price',edition.price!==null?`${edition.price_currency ? edition.price_currency+' ' : '$'}${edition.price}`:null)}${field('Content rating',issue.rating?.name)}${field('Imprint',issue.imprint?.name)}</dl>${issue.resource_url?`<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>`:''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned Copies</h3><div id="copy-rows"></div></section><section class="series-ratings" id="series-ratings" hidden><h3>Ratings In This Series</h3><div id="series-rating-chart"></div></section><section class="owned-series"><h3>Owned Issues In Series</h3><div id="owned-series-results"><p class="muted">Opening owned issues…</p></div><a class="button quiet full-series-search" href="#/?${new URLSearchParams({q:issue.series.name})}"><img class="metron-logo" src="/metron.svg" alt="">Search Full Series on Metron</a></section>`;
+  app.innerHTML=`<a class="back-link" href="#/collection?view=${from}">← My Collection</a><div class="detail-layout"><aside>${localCover(edition)?`<button type="button" class="cover-zoom" id="open-cover-lightbox" aria-label="Open full-size cover image">${cover(localCover(edition),issue.display_name)}</button>`:cover(null,issue.display_name)}${localCover(edition)?`<p class="hint"><a href="${localCover(edition)}" target="_blank" rel="noopener noreferrer">Open original cover ↗</a></p>`:''}</aside><div><p class="eyebrow">${esc(issue.publisher?.name||'Comic')} · ${esc(issue.series.name)} · Volume ${esc(issue.series.volume||'—')}</p><h2>${esc(issue.series.name)} #${esc(issue.number)}</h2>${issue.title?`<p class="intro">${esc(issue.title)}</p>`:''}<p class="intro">${esc(edition.name)}</p><div class="comic-actions" id="detail-actions"></div><p class="hint rating-note">Toggle an icon to save its status. Use the duplicate icon for another copy.</p><div id="detail-rating"></div><button type="button" class="quiet log-reading-button" id="add-reading-log"><img class="icon light-icon" src="/reading-log.png" alt="">Log a Reading</button><dl class="metadata">${field('Publisher',issue.publisher?.name)}${field('Volume',issue.series.volume)}${field('Cover date',date(issue.cover_date))}${field('Release date',date(issue.store_date))}${field('UPC · selected cover',edition.upc)}${field('SKU · selected cover',edition.sku)}${field('ISBN',issue.isbn)}${field('Pages',issue.page_count)}${field('Cover price',edition.price!==null?`${edition.price_currency ? edition.price_currency+' ' : '$'}${edition.price}`:null)}${field('Content rating',issue.rating?.name)}${field('Imprint',issue.imprint?.name)}</dl>${issue.resource_url?`<p class="deep-link"><a href="${esc(issue.resource_url)}" target="_blank" rel="noopener noreferrer">Deep Search on Metron ↗</a></p>`:''}<p class="source-credit">Metadata from Metron · saved ${esc(date(issue.saved_at))}. Cover artwork belongs to its respective rights holders.</p></div></div><section class="copy-list"><h3>Owned Copies</h3><div id="copy-rows"></div></section><section class="series-ratings" id="series-ratings" hidden><h3>Ratings In This Series</h3><div id="series-rating-chart"></div></section><section class="issue-reading-log"><h3>Reading Log Entries</h3><div id="issue-reading-entries"></div></section><section class="owned-series"><h3>Owned Issues In Series</h3><div id="owned-series-results"><p class="muted">Opening owned issues…</p></div><a class="button quiet full-series-search" href="#/?${new URLSearchParams({q:issue.series.name})}"><img class="metron-logo" src="/metron.svg" alt="">Search Full Series on Metron</a></section>`;
   if(localCover(edition))$('#open-cover-lightbox').onclick=()=>openCoverImage(localCover(edition),`${issue.display_name} · ${edition.name}`);
   bindToggles($('#detail-actions'),ctx,state,{extra:true});mountRating($('#detail-rating'),ctx,state);
   let unbind=[];
@@ -245,6 +272,24 @@ async function detail(id,params,ticket){
     [...rows.values()].forEach((row,i)=>unbind.push(bindToggles(document.querySelector(`[data-copy-actions="${i}"]`),ctx,row.state,{actions:['owned']})));
   }
   ctx.listeners.add(()=>{if(state.copyId){const p=new URLSearchParams(params);p.set('copy',state.copyId);history.replaceState(null,'',`#/issues/${id}?${p}`);}});
+  $('#add-reading-log').onclick=()=>changeRead(ctx,state,{logOnly:true});
+  ctx.listeners.add(()=>$('#add-reading-log').disabled=ctx.busy);
+  let logGeneration=0;
+  async function renderIssueLog(){
+    if(ctx.busy)return;
+    const request=++logGeneration;
+    try{
+      const data=await api(`/issues/${id}/reading-log`);
+      if(ticket!==generation||request!==logGeneration)return;
+      $('#issue-reading-entries').innerHTML=data.items.length ? `<ul class="reading-entries issue-log-list">${data.items.map(entry=>`<li><span>${esc(date(entry.read_date))}</span><button class="quiet log-remove" type="button" data-remove-issue-log="${entry.id}" aria-label="Remove reading log entry on ${esc(date(entry.read_date))}" title="Remove log entry">×</button></li>`).join('')}</ul>` : '<p class="muted">No reading log entries for this issue.</p>';
+      document.querySelectorAll('[data-remove-issue-log]').forEach(button=>button.onclick=async()=>{
+        if(ctx.busy)return;ctx.busy=true;ctx.notify();
+        try{await api(`/reading-log/${button.dataset.removeIssueLog}`,{method:'DELETE'});ctx.sync(await api(`/issues/${id}`));}
+        catch(error){ctx.onError(error.message);}finally{ctx.busy=false;ctx.notify();}
+      });
+    }catch(error){if(ticket===generation&&request===logGeneration)$('#issue-reading-entries').innerHTML=`<p class="form-error">${esc(error.message)}</p>`;}
+  }
+  ctx.listeners.add(renderIssueLog);renderIssueLog();
   let chartGeneration=0;
   async function renderSeriesRatings(){
     if(ctx.busy)return;

@@ -1,3 +1,4 @@
+import { changeRead } from './reading-log.js';
 const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'duplicate' };
 const names = { owned:'Add to collection', wanted:'Add to Want List', read:'Mark as read', extra:'Add another copy' };
 export function actionButton(action, active = false, disabled = false) {
@@ -31,6 +32,7 @@ export function bindToggles(container,ctx,state,{actions=['owned','wanted','read
     if(ctx.busy)return;
     const edition=ctx.editions.find(e=>e.key===state.editionKey);
     if(!edition || action==='wanted' && edition.owned)return;
+    if(action==='read')return changeRead(ctx,state);
     ctx.busy=true;ctx.notify();
     try{
       if(action==='owned' && state.copyId){
@@ -44,9 +46,6 @@ export function bindToggles(container,ctx,state,{actions=['owned','wanted','read
       }else if(action==='wanted'){
         if(edition.wanted){await ctx.api(`/wants/${ctx.issue.id}/${edition.key}`,{method:'DELETE'});edition.wanted=false;}
         else{const result=await ctx.api('/wants',{method:'POST',body:JSON.stringify({issue_id:ctx.issue.id,edition_key:edition.key})});Object.assign(edition,{owned:result.owned,wanted:result.wanted});}
-      }else if(action==='read'){
-        if(ctx.saved)ctx.sync(await ctx.api(`/issues/${ctx.issue.id}/read`,{method:'PATCH',body:JSON.stringify({read:!ctx.issue.read,edition_key:edition.key})}));
-        else ctx.sync((await ctx.api('/entries',{method:'POST',body:JSON.stringify({issue_id:ctx.issue.id,edition_key:edition.key,owned:false,read:true})})).issue);
       }
     }catch(error){ctx.onError(error.message);}
     finally{ctx.busy=false;ctx.notify();}

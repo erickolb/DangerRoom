@@ -35,8 +35,23 @@ Status errors use `{error}`. HTTP 429 includes `Retry-After`. Provider credentia
 
 ## Cover storage locations (α-006)
 
-`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 4. See [S3 configuration and migration](s3.md).
+`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 5. See [S3 configuration and migration](s3.md).
 
 `GET /api/issues/:id/owned-series` returns `{ items }` from saved collection data only. It groups owned issues by matching series title across runs (case-insensitive, trimmed, Unicode-normalized), sorts by start year, volume, and numeric issue, and returns one row per issue with `copy_count`. It prefers owned variant artwork. Read-only and wanted-only entries are excluded.
 
 `GET /api/issues/:id/series-ratings` returns `{ max_issue, points: [{ number, rating }] }` from saved metadata and personal ratings only, restricted to the exact Metron series ID. The range includes read-only issues and retained local issue records. Positive numeric issue labels are charted; nonnumeric specials are omitted. The UI shows the section only with two or more points. No provider calls occur.
+
+## Reading journal (schema 5)
+
+`reading_log(id TEXT PRIMARY KEY, issue_id, edition_key, read_date, created_at)` references a saved issue/edition; each reading has its own UUID, even on the same date. Dates are validated calendar strings `YYYY-MM-DD` and never timezone-shifted. Existing read flags create no inferred history. Issue responses expose `reading_log_count` across all covers.
+
+| Method | Route | Behavior |
+| --- | --- | --- |
+| GET | `/api/reading-log?month=YYYY-MM` | Required calendar month; entries ordered date descending, then creation time/ID descending, with issue and selected-cover metadata. |
+| GET | `/api/issues/:id/reading-log` | All dated entries for the issue across variants, newest first. |
+| POST | `/api/issues/:id/reading-log` | `{ edition_key, log_date }`; adds a distinct entry and atomically marks read, without ownership. |
+| DELETE | `/api/reading-log/:uuid` | Deletes only the entry; does not alter read status, ratings, or copies. |
+| PATCH | `/api/issues/:id/read` | Existing `{ read, edition_key }`; optional `log_date` when true creates an entry in the same transaction. `remove_log_entries: true` when false deletes all entries across covers atomically with marking unread; omitted/false retains entries. |
+| POST | `/api/entries` | Optional `log_date` is validated before provider/image requests and saved atomically with import and read status. |
+
+The UI asks about journal removal before marking unread when entries exist. Rating alone does not create a log entry. The monthly view and saved-issue journal changes make no Metron calls. The issue log section appears after the chart and includes all editions.

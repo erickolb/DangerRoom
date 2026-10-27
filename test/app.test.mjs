@@ -241,7 +241,7 @@ test('ratings migration preserves old inventory, starts unrated, and persists ha
   db = openDatabase(dir); repo = new Repository(db);
   try {
     assert.equal(repo.issue(42).user_rating, 2.5); assert.ok(repo.issue(42).read);
-    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 4);
+    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 5);
   } finally { db.close(); }
 });
 
@@ -326,7 +326,7 @@ test('want-list migration preserves inventory and ratings and persists wants thr
   assert.equal(repo.wantList().length,0);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.collection('owned').length,1);
   repo.addWant(essentialIssue(raw),editionsFor(raw)[1],null);db.close();
   db=openDatabase(dir);repo=new Repository(db);
-  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,4);}finally{db.close();}
+  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,5);}finally{db.close();}
 });
 test('ownership wins a want-list race, even when a stale cover selection is submitted', async t => {
   const h=await harness(t), issue=essentialIssue(raw),edition=editionsFor(raw)[0];
@@ -444,4 +444,83 @@ test('series ratings use saved issues, separate runs, include read-only ratings,
   response=await h.request('/api/issues/301/series-ratings');assert.equal(response.data.points.length,1);assert.equal(response.data.max_issue,6);
   assert.equal((await h.request('/api/issues/999/series-ratings')).status,404);
   assert.deepEqual(h.counts(),{lookups:0,downloads:0});
+});
+
+test('dated reading imports are atomic, repeatable, and issue-wide across variants without claiming ownership',async t=>{
+  const h=await harness(t),variant=editionsFor(raw)[1].key;
+  let result=await h.request('/api/entries','POST',{...add('standard',false,true),log_date:'2026-10-27'});
+  assert.equal(result.status,201);assert.equal(result.data.issue.reading_log_count,1);assert.equal(result.data.issue.copies.length,0);
+  result=await h.request('/api/entries','POST',{...add(variant,false,true),log_date:'2026-10-27'});
+  assert.equal(result.data.issue.reading_log_count,2);
+  await h.request('/api/issues/42/reading-log','POST',{edition_key:variant,log_date:'2026-10-27'});
+  const entries=(await h.request('/api/issues/42/reading-log')).data.items;
+  assert.equal(entries.length,3);assert.equal(new Set(entries.map(row=>row.id)).size,3);
+  assert.deepEqual(new Set(entries.map(row=>row.edition_key)),new Set(['standard',variant]));
+  const monthly=(await h.request('/api/reading-log?month=2026-10')).data.items;
+  assert.equal(monthly.length,3);assert.equal(monthly[0].issue.display_name,'Test Heroes (2024) #1');assert.ok(monthly[0].edition.cover_file);
+});
+test('individual log removal keeps read status, rating, ownership and other log entries',async t=>{
+  const h=await harness(t);
+  await h.request('/api/entries','POST',{...add('standard'),rating:4,log_date:'2026-10-27'});
+  await h.request('/api/issues/42/reading-log','POST',{edition_key:'standard',log_date:'2026-10-26'});
+  const entries=(await h.request('/api/issues/42/reading-log')).data.items;
+  assert.equal((await h.request(`/api/reading-log/${entries[0].id}`,'DELETE')).status,200);
+  const issue=(await h.request('/api/issues/42')).data;
+  assert.ok(issue.read);assert.equal(issue.user_rating,4);assert.equal(issue.copies.length,1);assert.equal(issue.reading_log_count,1);
+  assert.equal((await h.request(`/api/reading-log/${entries[0].id}`,'DELETE')).status,404);
+});
+test('mark unread can keep or remove all issue log entries while preserving ratings and other issues',async t=>{
+  const h=await harness(t),variant=editionsFor(raw)[1].key;
+  await h.request('/api/entries','POST',{...add('standard'),rating:4.5,log_date:'2026-10-27'});
+  await h.request('/api/entries','POST',{...add(variant),log_date:'2026-09-30'});
+  const other={...essentialIssue(raw),id:43};h.repo.save(other,editionsFor(raw)[0],null,{read:true,owned:false,log_date:'2026-10-27'});
+  let result=await h.request('/api/issues/42/read','PATCH',{read:false,remove_log_entries:false});
+  assert.equal(result.data.read,null);assert.equal(result.data.reading_log_count,2);assert.equal(result.data.user_rating,4.5);
+  await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:variant});
+  result=await h.request('/api/issues/42/read','PATCH',{read:false,remove_log_entries:true});
+  assert.equal(result.data.read,null);assert.equal(result.data.reading_log_count,0);assert.equal(result.data.user_rating,4.5);assert.equal(result.data.copies.length,2);
+  assert.equal(h.repo.issue(43).reading_log_count,1);assert.ok(h.repo.issue(43).read);
+});
+test('reading log month pages preserve calendar dates and sort newest first across year and leap boundaries',async t=>{
+  const h=await harness(t);await h.request('/api/entries','POST',add('standard',false,true));
+  for(const day of ['2026-01-01','2025-12-31','2026-01-31','2024-02-29','2026-02-01'])await h.request('/api/issues/42/reading-log','POST',{edition_key:'standard',log_date:day});
+  assert.deepEqual((await h.request('/api/reading-log?month=2026-01')).data.items.map(e=>e.read_date),['2026-01-31','2026-01-01']);
+  assert.deepEqual((await h.request('/api/reading-log?month=2025-12')).data.items.map(e=>e.read_date),['2025-12-31']);
+  assert.equal((await h.request('/api/reading-log?month=2024-02')).data.items[0].read_date,'2024-02-29');
+  assert.equal((await h.request('/api/reading-log?month=2026-03')).data.items.length,0);
+});
+test('invalid reading dates and months fail before provider calls or state changes',async t=>{
+  const h=await harness(t);
+  for(const log_date of ['2026-02-29','2026-02-30','2026-13-01','2026-10-27T00:00:00Z',null,42,'0000-01-01']){
+    assert.equal((await h.request('/api/entries','POST',{...add('standard'),log_date})).status,400);
+  }
+  assert.deepEqual(h.counts(),{lookups:0,downloads:0});assert.equal(h.repo.collection('owned').length,0);
+  for(const month of ['2026-13','2026-2','nope'])assert.equal((await h.request('/api/reading-log?month='+month)).status,400);
+  await h.request('/api/entries','POST',add('standard'));
+  assert.equal((await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard',log_date:'2026-02-29'})).status,400);
+  assert.equal((await h.request('/api/issues/42/read','PATCH',{read:false,log_date:'2026-10-27'})).status,400);
+  assert.equal((await h.request('/api/issues/42/read','PATCH',{read:false,remove_log_entries:'yes'})).status,400);
+  assert.equal(h.repo.issue(42).read,null);assert.equal(h.repo.issue(42).reading_log_count,0);
+});
+test('marking read and rating never create log entries implicitly; log write failures roll back read and import',async t=>{
+  const h=await harness(t);
+  await h.request('/api/entries','POST',add('standard',false,true));
+  await h.request('/api/issues/42/rating','PATCH',{rating:5,edition_key:'standard'});
+  assert.equal(h.repo.issue(42).reading_log_count,0);
+  await h.request('/api/issues/42/read','PATCH',{read:false});
+  h.repo.db.exec("CREATE TRIGGER reject_log BEFORE INSERT ON reading_log BEGIN SELECT RAISE(ABORT,'test failure'); END;");
+  assert.equal((await h.request('/api/issues/42/read','PATCH',{read:true,edition_key:'standard',log_date:'2026-10-27'})).status,500);
+  assert.equal(h.repo.issue(42).read,null);
+  assert.throws(()=>h.repo.save({...essentialIssue(raw),id:43},editionsFor(raw)[0],null,{read:true,owned:true,log_date:'2026-10-27'}));
+  assert.equal(h.repo.issue(43),null);
+});
+test('reading-log schema migration preserves old collection and logs persist after reopen',async t=>{
+  const dir=await mkdtemp(join(tmpdir(),'dangerroom-log-migration-'));let db=openDatabase(dir);
+  const repo=new Repository(db);repo.save(essentialIssue(raw),editionsFor(raw)[0],null,{owned:true,read:true,rating:3});
+  db.exec('DROP TABLE reading_log; PRAGMA user_version=4;');db.close();db=openDatabase(dir);
+  try{
+    const migrated=new Repository(db);assert.equal(migrated.issue(42).reading_log_count,0);assert.equal(migrated.issue(42).copies.length,1);assert.equal(migrated.issue(42).user_rating,3);
+    migrated.setRead(42,true,'standard',{log_date:'2026-10-27'});db.close();db=openDatabase(dir);
+    assert.equal(new Repository(db).issueLog(42)[0].read_date,'2026-10-27');assert.equal(db.prepare('PRAGMA user_version').get().user_version,5);
+  }finally{db.close();await rm(dir,{recursive:true,force:true});}
 });

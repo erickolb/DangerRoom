@@ -1,5 +1,12 @@
 # Changelog
 
+## α-048 · 2026-10-27
+
+- Add a dated, month-paginated Reading Log with thumbnails, issue links, repeated entries, and individual removal.
+- Add Reading Log header navigation, Log a Reading on details, and issue-wide log entries beneath the chart.
+- Prompt when marking read to optionally record a date; offer to remove or keep all issue entries when marking unread.
+- Add the supplied manual-guide icon with embedded text removed and creator attribution retained.
+
 ## α-047 · 2026-10-26
 
 - Label the graph Y-axis Rating with room beside its numeric ticks.
