@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-059', date: '2026-10-27', title: 'Search controls together',
+  changes: ['Move the not-in-collection toggle beside Filters in the Metron results toolbar.'],
+}, {
   version: 'α-058', date: '2026-10-27', title: 'Filter by series type',
   changes: ['Add a Filters dropdown beside Metron search results with multi-select series-type checkboxes, Apply, and Clear.', 'Combine series-type filtering with hide-owned, retain selections across searches and pagination, and cache the full type list for 24 hours.'],
 }, {

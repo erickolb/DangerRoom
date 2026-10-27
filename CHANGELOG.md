@@ -1,5 +1,9 @@
 # Changelog
 
+## α-059 · 2026-10-27
+
+- Move the not-in-collection toggle beside Filters in the Metron results toolbar.
+
 ## α-058 · 2026-10-27
 
 - Add a results Filters dropdown with series-type checkboxes, Apply, and Clear.
