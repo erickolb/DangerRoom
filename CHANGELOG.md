@@ -1,5 +1,9 @@
 # Changelog
 
+## α-051 · 2026-10-27
+
+- Arrange header navigation as My Collection / Search Metron above Want List / Reading Log in a 2×2 grid.
+
 ## α-050 · 2026-10-27
 
 - Hide Reading Log Next month navigation when viewing the current month.

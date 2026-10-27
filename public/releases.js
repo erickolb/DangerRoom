@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-051', date: '2026-10-27', title: 'Navigation in two rows',
+  changes: ['Arrange header navigation in a 2×2 grid: My Collection and Search Metron above Want List and Reading Log.'],
+}, {
   version: 'α-050', date: '2026-10-27', title: 'Stay in the current month',
   changes: ['Hide Next month on the Reading Log when viewing the current calendar month.'],
 }, {
