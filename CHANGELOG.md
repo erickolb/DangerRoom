@@ -1,5 +1,9 @@
 # Changelog
 
+## α-035 · 2026-10-26
+
+- Make the note about ratings marking copies and variants read smaller, grey, and italic.
+
 ## α-034 · 2026-10-26
 
 - Open detail cover images in an accessible, responsive lightbox using the saved original-resolution file.

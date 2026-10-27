@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-035', date: '2026-10-26', title: 'A quieter rating note',
+  changes: ['Make the shared reading-status note below ratings much smaller, grey, and italic.'],
+}, {
   version: 'α-034', date: '2026-10-26', title: 'A closer look',
   changes: ['Open saved full-resolution cover images in a responsive lightbox from comic details; close with Escape, the close button, or the backdrop.'],
 }, {
