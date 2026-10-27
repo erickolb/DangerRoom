@@ -1,5 +1,10 @@
 # Changelog
 
+## α-034 · 2026-10-26
+
+- Open detail cover images in an accessible, responsive lightbox using the saved original-resolution file.
+- Support closing with Escape, a close button, or the backdrop.
+
 ## α-033 · 2026-10-26
 
 - Use the supplied duplicate icon for adding another copy, with bottom text removed and creator credit retained.

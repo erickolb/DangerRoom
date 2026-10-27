@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-034', date: '2026-10-26', title: 'A closer look',
+  changes: ['Open saved full-resolution cover images in a responsive lightbox from comic details; close with Escape, the close button, or the backdrop.'],
+}, {
   version: 'α-033', date: '2026-10-26', title: 'Another copy',
   changes: ['Use the supplied duplicate icon for adding another copy, removing embedded bottom text and retaining creator attribution.'],
 }, {

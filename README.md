@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-033**.
+Comic inventory and reading journal. Current build: **α-034**.
 
 ## Run locally
 
@@ -30,6 +30,8 @@ Open a search result's collection, Want List, or read icon to choose its exact c
 **My Collection** defaults to My Collection. Collection views sort by series name, start year, and numeric issue number; variants and duplicate copies stay together. Each copy has its own collection toggle: turning it off removes only that copy, and turning it on again restores ownership with a new copy ID. Other copies, variants, read status, and ratings are preserved. The inactive card/control remains available until navigation or refresh so it can be toggled back on. Existing local metadata and covers are reused; a new cover or missing metadata is fetched from Metron if needed. There is no delete confirmation dialog.
 
 Use the duplicate icon to add another copy of the selected cover. Every owned copy remains a distinct inventory entry. Read icons share one state across every instance of the same issue. **Read and Rated Comics** lists each read issue once, including comics you do not own. Local collection search includes series, publisher, issue, cover name, UPC, and ISBN. Details retain the exact edition, individual copy toggles, rating editor, and **Deep Search on Metron**.
+
+Click a saved cover on its details page to open the full-resolution image in a lightbox. Close it with Escape, the close button, or a click outside the dialog. Images use the existing local/S3 storage route.
 
 ## Personal ratings
 
