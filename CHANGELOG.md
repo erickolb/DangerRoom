@@ -1,5 +1,10 @@
 # Changelog
 
+## α-045 · 2026-10-26
+
+- Remove graph lead-in before #1 and extra tail past the latest known issue.
+- Use solid transitions between consecutive ratings and dotted lines only for missing ratings.
+
 ## α-044 · 2026-10-26
 
 - Add a local-only series ratings graph when more than one issue is rated, above Owned Issues In Series.
