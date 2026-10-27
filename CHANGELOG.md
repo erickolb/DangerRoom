@@ -1,5 +1,10 @@
 # Changelog
 
+## α-036 · 2026-10-26
+
+- Add Publisher and Volume as the first metadata fields.
+- Show publisher, series name, and volume in the comic detail header.
+
 ## α-035 · 2026-10-26
 
 - Make the note about ratings marking copies and variants read smaller, grey, and italic.

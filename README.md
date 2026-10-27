@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-035**.
+Comic inventory and reading journal. Current build: **α-036**.
 
 ## Run locally
 
