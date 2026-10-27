@@ -1,5 +1,9 @@
 # Changelog
 
+## α-065 · 2026-10-27
+
+- Replace the reading log month entry with a month-and-year picker widget.
+
 ## α-064 · 2026-10-27
 
 - Clear Series Name selections absent from newly submitted search results; retain matching names, other filters, and pagination behavior.

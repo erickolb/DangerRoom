@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-065', date: '2026-10-27', title: 'Pick a reading month',
+  changes: ['Replace the reading log month text entry with a month grid and year navigation picker, consistent across browsers.'],
+}, {
   version: 'α-064', date: '2026-10-27', title: 'Release stale name filters',
   changes: ['Automatically clear Series Name selections absent from a submitted search’s results, retaining matching selections and other filters. Pagination preserves selections.'],
 }, {

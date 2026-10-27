@@ -70,3 +70,15 @@ export async function changeRead(ctx,state,{logOnly=false}={}) {
   }catch(error){ctx.onError(error.message);}
   finally{ctx.busy=false;ctx.notify();}
 }
+
+export function mountMonthPicker(container,value,onSelect){
+  let year=Number(value.slice(0,4));
+  function render(){
+    container.innerHTML=`<details class="month-picker"><summary class="button quiet" aria-label="Choose reading log month and year">${new Date(value+'-15T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'})}</summary><div class="month-picker-panel"><div class="inline-calendar-nav"><button type="button" class="quiet" data-year-prev aria-label="Previous year" ${year===1?'disabled':''}>‹</button><strong aria-live="polite">${year}</strong><button type="button" class="quiet" data-year-next aria-label="Next year" ${year===9999?'disabled':''}>›</button></div><div class="month-picker-grid">${Array.from({length:12},(_,index)=>{const month=String(index+1).padStart(2,'0'),key=String(year).padStart(4,'0')+'-'+month;return `<button type="button" class="quiet" data-month="${key}" aria-pressed="${key===value}">${new Date('2000-'+month+'-15T12:00:00').toLocaleDateString(undefined,{month:'short'})}</button>`;}).join('')}</div></div></details>`;
+    container.querySelector('[data-year-prev]').onclick=()=>{year--;render();container.querySelector('details').open=true;container.querySelector('[data-year-prev]').focus();};
+    container.querySelector('[data-year-next]').onclick=()=>{year++;render();container.querySelector('details').open=true;container.querySelector('[data-year-next]').focus();};
+    container.querySelectorAll('[data-month]').forEach(button=>button.onclick=()=>{container.querySelector('details').open=false;onSelect(button.dataset.month);});
+    container.onkeydown=event=>{if(event.key==='Escape'){container.querySelector('details').open=false;container.querySelector('summary').focus();}};
+  }
+  render();
+}
