@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-043', date: '2026-10-26', title: 'Changelog presentation',
+  changes: ['Show only version, date, and change bullets for each changelog entry, omitting release titles.'],
+}, {
   version: 'α-042', date: '2026-10-26', title: 'Wine and scarlet',
   changes: ['Shift the app to deep wine surfaces, scarlet accents, warm text, and rose borders while preserving distinct status colors and gold ratings.'],
 }, {

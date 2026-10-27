@@ -1,5 +1,9 @@
 # Changelog
 
+## α-043 · 2026-10-26
+
+- Omit release titles from the in-app changelog; retain version, date, and change bullets.
+
 ## α-042 · 2026-10-26
 
 - Replace the plum/lavender palette with deep wine surfaces, scarlet accents, warm text, and rose borders.

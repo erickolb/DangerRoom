@@ -275,7 +275,7 @@ async function detail(id,params,ticket){
 }
 
 function changelog() {
-  app.innerHTML = `<a class="back-link" href="#/">← Search Metron</a><div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.map(r => `<article class="release"><p class="eyebrow"><span class="build-version">${esc(r.version)}</span> · <time datetime="${r.date}">${esc(date(r.date))}</time></p><h3>${esc(r.title)}</h3><ul>${r.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul></article>`).join('')}`;
+  app.innerHTML = `<a class="back-link" href="#/">← Search Metron</a><div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.map(r => `<article class="release"><p class="eyebrow"><span class="build-version">${esc(r.version)}</span> · <time datetime="${r.date}">${esc(date(r.date))}</time></p><ul>${r.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul></article>`).join('')}`;
 }
 window.addEventListener('hashchange', route);
 try { connected = (await api('/health')).metron_configured; } catch { /* Search and collection report actionable failures. */ }
