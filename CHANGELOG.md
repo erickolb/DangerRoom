@@ -1,5 +1,9 @@
 # Changelog
 
+## α-071 · 2026-10-27
+
+- Remove remaining corner text from the Unread Comics icon.
+
 ## α-070 · 2026-10-27
 
 - Add Unread Comics to collection filters with the cleaned, attributed Iconiqu icon.

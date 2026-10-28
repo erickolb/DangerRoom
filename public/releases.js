@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-071', date: '2026-10-27', title: 'Clean unread icon',
+  changes: ['Remove the remaining creator text from the Unread Comics icon; retain attribution in Credits.'],
+}, {
   version: 'α-070', date: '2026-10-27', title: 'Unread collection',
   changes: ['Add an Unread Comics collection filter with the cleaned New icon and Iconiqu attribution; show owned copies whose issue is unread.'],
 }, {
