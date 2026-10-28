@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-068', date: '2026-10-27', title: 'Simplify collection navigation',
+  changes: ['Remove redundant Search Metron buttons from the My Collection page body and empty state.'],
+}, {
   version: 'α-067', date: '2026-10-27', title: 'Simplify changelog navigation',
   changes: ['Remove the redundant Search Metron link from the changelog body.'],
 }, {

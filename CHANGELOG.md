@@ -1,5 +1,9 @@
 # Changelog
 
+## α-068 · 2026-10-27
+
+- Remove redundant Search Metron buttons from the My Collection page body and empty state.
+
 ## α-067 · 2026-10-27
 
 - Remove the redundant Search Metron link from the changelog body.
