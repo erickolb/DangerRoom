@@ -1,5 +1,9 @@
 # Changelog
 
+## β-006 · 2026-10-28
+
+- Remove Black bag from slideshow controls. The Android collection listing's Ø toggle remains the place to manage exclusions. No APK update is required.
+
 ## β-005 · 2026-10-28
 
 - Show the Ø black-bag control on My Collection tiles only in the Android app. Browser tiles retain their original three controls. No APK update is required; Android β-004 uses the updated server screens.

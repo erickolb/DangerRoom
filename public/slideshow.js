@@ -34,7 +34,7 @@ export async function mountSlideshow(app, api, current) {
   let rows = chooseCovers(data.items, settings), index = 0, playing = false, loading = false;
   let timer = null, controlsTimer = null, generation = 0;
   const failed = new Set();
-  app.innerHTML = `<h2>Cover Slideshow</h2><div id="gallery-stage" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite"></p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover">‹</button><button id="play-covers">Play</button><button id="next-cover" aria-label="Next cover">›</button><button id="black-bag-cover">Black bag</button><button id="gallery-settings">Settings</button></div></div></div><p class="hint">Uses every owned cover except black-bagged covers. During playback, tap the screen to show controls. Toggle Ø in My Collection to remove a black bag.</p><dialog id="gallery-options"><h2>Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form></dialog>`;
+  app.innerHTML = `<h2>Cover Slideshow</h2><div id="gallery-stage" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite"></p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover">‹</button><button id="play-covers">Play</button><button id="next-cover" aria-label="Next cover">›</button><button id="gallery-settings">Settings</button></div></div></div><p class="hint">Uses every owned cover except black-bagged covers. During playback, tap the screen to show controls. Toggle Ø in My Collection to remove a black bag.</p><dialog id="gallery-options"><h2>Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form></dialog>`;
   const $ = selector => app.querySelector(selector);
   const stage = $('#gallery-stage'), caption = $('#gallery-caption');
   const image = $('#gallery-cover'), old = $('#gallery-old'), dialog = $('#gallery-options');
@@ -68,10 +68,10 @@ export async function mountSlideshow(app, api, current) {
     if (!rows.length) {
       loading = false; image.removeAttribute('src'); old.removeAttribute('src');
       caption.textContent = 'No eligible owned covers. Add comics or remove a black bag using Ø in My Collection.';
-      $('#black-bag-cover').disabled = true; stop(); return;
+      stop(); return;
     }
     const row = rows[index]; loading = true;
-    caption.textContent = 'Loading cover…'; $('#black-bag-cover').disabled = true;
+    caption.textContent = 'Loading cover…';
     const loaded = new Image();
     loaded.onload = () => {
       if (ticket !== generation || !current()) return;
@@ -80,7 +80,7 @@ export async function mountSlideshow(app, api, current) {
       image.src = loaded.src; image.alt = `${comicTitleText(row.issue, { year: true })} · ${row.edition.name}`;
       old.animate([{ opacity: settings.fade ? 1 : 0 }, { opacity: 0 }], { duration: settings.fade ? 600 : 0, fill: 'forwards' });
       caption.textContent = `${image.alt} · ${index + 1} / ${rows.length}`;
-      $('#black-bag-cover').disabled = false; schedule();
+      schedule();
     };
     loaded.onerror = () => {
       if (ticket !== generation || !current()) return;
@@ -99,17 +99,6 @@ export async function mountSlideshow(app, api, current) {
       playing = true; $('#play-covers').textContent = 'Pause'; stage.classList.add('gallery-playing');
       fullscreen(true); window.DangerRoomAndroid?.keepAwake(true); revealControls(); schedule(); stage.focus();
     }
-  };
-  $('#black-bag-cover').onclick = async () => {
-    if (!rows.length) return;
-    const row = rows[index], button = $('#black-bag-cover');
-    button.disabled = true; clearTimeout(timer);
-    try {
-      await api(`/issues/${row.issue.id}/black-bag`, { method: 'PATCH', body: JSON.stringify({ edition_key: row.edition.key, black_bagged: true }) });
-      if (!current()) return;
-      row.edition.black_bagged = true;
-      rows = rows.filter(r => r !== row); index = rows.length ? index % rows.length : 0; display(); revealControls();
-    } catch (error) { if (current()) { caption.textContent = error.message; stop(); button.disabled = false; } }
   };
   $('#gallery-settings').onclick = () => { stop(); dialog.showModal(); };
   $('#cancel-gallery-options').onclick = () => dialog.close();

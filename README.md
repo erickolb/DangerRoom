@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-005**.
+Comic inventory and reading journal. Current build: **β-006**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 

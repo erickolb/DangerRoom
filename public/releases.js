@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-006', date: '2026-10-28', title: 'Manage black bags from the collection',
+  changes: ['Remove Black bag from the slideshow playback controls. Manage slideshow exclusions with the Ø toggle in the Android collection listing.'],
+}, {
   version: 'β-005', date: '2026-10-28', title: 'Android-only black-bag controls',
   changes: ['Show the fourth Ø collection tile control only in the Android app. Browser collection tiles retain their three original controls; shared black-bag storage and slideshow filtering are unchanged.'],
 }, {
