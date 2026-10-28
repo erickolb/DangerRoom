@@ -49,11 +49,28 @@ git pull --ff-only
 sudo docker compose build --pull
 sudo docker compose up -d --force-recreate
 sudo docker compose ps
-curl --fail http://127.0.0.1:4340/api/health
 sudo docker compose logs --tail=100 dangerroom
 ```
 
-Adjust the health URL if DANGERROOM_PORT differs. Confirm the expected build label, saved collection, a cover, and Reading Log in the browser. Schema changes apply automatically at startup, making the stopped-app backup essential. Image rebuilds do not alter .env or erase the volume. To change credentials/configuration, vi .env then sudo docker compose up -d --force-recreate (restart alone does not reload Compose environment values).
+### Check health at the address exposed by your deployment
+
+For astralplane's HTTPS reverse-proxy setup, use:
+
+```sh
+curl --fail https://dangerroom.chateaulore.net/api/health
+```
+
+For another instance, replace `dangerroom.chateaulore.net` with its configured HTTPS hostname. The hostname must be included in `ALLOWED_HOSTS` and routed to DangerRoom by the reverse proxy.
+
+Only use the following check when Compose publishes the container port on the host (the default `compose.yaml` configuration). Adjust `4340` if `DANGERROOM_PORT` differs:
+
+```sh
+curl --fail http://127.0.0.1:4340/api/health
+```
+
+An HTTPS override containing `ports: !reset []` removes that host port mapping. In that setup, localhost curl reports **Failed to connect** even when the app is healthy. A log line such as `DangerRoom β-002 · http://0.0.0.0:4340` describes the listener **inside the container**; it does not mean port 4340 is exposed on the host. Use the HTTPS hostname instead. A failed HTTPS check still needs investigation; inspect the Compose service and reverse proxy.
+
+Confirm the health JSON reports the expected build label, then check the saved collection, a cover, and Reading Log in the browser. Schema changes apply automatically at startup, making the stopped-app backup essential. Image rebuilds do not alter .env or erase the volume. To change credentials/configuration, vi .env then sudo docker compose up -d --force-recreate (restart alone does not reload Compose environment values).
 
 ## Roll back
 
