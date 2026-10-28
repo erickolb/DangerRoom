@@ -1,5 +1,9 @@
 # Changelog
 
+## α-070 · 2026-10-27
+
+- Add Unread Comics to collection filters with the cleaned, attributed Iconiqu icon.
+
 ## α-069 · 2026-10-27
 
 - Restore the empty-state Search Metron button and preserve the collection search text.

@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-070', date: '2026-10-27', title: 'Unread collection',
+  changes: ['Add an Unread Comics collection filter with the cleaned New icon and Iconiqu attribution; show owned copies whose issue is unread.'],
+}, {
   version: 'α-069', date: '2026-10-27', title: 'Restore empty collection search',
   changes: ['Restore Search Metron in empty collection results, carrying the find text into the search.'],
 }, {

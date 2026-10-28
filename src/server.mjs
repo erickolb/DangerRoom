@@ -17,7 +17,7 @@ const staticFiles = new Map([
   ['/ratings.js', ['ratings.js', 'text/javascript; charset=utf-8']],
   ['/reading-log.js', ['reading-log.js', 'text/javascript; charset=utf-8']], ['/reading-log.png', ['reading-log.png', 'image/png']],
   ['/series-ratings.js', ['series-ratings.js', 'text/javascript; charset=utf-8']],
-  ['/duplicate.png', ['duplicate.png', 'image/png']],
+  ['/duplicate.png', ['duplicate.png', 'image/png']], ['/unread.png', ['unread.png', 'image/png']],
   ['/metron.svg', ['metron.svg', 'image/svg+xml']],
   ['/boxes.png', ['boxes.png', 'image/png']], ['/star.png', ['star.png', 'image/png']],
   ['/actions.js', ['actions.js','text/javascript; charset=utf-8']],
