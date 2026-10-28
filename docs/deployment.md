@@ -28,12 +28,14 @@ Stop the Windows instance before copying its data directory so SQLite and any WA
 sudo docker compose build --pull
 sudo docker compose create
 sudo docker compose cp ./import-data/. dangerroom:/data/
-sudo docker compose run --rm --no-deps --user root --entrypoint chown dangerroom -R node:node /data
+sudo docker compose run --rm --no-deps --user root --cap-add CHOWN --entrypoint chown dangerroom -R node:node /data
 sudo docker compose up -d
 sudo docker compose ps
 curl --fail http://127.0.0.1:4340/api/health
 sudo docker compose logs --tail=100 dangerroom
 ```
+
+The one-off ownership command temporarily adds CHOWN because the normal service drops all Linux capabilities, including for root. The running application still retains no added capabilities.
 
 For a genuinely fresh collection, omit create/cp/chown and simply build, then up -d. Never import over an existing production database. A new named volume gets the correct ownership from the image. Set ALLOWED_HOSTS before accessing via a hostname or LAN address; a 403 host error means it does not match. For a proxy in another container, arrange a shared Docker network and forward to dangerroom:4340 rather than the other container's localhost. Do not expose this app to the internet without access control.
 
