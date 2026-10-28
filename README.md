@@ -2,6 +2,8 @@
 
 Comic inventory and reading journal. Current build: **β-002**.
 
+[Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
+
 The [Android companion](docs/android.md) adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download the signed Android beta](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.2). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 ## Run locally
@@ -88,6 +90,8 @@ New imports retain Metron's `series.series_type` as an `id`/`name` object, or nu
 For older records, stop the app and preview `pnpm run backfill:series-types --dry-run`, then run `pnpm run backfill:series-types`. This operator utility uses retained issue-detail cache entries (even expired entries still present in SQLite), never calls Metron, and creates a consistent SQLite backup under `DATA_DIR/backups/` before updating missing types. It also reuses types already stored on other issues in the same series. If any series cannot be resolved, no records are updated; preserve or obtain the missing detail data before rerunning. Only series_type fields in issue/Want List JSON are changed. Existing types are preserved, and rerunning after success makes no changes. Restart the app afterward.
 
 ## Checks and release history
+
+The minimal public download website lives in `website/` and deploys to GitHub Pages through `.github/workflows/pages.yml`. Keep its displayed Android version and APK/release links aligned with `docs/android.md` and each published Android build. It is separate from the self-hosted collection application in `public/`.
 
 ```sh
 pnpm run check

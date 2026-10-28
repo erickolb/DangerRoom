@@ -1,6 +1,6 @@
 # DangerRoom for Android · β-002
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-002 or later. Download the signed **DangerRoom.apk** from [DangerRoom's β-002 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.2), alongside `SHA256SUMS.txt`. Installing it does not authorize a device. While the repository is private, downloading requires GitHub access to DangerRoom.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-002 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [DangerRoom's β-002 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.2), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
 
 ## Install and connect
 
