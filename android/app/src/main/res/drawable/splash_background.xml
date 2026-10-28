@@ -1,0 +1,6 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape><solid android:color="#E7001F" /></shape></item>
+    <item android:width="192dp" android:height="192dp" android:gravity="center">
+        <bitmap android:src="@drawable/mask" android:gravity="fill" android:filter="true" />
+    </item>
+</layer-list>

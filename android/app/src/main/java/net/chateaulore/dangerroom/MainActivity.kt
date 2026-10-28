@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
     private var screen = "splash"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         store = ConnectionStore(this); connection = store.load()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -50,11 +51,21 @@ class MainActivity : ComponentActivity() {
                 else if (connection != null) { if (screen in listOf("review", "recognition")) { capture.delete(); photoSignature = null }; openWeb() } else finish()
             }
         })
-        base("DangerRoom")
-        val mask = ImageView(this).apply { setImageResource(net.chateaulore.dangerroom.R.drawable.mask); contentDescription = "DangerRoom mask" }
-        column.addView(mask, LinearLayout.LayoutParams(-1, dp(180)))
-        text("Your comics. Your collection.", 18f)
-        column.postDelayed({ if (!isDestroyed) { if (connection == null) settings() else openWeb() } }, 700)
+        val splash = FrameLayout(this).apply { setBackgroundColor(Color.rgb(231, 0, 31)) }
+        val mask = ImageView(this).apply { setImageResource(R.drawable.mask); contentDescription = "DangerRoom mask"; scaleType = ImageView.ScaleType.FIT_CENTER }
+        splash.addView(mask, FrameLayout.LayoutParams(dp(192), dp(192), android.view.Gravity.CENTER))
+        setContentView(splash)
+        val bars = androidx.core.view.WindowInsetsControllerCompat(window, splash)
+        bars.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        splash.postDelayed({
+            if (!isDestroyed) {
+                window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.rgb(25, 12, 18)))
+                window.statusBarColor = Color.rgb(25, 12, 18)
+                window.navigationBarColor = Color.rgb(25, 12, 18)
+                bars.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+                if (connection == null) settings() else openWeb()
+            }
+        }, 700)
     }
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun destroyWeb() { web?.let { it.removeJavascriptInterface("DangerRoomAndroid"); it.stopLoading(); it.destroy() }; web = null; window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
@@ -97,7 +108,7 @@ class MainActivity : ComponentActivity() {
             } catch (error: Exception) { status.text = error.message }
         }
         if (saved != null) button("Back to menu") { openWeb() }
-        text("DangerRoom Android · β-004\nMask: Magnific / Flaticon. Cover artwork belongs to its rights holders. Full credits are in DangerRoom.", 13f)
+        text("DangerRoom Android · β-007\nMask: Magnific / Flaticon. Cover artwork belongs to its rights holders. Full credits are in DangerRoom.", 13f)
     }
     @Suppress("SetJavaScriptEnabled")
     private fun openWeb(hash: String = "/home") {

@@ -1,12 +1,12 @@
-# DangerRoom for Android · β-004
+# DangerRoom for Android · β-007
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-004 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [DangerRoom's β-004 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.4), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-004 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [DangerRoom's β-007 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.7), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
 
 ## Install and connect
 
 1. Download the APK, open it, and allow your browser to install apps if Android asks. Install updates over the existing app.
 2. Ask the DangerRoom administrator to issue a credential for this device. Each installation should have its own credential.
-3. Open DangerRoom. Its mask startup screen leads to connection settings on first use.
+3. Open DangerRoom. Its startup screen shows only the centered mask on a matching red background, then leads to connection settings on first use.
 4. Enter the instance hostname (for example `dangerroom.chateaulore.net`), device ID, and secret. A custom HTTPS port is supported. Paths, HTTP, and credentials embedded in the address are rejected.
 5. Tap **Save and test connection**. The app verifies that the credential is enabled before saving it in Android Keystore-encrypted storage. Backups and device transfers exclude credentials. Reinstalling requires provisioning again.
 
@@ -45,4 +45,4 @@ cd android
 
 For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds; published APKs are signed separately. Keep `applicationId=net.chateaulore.dangerroom`, retain the signing key, and increment versionCode for every future published Android build.
 
-Published version: **0.1.0-beta.4 / β-004**, Android version code **2**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.4`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+Published version: **0.1.0-beta.7 / β-007**, Android version code **3**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.7`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.

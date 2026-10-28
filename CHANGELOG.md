@@ -1,5 +1,11 @@
 # Changelog
 
+## β-007 · 2026-10-28
+
+- Replace the Android startup heading and tagline with just the mask, centered on a background matching its main red edge (#E7001F).
+- Match the Android system launch screen and brief in-app startup screen. Restore the usual wine theme after loading.
+- Android version 0.1.0-beta.7, version code 3; signed with the existing release identity.
+
 ## β-006 · 2026-10-28
 
 - Remove Black bag from slideshow controls. The Android collection listing's Ø toggle remains the place to manage exclusions. No APK update is required.

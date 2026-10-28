@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-007', date: '2026-10-28', title: 'Mask-only startup',
+  changes: ['Show only the centered mask on Android startup, without text, against the icon’s main red edge color (#E7001F). Match the system launch screen and hide system bars during the brief app startup screen.'],
+}, {
   version: 'β-006', date: '2026-10-28', title: 'Manage black bags from the collection',
   changes: ['Remove Black bag from the slideshow playback controls. Manage slideshow exclusions with the Ø toggle in the Android collection listing.'],
 }, {

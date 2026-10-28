@@ -7,7 +7,13 @@
         <item name="android:navigationBarColor">#190c12</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
-        <item name="android:windowSplashScreenBackground">#190c12</item>
+    </style>
+    <style name="SplashTheme" parent="AppTheme">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">#E7001F</item>
+        <item name="android:navigationBarColor">#E7001F</item>
+        <item name="android:windowSplashScreenBackground">#E7001F</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/mask</item>
     </style>
 </resources>
