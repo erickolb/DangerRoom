@@ -43,14 +43,6 @@ vi .env
 
 Set `REQUIRE_AUTH=false` (or leave it unset). The old `DANGERROOM_ADMIN_TOKEN` can be removed; it is not an Android credential. Rebuild and recreate the container using the commands below to apply the corrected Compose default. A host Node.js installation is not required.
 
-Provision each phone/tablet after the updated container starts, following [Android installation and device management](android.md). For your HTTPS setup:
-
-```sh
-sudo docker compose -f compose.yaml -f compose.https.yaml exec dangerroom node scripts/devices.mjs add "Eric's phone"
-```
-
-Enter the returned `deviceId` and `token` into Android's **Device ID** and **Device secret** fields, together with your DangerRoom hostname. Save the secret privately: it is shown only once. Mobile routes always require an enabled device, independently of browser access.
-
 Optional browser sign-in is available only if you deliberately set `REQUIRE_AUTH=true` and configure `DANGERROOM_ADMIN_TOKEN` to a random secret of at least 32 characters (`openssl rand -hex 32`). It is separate from Android device approval and is not needed for the default deployment.
 
 ```sh
@@ -80,6 +72,10 @@ curl --fail http://127.0.0.1:4340/api/health
 An HTTPS override containing `ports: !reset []` removes that host port mapping. In that setup, localhost curl reports **Failed to connect** even when the app is healthy. A log line such as `DangerRoom β-002 · http://0.0.0.0:4340` describes the listener **inside the container**; it does not mean port 4340 is exposed on the host. Use the HTTPS hostname instead. A failed HTTPS check still needs investigation; inspect the Compose service and reverse proxy.
 
 Confirm the health JSON reports the expected build label, then check the saved collection, a cover, and Reading Log in the browser. Schema changes apply automatically at startup, making the stopped-app backup essential. Image rebuilds do not alter .env or erase the volume. To change credentials/configuration, vi .env then sudo docker compose up -d --force-recreate (restart alone does not reload Compose environment values).
+
+### After the update: approve Android devices
+
+Once the rebuilt container is running and the health check reports the expected version, use [Device token management](devices.md) to issue, list, revoke, or replace Android credentials. Then follow [Android installation](android.md) to enter the hostname, device ID, and secret on the phone or tablet. Existing enabled device credentials survive normal container updates; you do not need to reissue them for each release.
 
 ## Roll back
 

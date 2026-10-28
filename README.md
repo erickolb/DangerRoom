@@ -21,7 +21,7 @@ pnpm start
 
 Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a token the app opens and saved collection pages work, but uncached Metron searches do not. `HOST`, `PORT`, `DATA_DIR`, and optional `ALLOWED_HOSTS` are documented in `.env.example`.
 
-Each DangerRoom instance holds a single shared collection. Browser access retains the original trust model, with no sign-in by default. Android requires a server-issued device ID and secret, matching Quartermaster and Heroes Feast; credentials can be revoked on the server. Optional browser authentication is separate and must be explicitly enabled. See [deployment](docs/deployment.md), [container updates and rollback](docs/updating.md), and [device provisioning](docs/android.md).
+Each DangerRoom instance holds a single shared collection. Browser access retains the original trust model, with no sign-in by default. Android requires a server-issued device ID and secret, matching Quartermaster and Heroes Feast; credentials can be revoked on the server. Optional browser authentication is separate and must be explicitly enabled. See [deployment](docs/deployment.md), [container updates and rollback](docs/updating.md), and [device token management](docs/devices.md).
 
 ## Use
 

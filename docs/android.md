@@ -12,19 +12,9 @@ Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerR
 
 The menu contains Want List, Comic Lookup by Camera, Text search on Metron, My Collection, Cover Slideshow, and Reading Log. **Menu → Instance and device settings** changes servers or credentials. No Metron credentials are entered on the phone. Existing browser controls are shared in an authenticated Android WebView, with native startup, configuration, capture and recognition. The instance must be reachable to browse or save; this release does not provide offline inventory.
 
-## Provision or revoke a device
+## Device approval
 
-On astralplane, from the deployed checkout:
-
-```sh
-sudo docker compose exec dangerroom node scripts/devices.mjs add "Eric's tablet"
-sudo docker compose exec dangerroom node scripts/devices.mjs list
-sudo docker compose exec dangerroom node scripts/devices.mjs revoke DEVICE_ID
-```
-
-The add command prints the device ID and a random secret **once**. Deliver these privately. The server stores a SHA-256 hash, never the original secret. Revocation applies to every subsequent API and cover request, including the regular web API when called with those credentials. Already displayed/downloaded images cannot be recalled. Credentials identify approved installations; they do not use hardware fingerprinting or Android IDs, and a copied secret can impersonate that device. Revoke it and issue another if exposed.
-
-For a local non-Docker checkout, use `pnpm devices add "Phone"`, `pnpm devices list`, and `pnpm devices revoke DEVICE_ID` with Node 24. The returned `deviceId` and `token` go into Android's **Device ID** and **Device secret** fields. This follows the Quartermaster and Heroes Feast provisioning model. Browser access requires no key by default; optional browser sign-in is independent. See [container updates](updating.md). Mobile routes always require an enabled device.
+After updating and starting the server, follow [Device token management](devices.md) for the commands to issue, list, revoke, and replace device credentials, including astralplane's HTTPS Compose override and source-only installations. Enter the returned `deviceId` and `token` into Android's **Device ID** and **Device secret** fields. Mobile routes always require an enabled device. Browser access requires no key by default; optional browser sign-in is independent.
 
 ## Camera lookup
 
