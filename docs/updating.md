@@ -1,14 +1,37 @@
-# Update DangerRoom on astralplane
+# Update a DangerRoom instance
 
 Run from the original DangerRoom checkout; changing the Compose project/directory name can select a different named volume. These commands build from source; no registry login or prepublished image is required. Keep .env and the named data volume across updates.
 
+## Configure the instance address once
+
+Keep your instance's address in the checkout's private `.env`, so the commands below work across updates and new shell sessions:
+
+```sh
+vi .env
+```
+
+For an HTTPS reverse proxy, add your own URL (the following hostname is an example):
+
+```dotenv
+DANGERROOM_URL=https://comics.example.net
+```
+
+For the default local port mapping, use `DANGERROOM_URL=http://127.0.0.1:4340` instead. If you changed `DANGERROOM_PORT`, use the matching host port in the URL. Do not add `/api/health` to this base URL. `DANGERROOM_URL` records the address used to reach the instance; it does not configure DNS, the proxy, the listener, or `ALLOWED_HOSTS`. For HTTPS, separately include your hostname in `ALLOWED_HOSTS` and configure the proxy to route it to DangerRoom.
+
+If you use a local `compose.https.yaml` override, also add this line to `.env`:
+
+```dotenv
+COMPOSE_FILE=compose.yaml:compose.https.yaml
+```
+
+Compose reads this setting from `.env` for every command below, including commands run with `sudo`. This persists the override selection without relying on shell environment variables that `sudo` may discard. Omit it for installations using only `compose.yaml`. Retain any other override files your deployment needs in that colon-separated list.
+
 ## Back up before updating
 
-Run in a shell on astralplane:
+Run in a shell on your server:
 
 ```sh
 cd /path/to/DangerRoom
-if [ -f compose.https.yaml ]; then export COMPOSE_FILE=compose.yaml:compose.https.yaml; fi
 git status --short
 git rev-parse HEAD > previous-revision.txt
 sudo docker image tag dangerroom:local dangerroom:rollback
@@ -27,7 +50,7 @@ Confirm the backup exists and tar can list it before proceeding. It contains SQL
 
 The one-off backup needs `DAC_OVERRIDE` because the service drops all capabilities: container root otherwise cannot write into your user-owned `700` backup directory or read files restricted to another UID. This capability is added only for the backup command. Keep the backup directory private. The bind mount is `"$PWD/backups:/backups"`, with no backslash before the colon.
 
-If present, `compose.https.yaml` is a server-specific override; keep it and include it in configuration backups. The `COMPOSE_FILE` export above applies both files to subsequent Compose commands in this shell, including stop, backup, rebuild, startup, and device provisioning. Alternatively pass `-f compose.yaml -f compose.https.yaml` explicitly each time. If the override removes the localhost port, check health with `curl --fail https://dangerroom.chateaulore.net/api/health` instead of the localhost URL below.
+If present, `compose.https.yaml` is a server-specific override; keep it and include it in configuration backups. The `COMPOSE_FILE` setting above selects both files for stop, backup, rebuild, startup, and device provisioning. Alternatively pass `-f compose.yaml -f compose.https.yaml` explicitly each time. If your override has another filename, back up that file too.
 
 ## Build and apply
 
@@ -55,19 +78,18 @@ sudo docker compose logs --tail=100 dangerroom
 
 ### Check health at the address exposed by your deployment
 
-For astralplane's HTTPS reverse-proxy setup, use:
+After recreating the container, read only `DANGERROOM_URL` from its environment (loaded from `.env`) and check that address:
 
 ```sh
-curl --fail https://dangerroom.chateaulore.net/api/health
+dangerroom_url=$(sudo docker compose exec -T dangerroom node -p 'process.env.DANGERROOM_URL || ""')
+if [ -n "$dangerroom_url" ]; then
+  curl --fail "${dangerroom_url%/}/api/health"
+else
+  echo 'Set DANGERROOM_URL in .env, recreate the container, then retry the health check.' >&2
+fi
 ```
 
-For another instance, replace `dangerroom.chateaulore.net` with its configured HTTPS hostname. The hostname must be included in `ALLOWED_HOSTS` and routed to DangerRoom by the reverse proxy.
-
-Only use the following check when Compose publishes the container port on the host (the default `compose.yaml` configuration). Adjust `4340` if `DANGERROOM_PORT` differs:
-
-```sh
-curl --fail http://127.0.0.1:4340/api/health
-```
+Node runs inside the updated container; it does not need to be installed on the host. This reads the configured value without sourcing `.env` as shell code or printing other environment values. Changes to `.env` require container recreation before this command sees them. The request runs from the server, so the configured address must be reachable there; it does not have to be accessible from the public internet.
 
 An HTTPS override containing `ports: !reset []` removes that host port mapping. In that setup, localhost curl reports **Failed to connect** even when the app is healthy. A log line such as `DangerRoom β-002 · http://0.0.0.0:4340` describes the listener **inside the container**; it does not mean port 4340 is exposed on the host. Use the HTTPS hostname instead. A failed HTTPS check still needs investigation; inspect the Compose service and reverse proxy.
 

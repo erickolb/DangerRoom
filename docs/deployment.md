@@ -20,6 +20,8 @@ Set METRON_API_TOKEN and ALLOWED_HOSTS (for example dangerroom.example.com). Lea
 
 Compose overrides HOST=0.0.0.0, PORT=4340, and DATA_DIR=/data inside the container. DANGERROOM_PORT in .env optionally changes the host-side loopback port. The image runs as UID/GID 1000, uses a read-only root filesystem, and stores SQLite and optional local covers in the named dangerroom-data volume. It contains no .env, local data, test files, or Git metadata. Building requires internet access to Node's image and the package registry.
 
+Set `DANGERROOM_URL` in `.env` to the base URL used to reach your instance, such as `https://comics.example.net` or `http://127.0.0.1:4340` for the default local mapping. This is the address used by the [update guide's health check](updating.md); it does not configure routing or replace `ALLOWED_HOSTS`. If you use `compose.https.yaml`, persist `COMPOSE_FILE=compose.yaml:compose.https.yaml` in `.env` so future Compose commands include it, even when run with `sudo`.
+
 ## Transfer your current collection before first startup
 
 Stop the Windows instance before copying its data directory so SQLite and any WAL files form a consistent snapshot. Transfer the data directory contents to ./import-data on astralplane using your preferred secure transfer tool. Preserve dangerroom.sqlite and any SQLite sidecar files together; include covers if any images still use local storage. Your migrated database already records the S3 bucket and keys, so its covers will read from S3 immediately. Local originals can be retained in a separate backup instead of the production volume once all referenced images have migrated. Do not transfer node_modules or place .env in /data.
