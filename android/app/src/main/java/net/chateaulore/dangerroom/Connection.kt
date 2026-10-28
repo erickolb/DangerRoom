@@ -40,4 +40,3 @@ class ConnectionStore(context: Context) {
         }.getOrNull()
     }
 }
-

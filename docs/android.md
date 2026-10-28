@@ -1,6 +1,6 @@
 # DangerRoom for Android · β-002
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-002 or later. Download the signed **DangerRoom.apk** from the [public Android download page](https://erickolb.github.io/QuartermasterIntake/dangerroom.html). Installing it does not authorize a device.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-002 or later. Download the signed **DangerRoom.apk** from [DangerRoom's β-002 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.2), alongside `SHA256SUMS.txt`. Installing it does not authorize a device. While the repository is private, downloading requires GitHub access to DangerRoom.
 
 ## Install and connect
 
@@ -51,4 +51,4 @@ cd android
 
 For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds; published APKs are signed separately. Keep `applicationId=net.chateaulore.dangerroom`, retain the signing key, and increment versionCode for every future published Android build.
 
-Published version: **0.1.0-beta.2 / β-002**, Android version code **1**. Downloads and checksums are hosted in the public QuartermasterIntake release repository under `dangerroom-android-v0.1.0-beta.2`; this keeps the private application source private. DangerRoom releases are never marked Latest there, preserving QM Intake's existing update links.
+Published version: **0.1.0-beta.2 / β-002**, Android version code **1**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.2`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
