@@ -1,0 +1,43 @@
+package net.chateaulore.dangerroom
+
+import android.content.Context
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
+import org.json.JSONObject
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
+
+data class Connection(val url: String, val device: String, val token: String)
+
+class ConnectionStore(context: Context) {
+    private val prefs = context.getSharedPreferences("connection", Context.MODE_PRIVATE)
+    private fun key(): SecretKey {
+        val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+        (store.getKey("dangerroom-connection", null) as? SecretKey)?.let { return it }
+        return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
+            init(KeyGenParameterSpec.Builder("dangerroom-connection", KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).build())
+        }.generateKey()
+    }
+    fun save(c: Connection) {
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply { init(Cipher.ENCRYPT_MODE, key()) }
+        val data = JSONObject().put("url", c.url).put("device", c.device).put("token", c.token).toString().toByteArray()
+        prefs.edit().putString("iv", Base64.encodeToString(cipher.iv, Base64.NO_WRAP))
+            .putString("data", Base64.encodeToString(cipher.doFinal(data), Base64.NO_WRAP)).commit()
+    }
+    fun load(): Connection? {
+        val data = prefs.getString("data", null) ?: return null
+        return runCatching {
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply {
+                init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, Base64.decode(prefs.getString("iv", ""), Base64.NO_WRAP)))
+            }
+            val json = JSONObject(String(cipher.doFinal(Base64.decode(data, Base64.NO_WRAP))))
+            Connection(json.getString("url"), json.getString("device"), json.getString("token"))
+        }.getOrNull()
+    }
+}
+

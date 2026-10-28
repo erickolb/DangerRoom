@@ -1,6 +1,6 @@
 {
   "name": "dangerroom",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "private": true,
   "type": "module",
   "engines": {
@@ -11,6 +11,7 @@
     "dev": "node --env-file-if-exists=.env --watch src/server.mjs",
     "test": "node --test",
     "check": "node scripts/check.mjs",
+    "devices": "node --env-file-if-exists=.env scripts/devices.mjs",
     "migrate:covers:s3": "node --env-file-if-exists=.env scripts/migrate-covers-to-s3.mjs",
     "backfill:series-types": "node --env-file-if-exists=.env scripts/backfill-series-types.mjs"
   },

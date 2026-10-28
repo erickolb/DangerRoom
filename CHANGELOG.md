@@ -1,5 +1,13 @@
 # Changelog
 
+## β-002 · 2026-10-28
+
+- Add the Android companion with configurable instance, encrypted device credentials, branded startup, and six-section menu.
+- Keep collection, Want List, Metron text search, ratings, and Reading Log behavior shared with the responsive web app.
+- Add on-device barcode/text recognition and approximate candidate artwork ranking, with explicit issue/variant confirmation.
+- Add the owned-cover slideshow with RoguesGallery-style selection, exclusions, playback and transition settings.
+- Require browser sign-in or approved device credentials for Docker-hosted data APIs and saved covers. Add device issuance/revocation commands.
+
 ## β-001 · 2026-10-28
 
 - Collapse alpha changelog entries under a closed Alpha releases header.

@@ -1,6 +1,8 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-001**.
+Comic inventory and reading journal. Current build: **β-002**.
+
+The [Android companion](docs/android.md) adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download and install](https://erickolb.github.io/QuartermasterIntake/dangerroom.html). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 ## Run locally
 
@@ -17,7 +19,7 @@ pnpm start
 
 Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a token the app opens and saved collection pages work, but uncached Metron searches do not. `HOST`, `PORT`, `DATA_DIR`, and optional `ALLOWED_HOSTS` are documented in `.env.example`.
 
-This is a single personal collection with no account/login system. For Docker hosting, see [deployment](docs/deployment.md) and [container updates and rollback](docs/updating.md). Keep it on a trusted network or behind an authenticated reverse proxy.
+Each DangerRoom instance holds a single shared collection. Docker hosting now requires a browser access key or an approved device credential. For deployment and the required β-002 access-key configuration, see [deployment](docs/deployment.md) and [container updates and rollback](docs/updating.md). Source-only trusted-network installs can opt out of browser authentication; mobile access always requires a device credential.
 
 ## Use
 

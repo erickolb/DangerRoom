@@ -16,17 +16,24 @@ jobs:
       - run: npm install --global pnpm@11.25.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm check && pnpm test
-      - run: cp .env.example .env && docker compose config --quiet
+      - run: cp .env.example .env && DANGERROOM_ADMIN_TOKEN=ci-only-placeholder-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa docker compose config --quiet
       - run: docker build -t dangerroom:test .
       - name: Verify health and non-root persistent storage
         run: |
-          docker run -d --name dangerroom-test --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true -p 127.0.0.1:4340:4340 -v dangerroom-test-data:/data dangerroom:test
+          docker run -d --name dangerroom-test --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true -e REQUIRE_AUTH=true -e DANGERROOM_ADMIN_TOKEN=ci-only-placeholder-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa -p 127.0.0.1:4340:4340 -v dangerroom-test-data:/data dangerroom:test
           for attempt in $(seq 1 30); do
             if curl --fail http://127.0.0.1:4340/api/health; then break; fi
             sleep 1
           done
-          curl --fail http://127.0.0.1:4340/api/health | grep 'β-001'
+          curl --fail http://127.0.0.1:4340/api/health | grep 'β-002'
           docker exec dangerroom-test sh -c 'test "$(id -u)" != 0 && test -s /data/dangerroom.sqlite'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4340/api/collection)" = 401
+          credential=$(docker exec dangerroom-test node scripts/devices.mjs add "CI device")
+          device_id=$(printf '%s' "$credential" | jq -r .deviceId)
+          device_token=$(printf '%s' "$credential" | jq -r .token)
+          curl --fail -H "X-Device-Id: $device_id" -H "Authorization: Bearer $device_token" http://127.0.0.1:4340/mobile/api/collection
+          docker exec dangerroom-test node scripts/devices.mjs revoke "$device_id"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H "X-Device-Id: $device_id" -H "Authorization: Bearer $device_token" http://127.0.0.1:4340/mobile/api/collection)" = 401
           docker restart dangerroom-test
           for attempt in $(seq 1 30); do
             if curl --fail http://127.0.0.1:4340/api/health; then break; fi

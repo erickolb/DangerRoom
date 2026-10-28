@@ -9,9 +9,14 @@ import { Covers } from './covers.mjs';
 import { AppError, positiveId } from './errors.mjs';
 import { releases } from '../public/releases.js';
 import { validateRating } from './ratings.mjs';
+import { Devices, equalSecret } from './devices.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/mobile.js', ['mobile.js', 'text/javascript; charset=utf-8']],
+  ['/camera.svg', ['camera.svg', 'image/svg+xml']],
+  ['/slideshow.js', ['slideshow.js', 'text/javascript; charset=utf-8']],
+  ['/login.js', ['login.js', 'text/javascript; charset=utf-8']],
   ['/search-filters.js', ['search-filters.js', 'text/javascript; charset=utf-8']],
   ['/comic-title.js', ['comic-title.js', 'text/javascript; charset=utf-8']], ['/format-tpb.png', ['format-tpb.png', 'image/png']], ['/format-hc.png', ['format-hc.png', 'image/png']], ['/format-omni.png', ['format-omni.png', 'image/png']],
   ['/ratings.js', ['ratings.js', 'text/javascript; charset=utf-8']],
@@ -42,6 +47,11 @@ function flags(data) {
 export function createApp(options = {}) {
   const dataDir = resolve(options.dataDir || process.env.DATA_DIR || join(root, 'data'));
   const db = openDatabase(dataDir), repo = new Repository(db);
+  const devices = new Devices(db);
+  const requireAuth = options.requireAuth ?? process.env.REQUIRE_AUTH === 'true';
+  const adminToken = options.adminToken ?? process.env.DANGERROOM_ADMIN_TOKEN ?? '';
+  if (requireAuth && adminToken.length < 32) { db.close(); throw Error('Set DANGERROOM_ADMIN_TOKEN to a random secret of at least 32 characters before enabling REQUIRE_AUTH.'); }
+  let failedLogins = 0, loginWindow = 0;
   const metron = options.metron || new Metron(repo, { token: process.env.METRON_API_TOKEN, username: process.env.METRON_USERNAME, password: process.env.METRON_PASSWORD, ...options.metronOptions });
   const covers = options.covers || new Covers(dataDir, options.imageFetch, { db, ...options.coverOptions });
   const hosts = new Set(['127.0.0.1', 'localhost', '[::1]', ...(process.env.ALLOWED_HOSTS || '').split(',').map(h => h.trim()).filter(Boolean)]);
@@ -54,9 +64,60 @@ export function createApp(options = {}) {
       const host = new URL(`http://${req.headers.host || 'invalid'}`);
       if (!hosts.has(host.hostname)) throw new AppError(403, 'This host is not allowed.');
       const url = new URL(req.url, host);
+      const mobile = url.pathname.startsWith('/mobile/');
+      if (mobile) url.pathname = url.pathname.slice(7);
       if (req.headers['sec-fetch-site'] === 'cross-site' && !['GET', 'HEAD'].includes(req.method)) throw new AppError(403, 'Cross-site changes are not allowed.');
       if (!['GET', 'HEAD'].includes(req.method) && req.headers.origin && new URL(req.headers.origin).host !== host.host) throw new AppError(403, 'Cross-site changes are not allowed.');
-      if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured });
+      if (req.method === 'GET' && url.pathname === '/api/health' && !mobile) return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, authentication_required: requireAuth, mobile_api: 1 });
+      if (!mobile && req.method === 'POST' && url.pathname === '/api/session') {
+        if (Date.now() - loginWindow > 60000) { failedLogins = 0; loginWindow = Date.now(); }
+        if (failedLogins >= 10) throw new AppError(429, 'Too many sign-in attempts. Try again in a minute.', 60);
+        const data = await body(req);
+        if (!adminToken || !equalSecret(data.token, adminToken)) { failedLogins++; throw new AppError(401, 'Invalid browser access key.'); }
+        const token = devices.createSession();
+        res.setHeader('Set-Cookie', `dangerroom_session=${token}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=86400`);
+        return send(200, { signed_in: true });
+      }
+      if (!mobile && req.method === 'DELETE' && url.pathname === '/api/session') {
+        devices.logout(req);
+        res.setHeader('Set-Cookie', 'dangerroom_session=; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=0');
+        return send(200, { signed_in: false });
+      }
+      // Mobile always needs an approved device, even on trusted-network installations.
+      const device = devices.authenticate(req);
+      if (mobile && !device) throw new AppError(401, 'Configure an approved device ID and secret.');
+      if (requireAuth && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/covers/')) && !device && !devices.session(req)) throw new AppError(401, 'Sign in with your browser access key.');
+      if (req.method === 'GET' && url.pathname === '/api/device') return send(200, { authorized: device, version: releases[0].version });
+      if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, mobile_api: 1 });
+      if (req.method === 'GET' && url.pathname === '/api/slideshow') {
+        const unique = new Map();
+        for (const row of repo.collection('owned', '')) {
+          if (row.edition.cover_file) unique.set(`${row.issue.id}:${row.edition.key}`, row);
+        }
+        return send(200, { items: [...unique.values()] });
+      }
+      if (req.method === 'GET' && url.pathname === '/api/camera-search') {
+        const upc = url.searchParams.get('upc');
+        const barcodeParams = new URLSearchParams({ upc: upc || '', page: url.searchParams.get('page') || '1' });
+        let result = await metron.search(upc ? barcodeParams : url.searchParams);
+        if (upc && !result.results.length && url.searchParams.get('q')) {
+          const fallback = new URLSearchParams(url.searchParams); fallback.delete('upc');
+          result = await metron.search(fallback);
+        }
+        const coverPage = positiveId(url.searchParams.get('cover_page') || '1', 'Cover page');
+        const start = (coverPage - 1) * 5;
+        if (start >= result.results.length && result.results.length) throw new AppError(400, 'That cover page is not available. Start a new lookup.');
+        // Bound detail requests without skipping the rest of a provider page.
+        const items = [];
+        for (const row of result.results.slice(start, start + 5)) {
+          const issue = await metron.issue(positiveId(row.id));
+          for (const edition of issue.editions) items.push({ issue, edition, barcode_match: Boolean(upc && edition.upc === upc) });
+        }
+        items.sort((a, b) => Number(b.barcode_match) - Number(a.barcode_match));
+        const moreCovers = start + 5 < result.results.length;
+        return send(200, { ...result, results: undefined, items, limited: moreCovers, next: moreCovers || result.next,
+          next_page: moreCovers ? result.page : result.page + 1, next_cover_page: moreCovers ? coverPage + 1 : 1 });
+      }
       if(req.method==='GET'&&url.pathname==='/api/series-types')return send(200,{items:await metron.seriesTypes()});
       if (req.method === 'GET' && url.pathname === '/api/search') {
         const result=await metron.search(url.searchParams);
@@ -152,7 +213,7 @@ export function createApp(options = {}) {
   });
   server.requestTimeout = 60000;
   server.on('close', () => db.close());
-  return { server, repo, metron, covers };
+  return { server, repo, metron, covers, devices };
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { server } = createApp();

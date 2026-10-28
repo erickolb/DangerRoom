@@ -9,3 +9,12 @@ node_modules/
 /import-data/
 /backups/
 /previous-revision.txt
+
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+/.work/
+*.jks
+*.keystore
+/.signing/

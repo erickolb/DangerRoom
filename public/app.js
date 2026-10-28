@@ -5,6 +5,8 @@ import { localToday, shiftMonth, mountMonthPicker, changeRead, cancelReadDialog 
 import { seriesRatingChart } from './series-ratings.js';
 import { releases } from './releases.js';
 import { actionButton, context, copyState, bindToggles } from './actions.js';
+import { isAndroid, mobileHome, mobilePage } from './mobile.js';
+import { signIn } from './login.js';
 const $ = s => document.querySelector(s), app = $('#app'), notice = $('#notice'), dialog = $('#dialog');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icon = (name, light = false) => `<img class="icon${light ? ' light-icon' : ''}" src="/${name}.png" alt="">`;
@@ -16,6 +18,12 @@ let pendingSeriesNameCheck = null;
 let connected = false, generation = 0, dialogGeneration = 0, collectionView = 'owned';
 $('#build-label').textContent = releases[0].version;
 async function api(path, options = {}) {
+  if(isAndroid){
+    const result=await new Promise(resolve=>{const id=crypto.randomUUID();window.dangerroomResponses??={};window.dangerroomResponses[id]=result=>{delete window.dangerroomResponses[id];resolve(result);};window.DangerRoomAndroid.request(`/api${path}`,options.method||'GET',options.body||'',id);});
+    if(result.status===401)throw Error('This device is not authorized. Check instance and device settings.');
+    if(result.status<200||result.status>=300)throw Error(result.data?.error||'Could not reach DangerRoom.');
+    return result.data;
+  }
   const response = await fetch(`/api${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
   const data = await response.json();
   if (!response.ok) throw new Error(`${data.error || 'Request failed.'}${response.headers.get('Retry-After') ? ` Try again in ${response.headers.get('Retry-After')} seconds.` : ''}`);
@@ -66,6 +74,8 @@ async function route() {
   const { path, params } = routeData();
   document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === `#${path}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   try {
+    if(path==='/home'&&isAndroid)return mobileHome(app);
+    if(await mobilePage(path,params,app,api,(id,key)=>choose(id,null,key),()=>ticket===generation))return;
     if(path==='/reading-log')return await readingLogPage(params,ticket);
     if (path === '/wants') return await wantList(params,ticket);
     if (path === '/changelog') return changelog();
@@ -358,6 +368,8 @@ function changelog() {
 document.addEventListener('click',event=>{
   const dropdown=$('#results-filter');if(dropdown?.open&&!dropdown.contains(event.target))dropdown.open=false;
 });
+await signIn();
 window.addEventListener('hashchange', route);
+if(isAndroid){document.body.classList.add('android-app');document.querySelector('.brand').href='#/home';const home=document.createElement('a');home.className='button secondary';home.href='#/home';home.textContent='Menu';document.querySelector('.header-nav').prepend(home);if(!location.hash)location.hash='#/home';}
 try { connected = (await api('/health')).metron_configured; } catch { /* Search and collection report actionable failures. */ }
 await route();

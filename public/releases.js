@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-002', date: '2026-10-28', title: 'Android companion',
+  changes: ['Add an Android app with a mask startup screen, six-section menu, configurable HTTPS instance, encrypted device credentials, and phone/tablet layouts.', 'Add administrator-issued device credentials and revocation, plus browser access-key sessions; Docker deployments now require authentication for collection APIs and covers.', 'Look up photographed comics using on-device barcode and text recognition, candidate artwork comparison, and exact variant selection.', 'Display owned covers in a slideshow with exclusions, limits, remembered selections, shuffle, timing, full screen, and cross-fades.'],
+}, {
   version: 'β-001', date: '2026-10-28', title: 'First beta',
   changes: ['Promote DangerRoom to beta with a non-root Docker container, persistent storage, Compose configuration, and Linux container verification; collapse historical alpha changelog entries.', 'Document home-server deployment, transferring existing data and S3 references, backups, updates, and rollback.'],
 }, {
