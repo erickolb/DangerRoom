@@ -8,6 +8,7 @@ Run in a shell on astralplane:
 
 ```sh
 cd /path/to/DangerRoom
+if [ -f compose.https.yaml ]; then export COMPOSE_FILE=compose.yaml:compose.https.yaml; fi
 git status --short
 git rev-parse HEAD > previous-revision.txt
 sudo docker image tag dangerroom:local dangerroom:rollback
@@ -17,10 +18,16 @@ chmod 700 backups
 backup_stamp=$(date +%Y%m%d-%H%M%S)
 cp .env "backups/environment-$backup_stamp.env"
 chmod 600 "backups/environment-$backup_stamp.env"
-sudo docker compose run --rm --no-deps --user root --entrypoint tar -v "$PWD/backups:/backups" dangerroom -czf "/backups/data-$backup_stamp.tgz" -C /data .
+if [ -f compose.https.yaml ]; then cp compose.https.yaml "backups/compose.https-$backup_stamp.yaml"; fi
+sudo docker compose run --rm --no-deps --user root --cap-add DAC_OVERRIDE --entrypoint tar -v "$PWD/backups:/backups" dangerroom -czf "/backups/data-$backup_stamp.tgz" -C /data .
+sudo tar -tzf "backups/data-$backup_stamp.tgz" > /dev/null
 ```
 
 Confirm the backup exists and tar can list it before proceeding. It contains SQLite and any local covers; .env is stored separately and contains secrets. Maintain a separate recoverable S3 backup/versioning policy. If backup fails, restart the existing container and investigate before updating.
+
+The one-off backup needs `DAC_OVERRIDE` because the service drops all capabilities: container root otherwise cannot write into your user-owned `700` backup directory or read files restricted to another UID. This capability is added only for the backup command. Keep the backup directory private. The bind mount is `"$PWD/backups:/backups"`, with no backslash before the colon.
+
+If present, `compose.https.yaml` is a server-specific override; keep it and include it in configuration backups. The `COMPOSE_FILE` export above applies both files to subsequent Compose commands in this shell, including stop, backup, rebuild, startup, and device provisioning. Alternatively pass `-f compose.yaml -f compose.https.yaml` explicitly each time. If the override removes the localhost port, check health with `curl --fail https://dangerroom.chateaulore.net/api/health` instead of the localhost URL below.
 
 ## Build and apply
 
