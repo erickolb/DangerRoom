@@ -264,7 +264,7 @@ async function collection(params,ticket){
     if(!contexts.has(row.issue.id))contexts.set(row.issue.id,context(row.issue,api,text=>message(text,true)));
     const ctx=contexts.get(row.issue.id),state=copyState(ctx,row.edition.key,view!=='read'?row.id:undefined);states.push({ctx,state});
     const card=document.querySelector(`[data-card="${i}"]`);
-    bindToggles(card.querySelector('[data-card-actions]'),ctx,state);
+    bindToggles(card.querySelector('[data-card-actions]'),ctx,state,{actions:['owned','wanted','read','black_bag']});
     mountTileRating(card.querySelector('[data-card-rating]'),ctx,state);
     ctx.listeners.add(()=>{if(view==='unread')card.hidden=ctx.issue.read;card.classList.toggle('inactive-copy',view!=='read'&&!state.copyId);updateCount();});
   }
@@ -370,6 +370,6 @@ document.addEventListener('click',event=>{
 });
 await signIn();
 window.addEventListener('hashchange', route);
-if(isAndroid){document.body.classList.add('android-app');document.querySelector('.brand').href='#/home';const home=document.createElement('a');home.className='button secondary';home.href='#/home';home.textContent='Menu';document.querySelector('.header-nav').prepend(home);if(!location.hash)location.hash='#/home';}
+if(isAndroid){document.body.classList.add('android-app');document.querySelector('.brand').href='#/home';const subtitle=document.querySelector('.brand .eyebrow');subtitle.textContent='Your Comics Sidekick';subtitle.className='mobile-brand-subtitle';subtitle.parentElement.append(subtitle);const home=document.createElement('a');home.className='button secondary';home.href='#/home';home.textContent='Menu';document.querySelector('.header-nav').prepend(home);if(!location.hash)location.hash='#/home';}
 try { connected = (await api('/health')).metron_configured; } catch { /* Search and collection report actionable failures. */ }
 await route();

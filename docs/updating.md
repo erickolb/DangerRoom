@@ -54,6 +54,12 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
+### β-004: shared black bags and the Android menu
+
+β-004 stores slideshow black bags in SQLite schema 6. Follow the stopped-container backup above before updating. Update the server for the new menu, fourth Ø collection control, full-inventory slideshow, and automatic full-screen playback; these screens are served by DangerRoom. The new Android β-004 APK is linked in the [Android guide](android.md). Existing Android β-002 clients remain compatible with the updated server.
+
+When each device next opens the slideshow, its earlier local exclusions are saved as shared black bags. Maximum-cover settings and remembered subsets are retired. Remove black bags using Ø in My Collection. No collection entries, ratings, wants, or reading logs are removed.
+
 ### β-003: restore trusted browser access; provision Android separately
 
 Android follows the same device allowlist model as Quartermaster and Heroes Feast: generate a device ID and secret on the server, then enter both in the Android client. Browser access keeps its original trust model and does not require a login by default. The Android β-002 APK remains compatible with server β-003.

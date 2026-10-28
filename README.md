@@ -4,7 +4,7 @@ Comic inventory and reading journal. Current build: **β-003**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android companion](docs/android.md) adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download the signed Android beta](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.2). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android companion](docs/android.md) adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download the signed Android beta](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.4). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 ## Run locally
 
@@ -51,7 +51,7 @@ Tapping a read icon opens **Mark As Read**. **Record in Reading Log** defaults o
 
 Comic details have a **Log a Reading** button for recording additional dates, plus an issue-wide **Reading Log Entries** section directly below the graph area (above the owned-series shelf when no graph is shown). Entries from every cover appear here, with individual removal controls. Adding a reading marks the issue read but never adds an owned copy. The existing cover and metadata are reused. A first read from Metron search imports its standard cover and essential metadata; saved issues need no provider calls.
 
-Existing collections migrate to schema 5 with an empty journal: no historical dates are inferred from read flags. SQLite and covers are backed up as described above.
+The reading-journal migration introduced schema 5 with an empty journal: no historical dates are inferred from read flags. Schema 6 adds shared, per-cover slideshow black bags. SQLite and covers are backed up as described above.
 
 ## Personal ratings
 

@@ -1,6 +1,6 @@
-# DangerRoom for Android · β-002
+# DangerRoom for Android · β-004
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-002 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [DangerRoom's β-002 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.2), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-004 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [DangerRoom's β-004 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.4), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
 
 ## Install and connect
 
@@ -28,7 +28,11 @@ Confirm the issue/year and cover visually. Tap its tile to open the existing cov
 
 Only owned editions with saved artwork are eligible; duplicate copies of the same edition appear once. Different owned variants remain separate. The slideshow does not query Metron or require a League of Comic Geeks account.
 
-Settings mirror RoguesGallery: maximum covers (default 1000), random or collection-order selection, remembered selection, random display order, 3–600 seconds per cover (default 15), cross-fades or cuts, and individual cover exclusions. Remembered selections retain eligible covers and fill gaps when the collection changes. Preferences are stored separately per instance. Use previous/next, Play/Pause, Exclude cover, Full screen, and Settings. Failed images are skipped for the current session. Playback pauses when the app leaves the foreground. The screen stays awake only during playback. Images load as needed; this first version does not retain an offline cover cache.
+The slideshow uses the full owned inventory with no maximum or remembered subset. Settings contain only random display order, 3–600 seconds per cover (default 15), and cross-fades or cuts. Timing and playback preferences are stored separately per instance.
+
+**Black bag** excludes the current cover. Toggle the fourth **Ø** control on My Collection tiles to add or remove a black bag. This placeholder will be replaced with an icon later. Status is saved on the server for the exact cover: all duplicate copies share it, while other variants remain independent. Ownership, wants, reading history, and ratings are unaffected. The saved state applies across devices when they next load the collection or slideshow. Earlier device-local exclusions migrate to server black bags when that device next opens its slideshow.
+
+Play enters full screen automatically and keeps the screen awake. Controls and the caption fade away; tap the image to reveal previous/next, Pause, Black bag, and Settings. Pausing or opening Settings leaves full screen. Playback pauses when the app leaves the foreground. Failed images are skipped for the current session. Images load as needed; this version does not retain an offline cover cache.
 
 ## Build and signing
 
@@ -41,4 +45,4 @@ cd android
 
 For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds; published APKs are signed separately. Keep `applicationId=net.chateaulore.dangerroom`, retain the signing key, and increment versionCode for every future published Android build.
 
-Published version: **0.1.0-beta.2 / β-002**, Android version code **1**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.2`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+Published version: **0.1.0-beta.4 / β-004**, Android version code **2**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.4`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.

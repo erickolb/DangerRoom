@@ -1,5 +1,13 @@
 # Changelog
 
+## β-004 · 2026-10-28
+
+- Remove the centered Android menu logo/title and put Your Comics Sidekick below the top DangerRoom header; rename the search menu item Search Metron.
+- Use all owned covers except server-saved black bags. Remove maximum covers, random selection, remembered subsets, and the eligible-cover checklist. Retain shuffled playback order, timing, and cross-fades.
+- Rename the slideshow exclusion action Black bag and add a fourth Ø toggle on My Collection tiles. The exact cover's state is shared across copies and devices; other variants remain independent.
+- Enter full screen for playback and reveal controls on tap. Left-align Android collection and Reading Log navigation.
+- Add schema 6 for persistent cover exclusions; migrate prior device-local exclusions when that device next opens the slideshow.
+
 ## β-003 · 2026-10-28
 
 - Restore the original trusted-browser access model by default in Docker deployments; browser sign-in is now opt-in.

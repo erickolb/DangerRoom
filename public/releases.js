@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-004', date: '2026-10-28', title: 'Your Comics Sidekick',
+  changes: ['Simplify the Android menu and move Your Comics Sidekick under the top header; shorten Search Metron.', 'Use the full owned inventory for slideshows, with server-saved black bags per cover. Add an Ø toggle to My Collection tiles; remove selection limits, random selection, remembered subsets, and the eligible-cover checklist.', 'Enter full screen automatically during slideshow playback with controls available on tap, and left-align collection and reading-log navigation on Android.'],
+}, {
   version: 'β-003', date: '2026-10-28', title: 'Device-only approval by default',
   changes: ['Restore trusted browser access by default in Docker deployments. Android still requires an administrator-issued device ID and secret on every mobile API request; revoked devices remain blocked.', 'Make browser access-key sign-in an explicit opt-in and correct deployment and device provisioning instructions. Existing Android β-002 installations remain compatible.'],
 }, {

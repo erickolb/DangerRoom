@@ -6,8 +6,8 @@ android {
         applicationId = "net.chateaulore.dangerroom"
         minSdk = 28
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0-beta.2"
+        versionCode = 2
+        versionName = "0.1.0-beta.4"
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     val signing = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").map { providers.environmentVariable(it).orNull }

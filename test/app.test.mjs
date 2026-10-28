@@ -242,7 +242,7 @@ test('ratings migration preserves old inventory, starts unrated, and persists ha
   db = openDatabase(dir); repo = new Repository(db);
   try {
     assert.equal(repo.issue(42).user_rating, 2.5); assert.ok(repo.issue(42).read);
-    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 5);
+    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 6);
   } finally { db.close(); }
 });
 
@@ -327,7 +327,7 @@ test('want-list migration preserves inventory and ratings and persists wants thr
   assert.equal(repo.wantList().length,0);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.collection('owned').length,1);
   repo.addWant(essentialIssue(raw),editionsFor(raw)[1],null);db.close();
   db=openDatabase(dir);repo=new Repository(db);
-  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,5);}finally{db.close();}
+  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,6);}finally{db.close();}
 });
 test('ownership wins a want-list race, even when a stale cover selection is submitted', async t => {
   const h=await harness(t), issue=essentialIssue(raw),edition=editionsFor(raw)[0];
@@ -522,7 +522,7 @@ test('reading-log schema migration preserves old collection and logs persist aft
   try{
     const migrated=new Repository(db);assert.equal(migrated.issue(42).reading_log_count,0);assert.equal(migrated.issue(42).copies.length,1);assert.equal(migrated.issue(42).user_rating,3);
     migrated.setRead(42,true,'standard',{log_date:'2026-10-27'});db.close();db=openDatabase(dir);
-    assert.equal(new Repository(db).issueLog(42)[0].read_date,'2026-10-27');assert.equal(db.prepare('PRAGMA user_version').get().user_version,5);
+    assert.equal(new Repository(db).issueLog(42)[0].read_date,'2026-10-27');assert.equal(db.prepare('PRAGMA user_version').get().user_version,6);
   }finally{db.close();await rm(dir,{recursive:true,force:true});}
 });
 

@@ -47,7 +47,9 @@ export function openDatabase(directory) {
       read_date TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(issue_id,edition_key) REFERENCES editions(issue_id,key));
     CREATE INDEX IF NOT EXISTS reading_log_date ON reading_log(read_date DESC,created_at DESC);
     CREATE INDEX IF NOT EXISTS reading_log_issue ON reading_log(issue_id);
-    PRAGMA user_version=5;`);
+    CREATE TABLE IF NOT EXISTS black_bags (issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
+      PRIMARY KEY(issue_id,edition_key), FOREIGN KEY(issue_id,edition_key) REFERENCES editions(issue_id,key));
+    PRAGMA user_version=6;`);
   return db;
 }
 export class Repository {
@@ -68,7 +70,7 @@ export class Repository {
     return { ...JSON.parse(row.metadata), saved_at: row.saved_at,
       reading_log_count: this.db.prepare('SELECT COUNT(*) AS count FROM reading_log WHERE issue_id=?').get(id).count,
       user_rating: (this.db.prepare('SELECT half_stars FROM issue_ratings WHERE issue_id=?').get(id)?.half_stars ?? 0) / 2 || null,
-      editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file, ...this.coverStatus(id, e.key) })),
+      editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file, ...this.coverStatus(id, e.key), black_bagged: this.blackBagged(id, e.key) })),
       copies: this.db.prepare('SELECT * FROM copies WHERE issue_id=? ORDER BY added_at DESC,id').all(id),
       read: this.db.prepare('SELECT * FROM reads WHERE issue_id=?').get(id) || null };
   }
@@ -118,6 +120,14 @@ export class Repository {
   coverStatus(id, key) {
     return { owned: Boolean(this.db.prepare('SELECT 1 FROM copies WHERE issue_id=? AND edition_key=? LIMIT 1').get(id,key)),
       wanted: Boolean(this.db.prepare('SELECT 1 FROM wants WHERE issue_id=? AND edition_key=?').get(id,key)) };
+  }
+  blackBagged(id, key) { return Boolean(this.db.prepare('SELECT 1 FROM black_bags WHERE issue_id=? AND edition_key=?').get(id,key)); }
+  setBlackBag(id, key, enabled) {
+    if (typeof enabled !== 'boolean' || typeof key !== 'string') throw new AppError(400, 'Choose a cover and a true or false black-bag status.');
+    if (!this.db.prepare('SELECT 1 FROM editions WHERE issue_id=? AND key=?').get(id,key)) throw new AppError(404, 'Saved cover not found.');
+    if (enabled) this.db.prepare('INSERT OR IGNORE INTO black_bags VALUES (?,?)').run(id,key);
+    else this.db.prepare('DELETE FROM black_bags WHERE issue_id=? AND edition_key=?').run(id,key);
+    return this.issue(id);
   }
   want(id, key) {
     const row = this.db.prepare('SELECT * FROM wants WHERE issue_id=? AND edition_key=?').get(id,key);

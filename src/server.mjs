@@ -92,7 +92,7 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/slideshow') {
         const unique = new Map();
         for (const row of repo.collection('owned', '')) {
-          if (row.edition.cover_file) unique.set(`${row.issue.id}:${row.edition.key}`, row);
+          if (row.edition.cover_file && !row.edition.black_bagged) unique.set(`${row.issue.id}:${row.edition.key}`, row);
         }
         return send(200, { items: [...unique.values()] });
       }
@@ -124,7 +124,12 @@ export function createApp(options = {}) {
         result.results=result.results.map(row=>({...row,...repo.issueStatus(row.id),cover_file:repo.ownedCover(row.id)?.cover_file || null}));
         return send(200,result);
       }
-      let match = url.pathname.match(/^\/api\/metron\/issues\/(\d+)$/);
+      let match = url.pathname.match(/^\/api\/issues\/(\d+)\/black-bag$/);
+      if (req.method === 'PATCH' && match) {
+        const data = await body(req);
+        return send(200, repo.setBlackBag(positiveId(match[1]),data.edition_key,data.black_bagged));
+      }
+      match = url.pathname.match(/^\/api\/metron\/issues\/(\d+)$/);
       if (req.method === 'GET' && match) {
         const issue = await metron.issue(positiveId(match[1]));
         issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));

@@ -11,7 +11,8 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | `POST /api/session` | `{token}` browser administrator key → 24-hour opaque HttpOnly, Secure, SameSite=Strict cookie; 10 failed attempts per minute per instance. Use HTTPS. |
 | `DELETE /api/session` | Revoke current browser session and clear cookie. |
 | `GET /api/device` | Authentication check. Mobile settings require `authorized:true`, meaning an enabled device. |
-| `GET /api/slideshow` | `{items}` of unique owned `(issue ID, edition key)` pairs with saved cover files. No provider calls. |
+| `GET /api/slideshow` | `{items}` of all unique owned `(issue ID, edition key)` pairs with saved cover files, excluding black bags. No provider calls or selection limit. |
+| `PATCH /api/issues/:id/black-bag` | `{edition_key,black_bagged:boolean}` toggles a saved cover's slideshow exclusion and returns the refreshed issue. Shared across copies/devices; does not change ownership, wants, reading, or rating. |
 | `GET /api/camera-search?q=…&number=…&upc=…&page=1&cover_page=1` | Barcode search first, title fallback on zero barcode hits; expands five issues per response into exact cover candidates. Follow `next_page`/`next_cover_page` while `next` is true to include every issue on each provider page. `{count,page,next,previous,limited,next_page,next_cover_page,items:[{issue,edition,barcode_match}]}`. Candidate images compare on Android; photos never reach this API. No automatic inventory writes. |
 
 Additive `devices(id,label,token_hash,enabled)` and `web_sessions(token_hash,expires_at)` tables do not change existing inventory records. Issue/want/log migrations remain unchanged. Device management is a server CLI operation; there is no public provisioning endpoint. See [Android setup](android.md).
@@ -49,7 +50,7 @@ Status errors use `{error}`. HTTP 429 includes `Retry-After`. Provider credentia
 
 ## Cover storage locations (α-006)
 
-`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 5. See [S3 configuration and migration](s3.md).
+`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 6. `black_bags(issue_id,edition_key)` references saved editions and records per-cover slideshow exclusions; existing covers start unbagged. Issue editions expose `black_bagged`. See [S3 configuration and migration](s3.md).
 
 `GET /api/issues/:id/owned-series` returns `{ items }` from saved collection data only. It groups owned issues by matching series title across runs (case-insensitive, trimmed, Unicode-normalized), sorts by start year, volume, and numeric issue, and returns one row per issue with `copy_count`. It prefers owned variant artwork. Read-only and wanted-only entries are excluded.
 
