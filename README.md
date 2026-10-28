@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **α-071**.
+Comic inventory and reading journal. Current build: **β-001**.
 
 ## Run locally
 
@@ -17,7 +17,7 @@ pnpm start
 
 Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a token the app opens and saved collection pages work, but uncached Metron searches do not. `HOST`, `PORT`, `DATA_DIR`, and optional `ALLOWED_HOSTS` are documented in `.env.example`.
 
-This MVP is a single personal collection, bound to loopback by default. It has no account/login system. Internet hosting and Docker deployment have not been configured.
+This is a single personal collection with no account/login system. For Docker hosting, see [deployment](docs/deployment.md) and [container updates and rollback](docs/updating.md). Keep it on a trusted network or behind an authenticated reverse proxy.
 
 ## Use
 

@@ -69,3 +69,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 
 .month-picker-today{width:100%;margin-top:12px}
 .collection-card[hidden]{display:none}
+
+.alpha-history{margin-top:30px}.alpha-history>summary{cursor:pointer;font-size:1.2rem;padding:16px 0;border-bottom:1px solid #895064}

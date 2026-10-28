@@ -5,3 +5,7 @@
 /data/
 /test-results/
 node_modules/
+
+/import-data/
+/backups/
+/previous-revision.txt

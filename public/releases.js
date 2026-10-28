@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-001', date: '2026-10-28', title: 'First beta',
+  changes: ['Promote DangerRoom to beta with a non-root Docker container, persistent storage, Compose configuration, and Linux container verification; collapse historical alpha changelog entries.', 'Document home-server deployment, transferring existing data and S3 references, backups, updates, and rollback.'],
+}, {
   version: 'α-071', date: '2026-10-27', title: 'Clean unread icon',
   changes: ['Remove the remaining creator text from the Unread Comics icon; retain attribution in Credits.'],
 }, {

@@ -1,5 +1,11 @@
 # Changelog
 
+## β-001 · 2026-10-28
+
+- Collapse alpha changelog entries under a closed Alpha releases header.
+- Promote the app to beta and add Docker/Compose deployment with non-root execution and persistent data.
+- Document deployment, data transfer, backups, updates, and rollback; add container CI verification.
+
 ## α-071 · 2026-10-27
 
 - Remove remaining corner text from the Unread Comics icon.

@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!package.json
+!pnpm-lock.yaml
+!src/
+!src/**
+!public/
+!public/**
+!scripts/
+!scripts/**

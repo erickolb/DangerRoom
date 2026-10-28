@@ -1,0 +1,38 @@
+name: Container verification
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check && pnpm test
+      - run: cp .env.example .env && docker compose config --quiet
+      - run: docker build -t dangerroom:test .
+      - name: Verify health and non-root persistent storage
+        run: |
+          docker run -d --name dangerroom-test --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true -p 127.0.0.1:4340:4340 -v dangerroom-test-data:/data dangerroom:test
+          for attempt in $(seq 1 30); do
+            if curl --fail http://127.0.0.1:4340/api/health; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4340/api/health | grep 'β-001'
+          docker exec dangerroom-test sh -c 'test "$(id -u)" != 0 && test -s /data/dangerroom.sqlite'
+          docker restart dangerroom-test
+          for attempt in $(seq 1 30); do
+            if curl --fail http://127.0.0.1:4340/api/health; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4340/api/health
+      - name: Container logs
+        if: always()
+        run: docker logs dangerroom-test || true
