@@ -36,11 +36,11 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 β-002 adds Android device access and locks down Docker-hosted collection APIs and saved covers. Before rebuilding, generate a random browser key locally:
 
 ```sh
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+openssl rand -hex 32
 vi .env
 ```
 
-Set `DANGERROOM_ADMIN_TOKEN=` to that generated value (at least 32 characters). Keep it private and store it in your password manager. Compose refuses to start without the key. Open DangerRoom through your existing HTTPS hostname and use the key at the sign-in screen; browser sessions last 24 hours. The public health endpoint remains available for container checks. Direct local HTTP cannot use the Secure browser cookie; use HTTPS for authenticated browser access.
+Set `DANGERROOM_ADMIN_TOKEN=` to that generated value (at least 32 characters). The command uses OpenSSL on the host; a host Node.js installation is not required for Docker deployment. Keep the key private and store it in your password manager. Compose refuses to start without the key. Open DangerRoom through your existing HTTPS hostname and use the key at the sign-in screen; browser sessions last 24 hours. The public health endpoint remains available for container checks. Direct local HTTP cannot use the Secure browser cookie; use HTTPS for authenticated browser access.
 
 Provision each phone/tablet after the updated container starts, following [Android installation and device management](android.md). Do not put the browser access key into the Android app. For trusted-network source-only installations `REQUIRE_AUTH=false` retains the earlier browser behavior, but mobile routes still require credentials. Keep authentication enabled on publicly accessible instances.
 
