@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-005', date: '2026-10-28', title: 'Android-only black-bag controls',
+  changes: ['Show the fourth Ø collection tile control only in the Android app. Browser collection tiles retain their three original controls; shared black-bag storage and slideshow filtering are unchanged.'],
+}, {
   version: 'β-004', date: '2026-10-28', title: 'Your Comics Sidekick',
   changes: ['Simplify the Android menu and move Your Comics Sidekick under the top header; shorten Search Metron.', 'Use the full owned inventory for slideshows, with server-saved black bags per cover. Add an Ø toggle to My Collection tiles; remove selection limits, random selection, remembered subsets, and the eligible-cover checklist.', 'Enter full screen automatically during slideshow playback with controls available on tap, and left-align collection and reading-log navigation on Android.'],
 }, {

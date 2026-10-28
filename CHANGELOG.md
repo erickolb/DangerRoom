@@ -1,5 +1,9 @@
 # Changelog
 
+## β-005 · 2026-10-28
+
+- Show the Ø black-bag control on My Collection tiles only in the Android app. Browser tiles retain their original three controls. No APK update is required; Android β-004 uses the updated server screens.
+
 ## β-004 · 2026-10-28
 
 - Remove the centered Android menu logo/title and put Your Comics Sidekick below the top DangerRoom header; rename the search menu item Search Metron.

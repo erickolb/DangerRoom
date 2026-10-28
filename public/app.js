@@ -264,7 +264,7 @@ async function collection(params,ticket){
     if(!contexts.has(row.issue.id))contexts.set(row.issue.id,context(row.issue,api,text=>message(text,true)));
     const ctx=contexts.get(row.issue.id),state=copyState(ctx,row.edition.key,view!=='read'?row.id:undefined);states.push({ctx,state});
     const card=document.querySelector(`[data-card="${i}"]`);
-    bindToggles(card.querySelector('[data-card-actions]'),ctx,state,{actions:['owned','wanted','read','black_bag']});
+    bindToggles(card.querySelector('[data-card-actions]'),ctx,state,{actions:isAndroid?['owned','wanted','read','black_bag']:['owned','wanted','read']});
     mountTileRating(card.querySelector('[data-card-rating]'),ctx,state);
     ctx.listeners.add(()=>{if(view==='unread')card.hidden=ctx.issue.read;card.classList.toggle('inactive-copy',view!=='read'&&!state.copyId);updateCount();});
   }
