@@ -16,6 +16,18 @@ async function app(t, options = {}) {
   return { ...instance, request: (path, init = {}) => fetch(origin + path, init) };
 }
 const credentials = device => ({ 'X-Device-Id': device.deviceId, Authorization: `Bearer ${device.token}` });
+test('default deployment trusts browser access while requiring server-issued Android credentials', async t => {
+  const h = await app(t);
+  const health = await (await h.request('/api/health')).json();
+  assert.equal(health.authentication_required, false);
+  assert.equal((await h.request('/api/collection')).status, 200);
+  assert.equal((await h.request('/mobile/api/collection')).status, 401);
+  const device = h.devices.add('Quartermaster-style provisioned phone');
+  assert.equal((await h.request('/mobile/api/collection', { headers: credentials(device) })).status, 200);
+  h.devices.revoke(device.deviceId);
+  assert.equal((await h.request('/mobile/api/collection', { headers: credentials(device) })).status, 401);
+  assert.equal((await h.request('/api/collection')).status, 200);
+});
 test('mobile requires a live allowlisted credential and revocation covers both route prefixes', async t => {
   const h = await app(t), device = h.devices.add('Tablet');
   assert.equal((await h.request('/mobile/api/collection')).status, 401);

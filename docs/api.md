@@ -1,6 +1,6 @@
 # DangerRoom API and data model
 
-All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. With `REQUIRE_AUTH=true`, data APIs and saved covers require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`) or a browser session. Compose enables this and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
+All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted by default, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Optional `REQUIRE_AUTH=true` additionally protects the browser API and saved covers with a browser session or device credentials, and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
 
 ## Android and authentication (β-002)
 

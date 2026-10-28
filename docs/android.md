@@ -24,7 +24,7 @@ sudo docker compose exec dangerroom node scripts/devices.mjs revoke DEVICE_ID
 
 The add command prints the device ID and a random secret **once**. Deliver these privately. The server stores a SHA-256 hash, never the original secret. Revocation applies to every subsequent API and cover request, including the regular web API when called with those credentials. Already displayed/downloaded images cannot be recalled. Credentials identify approved installations; they do not use hardware fingerprinting or Android IDs, and a copied secret can impersonate that device. Revoke it and issue another if exposed.
 
-For a local non-Docker checkout, use `pnpm devices add "Phone"`, `pnpm devices list`, and `pnpm devices revoke DEVICE_ID` with Node 24. Browser access uses a separate administrator key and expiring HttpOnly session; see [container updates](updating.md). Mobile routes always require an enabled device even when trusted-network browser access is enabled.
+For a local non-Docker checkout, use `pnpm devices add "Phone"`, `pnpm devices list`, and `pnpm devices revoke DEVICE_ID` with Node 24. The returned `deviceId` and `token` go into Android's **Device ID** and **Device secret** fields. This follows the Quartermaster and Heroes Feast provisioning model. Browser access requires no key by default; optional browser sign-in is independent. See [container updates](updating.md). Mobile routes always require an enabled device.
 
 ## Camera lookup
 

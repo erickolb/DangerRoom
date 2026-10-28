@@ -1,5 +1,11 @@
 # Changelog
 
+## β-003 · 2026-10-28
+
+- Restore the original trusted-browser access model by default in Docker deployments; browser sign-in is now opt-in.
+- Keep server-issued device IDs and secrets mandatory for Android mobile routes, including revocation checks on each request.
+- Correct setup instructions and verify browser access and approved, unapproved, and revoked devices together. Android β-002 remains compatible; no new APK is required.
+
 ## β-002 · 2026-10-28
 
 - Add the Android companion with configurable instance, encrypted device credentials, branded startup, and six-section menu.

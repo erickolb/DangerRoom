@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-002**.
+Comic inventory and reading journal. Current build: **β-003**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
@@ -21,7 +21,7 @@ pnpm start
 
 Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a token the app opens and saved collection pages work, but uncached Metron searches do not. `HOST`, `PORT`, `DATA_DIR`, and optional `ALLOWED_HOSTS` are documented in `.env.example`.
 
-Each DangerRoom instance holds a single shared collection. Docker hosting now requires a browser access key or an approved device credential. For deployment and the required β-002 access-key configuration, see [deployment](docs/deployment.md) and [container updates and rollback](docs/updating.md). Source-only trusted-network installs can opt out of browser authentication; mobile access always requires a device credential.
+Each DangerRoom instance holds a single shared collection. Browser access retains the original trust model, with no sign-in by default. Android requires a server-issued device ID and secret, matching Quartermaster and Heroes Feast; credentials can be revoked on the server. Optional browser authentication is separate and must be explicitly enabled. See [deployment](docs/deployment.md), [container updates and rollback](docs/updating.md), and [device provisioning](docs/android.md).
 
 ## Use
 

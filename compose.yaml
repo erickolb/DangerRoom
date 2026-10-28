@@ -9,8 +9,7 @@ services:
       HOST: 0.0.0.0
       PORT: "4340"
       DATA_DIR: /data
-      REQUIRE_AUTH: "true"
-      DANGERROOM_ADMIN_TOKEN: ${DANGERROOM_ADMIN_TOKEN:?Set a random browser access key of at least 32 characters in .env}
+      REQUIRE_AUTH: ${REQUIRE_AUTH:-false}
     ports:
       - "127.0.0.1:${DANGERROOM_PORT:-4340}:4340"
     volumes:

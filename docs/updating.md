@@ -31,18 +31,27 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
-### Required once for β-002: browser access key
+### β-003: restore trusted browser access; provision Android separately
 
-β-002 adds Android device access and locks down Docker-hosted collection APIs and saved covers. Before rebuilding, generate a random browser key locally:
+Android follows the same device allowlist model as Quartermaster and Heroes Feast: generate a device ID and secret on the server, then enter both in the Android client. Browser access keeps its original trust model and does not require a login by default. The Android β-002 APK remains compatible with server β-003.
+
+If you followed the original β-002 browser-key instructions, edit `.env`:
 
 ```sh
-openssl rand -hex 32
 vi .env
 ```
 
-Set `DANGERROOM_ADMIN_TOKEN=` to that generated value (at least 32 characters). The command uses OpenSSL on the host; a host Node.js installation is not required for Docker deployment. Keep the key private and store it in your password manager. Compose refuses to start without the key. Open DangerRoom through your existing HTTPS hostname and use the key at the sign-in screen; browser sessions last 24 hours. The public health endpoint remains available for container checks. Direct local HTTP cannot use the Secure browser cookie; use HTTPS for authenticated browser access.
+Set `REQUIRE_AUTH=false` (or leave it unset). The old `DANGERROOM_ADMIN_TOKEN` can be removed; it is not an Android credential. Rebuild and recreate the container using the commands below to apply the corrected Compose default. A host Node.js installation is not required.
 
-Provision each phone/tablet after the updated container starts, following [Android installation and device management](android.md). Do not put the browser access key into the Android app. For trusted-network source-only installations `REQUIRE_AUTH=false` retains the earlier browser behavior, but mobile routes still require credentials. Keep authentication enabled on publicly accessible instances.
+Provision each phone/tablet after the updated container starts, following [Android installation and device management](android.md). For your HTTPS setup:
+
+```sh
+sudo docker compose -f compose.yaml -f compose.https.yaml exec dangerroom node scripts/devices.mjs add "Eric's phone"
+```
+
+Enter the returned `deviceId` and `token` into Android's **Device ID** and **Device secret** fields, together with your DangerRoom hostname. Save the secret privately: it is shown only once. Mobile routes always require an enabled device, independently of browser access.
+
+Optional browser sign-in is available only if you deliberately set `REQUIRE_AUTH=true` and configure `DANGERROOM_ADMIN_TOKEN` to a random secret of at least 32 characters (`openssl rand -hex 32`). It is separate from Android device approval and is not needed for the default deployment.
 
 ```sh
 git pull --ff-only
