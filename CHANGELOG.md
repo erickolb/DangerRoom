@@ -1,5 +1,9 @@
 # Changelog
 
+## α-069 · 2026-10-27
+
+- Restore the empty-state Search Metron button and preserve the collection search text.
+
 ## α-068 · 2026-10-27
 
 - Remove redundant Search Metron buttons from the My Collection page body and empty state.

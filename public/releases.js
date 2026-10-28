@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'α-069', date: '2026-10-27', title: 'Restore empty collection search',
+  changes: ['Restore Search Metron in empty collection results, carrying the find text into the search.'],
+}, {
   version: 'α-068', date: '2026-10-27', title: 'Simplify collection navigation',
   changes: ['Remove redundant Search Metron buttons from the My Collection page body and empty state.'],
 }, {
