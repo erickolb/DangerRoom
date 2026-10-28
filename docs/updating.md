@@ -78,18 +78,13 @@ sudo docker compose logs --tail=100 dangerroom
 
 ### Check health at the address exposed by your deployment
 
-After recreating the container, read only `DANGERROOM_URL` from its environment (loaded from `.env`) and check that address:
+After recreating the container, run the repository's health-check script:
 
 ```sh
-dangerroom_url=$(sudo docker compose exec -T dangerroom node -p 'process.env.DANGERROOM_URL || ""')
-if [ -n "$dangerroom_url" ]; then
-  curl --fail "${dangerroom_url%/}/api/health"
-else
-  echo 'Set DANGERROOM_URL in .env, recreate the container, then retry the health check.' >&2
-fi
+bash scripts/health-check.sh
 ```
 
-Node runs inside the updated container; it does not need to be installed on the host. This reads the configured value without sourcing `.env` as shell code or printing other environment values. Changes to `.env` require container recreation before this command sees them. The request runs from the server, so the configured address must be reachable there; it does not have to be accessible from the public internet.
+The script reads only `DANGERROOM_URL` from the updated container's environment, then checks its `/api/health` endpoint. Node runs inside the container; it does not need to be installed on the host. The script uses the checkout's `.env` and configured Compose overrides, without sourcing `.env` as shell code or printing other environment values. It exits unsuccessfully if the URL is missing, Compose fails, or the health request fails. Changes to `.env` require container recreation before the script sees them. The request runs from the server, so the configured address must be reachable there; it does not have to be accessible from the public internet.
 
 An HTTPS override containing `ports: !reset []` removes that host port mapping. In that setup, localhost curl reports **Failed to connect** even when the app is healthy. A log line such as `DangerRoom β-002 · http://0.0.0.0:4340` describes the listener **inside the container**; it does not mean port 4340 is exposed on the host. Use the HTTPS hostname instead. A failed HTTPS check still needs investigation; inspect the Compose service and reverse proxy.
 
