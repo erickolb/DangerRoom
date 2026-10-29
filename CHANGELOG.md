@@ -1,5 +1,11 @@
 # Changelog
 
+## β-011 · 2026-10-29
+
+- Fix the flash of the upcoming cover before a cross-fade. Load and decode each next image in a hidden layer before fading, leaving the displayed image untouched until the transition.
+- Clean up animation effects before reusing layers; handle rapid navigation, cuts, failed images, and exiting during a transition.
+- No APK update is required.
+
 ## β-010 · 2026-10-29
 
 - Replace the downscaled black-bag raster in controls with a clean SVG tuned for 30px display. Preserve the black body, white arc, and slashed eye; simplify and strengthen their geometry and tighten the glow.

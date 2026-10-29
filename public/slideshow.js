@@ -1,4 +1,5 @@
 import { comicTitleText } from './comic-title.js';
+import { createCoverTransition } from './cover-transition.js';
 
 function preferences() {
   const key = `dangerroom-gallery:${location.origin}`;
@@ -51,6 +52,7 @@ export async function mountSlideshow(app, api, current) {
   app.innerHTML = `<div id="gallery-stage" class="gallery-fullscreen gallery-immersive gallery-playing gallery-controls-visible" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite">Opening owned covers…</p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover" disabled>‹</button><button id="play-covers" disabled>Pause</button><button id="next-cover" aria-label="Next cover" disabled>›</button><button id="exit-gallery">Exit</button></div></div></div>`;
   const stage = app.querySelector('#gallery-stage'), caption = app.querySelector('#gallery-caption');
   const image = app.querySelector('#gallery-cover'), old = app.querySelector('#gallery-old');
+  const transition = createCoverTransition(image, old);
   const play = app.querySelector('#play-covers'), previous = app.querySelector('#previous-cover'), next = app.querySelector('#next-cover');
   function leaveFullscreen() {
     window.DangerRoomAndroid?.fullscreen(false);
@@ -69,34 +71,30 @@ export async function mountSlideshow(app, api, current) {
     clearTimeout(timer);
     if (playing && !loading && current() && !disposed && !document.hidden) timer = setTimeout(() => advance(1), settings.seconds * 1000);
   }
-  function display() {
+  async function display() {
     clearTimeout(timer);
     const ticket = ++generation;
     if (!current() || disposed) return;
     previous.disabled = next.disabled = play.disabled = !rows.length;
     if (!rows.length) {
-      loading = false; image.removeAttribute('src'); old.removeAttribute('src');
+      loading = false; transition.clear();
       caption.textContent = 'No eligible owned covers. Add comics or remove a black bag using the black-bag icon in My Collection.';
       pause(); return;
     }
     const row = rows[index]; loading = true; caption.textContent = 'Loading cover…'; revealControls();
-    const loaded = new Image();
-    loaded.onload = () => {
-      if (ticket !== generation || !current() || disposed) return;
+    try {
+      const alt = `${comicTitleText(row.issue, { year: true })} · ${row.edition.name}`;
+      const shown = await transition.show(`/covers/${row.edition.cover_file}`, alt, settings.fade, () => ticket === generation && current() && !disposed);
+      if (!shown || ticket !== generation || !current() || disposed) return;
       loading = false;
-      if (image.getAttribute('src')) old.src = image.src; else old.removeAttribute('src');
-      image.src = loaded.src; image.alt = `${comicTitleText(row.issue, { year: true })} · ${row.edition.name}`;
-      old.animate([{ opacity: settings.fade ? 1 : 0 }, { opacity: 0 }], { duration: settings.fade ? 600 : 0, fill: 'forwards' });
-      caption.textContent = `${image.alt} · ${index + 1} / ${rows.length}`;
+      caption.textContent = `${alt} · ${index + 1} / ${rows.length}`;
       revealControls(); schedule();
-    };
-    loaded.onerror = () => {
+    } catch {
       if (ticket !== generation || !current() || disposed) return;
       failed.add(`${row.issue.id}:${row.edition.key}`);
       rows = rows.filter(r => !failed.has(`${r.issue.id}:${r.edition.key}`));
       index = rows.length ? index % rows.length : 0; display();
-    };
-    loaded.src = `/covers/${row.edition.cover_file}`;
+    }
   }
   function advance(direction) { if (rows.length) { index = (index + direction + rows.length) % rows.length; display(); } }
   previous.onclick = () => advance(-1); next.onclick = () => advance(1);
@@ -115,7 +113,7 @@ export async function mountSlideshow(app, api, current) {
   const fullscreenChange = () => { if (!window.DangerRoomAndroid && !document.fullscreenElement) pause(); };
   const cleanup = () => {
     if (current() || disposed) return;
-    disposed = true; pause(); generation++; leaveFullscreen();
+    disposed = true; pause(); generation++; transition.cancel(); leaveFullscreen();
     window.removeEventListener('hashchange', cleanup);
     document.removeEventListener('visibilitychange', visibility);
     document.removeEventListener('dangerroompause', pause);

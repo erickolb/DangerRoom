@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-011', date: '2026-10-29', title: 'Smooth cover transitions',
+  changes: ['Prevent a new cover flashing before cross-fade by decoding it in a hidden image layer, then fading between stable layers. Cancel and clean up completed animation effects before reusing a layer.'],
+}, {
   version: 'β-010', date: '2026-10-29', title: 'Crisp black-bag controls',
   changes: ['Use a clean, small-size SVG version of the black-bag design, with stronger eye/slash shapes, less unused padding, and a tighter white glow for legibility in collection and detail controls.'],
 }, {

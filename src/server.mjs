@@ -19,6 +19,7 @@ const staticFiles = new Map([
   ['/black-bag.png', ['black-bag.png', 'image/png']],
   ['/black-bag.svg', ['black-bag.svg', 'image/svg+xml']],
   ['/slideshow.js', ['slideshow.js', 'text/javascript; charset=utf-8']],
+  ['/cover-transition.js', ['cover-transition.js', 'text/javascript; charset=utf-8']],
   ['/login.js', ['login.js', 'text/javascript; charset=utf-8']],
   ['/search-filters.js', ['search-filters.js', 'text/javascript; charset=utf-8']],
   ['/comic-title.js', ['comic-title.js', 'text/javascript; charset=utf-8']], ['/format-tpb.png', ['format-tpb.png', 'image/png']], ['/format-hc.png', ['format-hc.png', 'image/png']], ['/format-omni.png', ['format-omni.png', 'image/png']],
