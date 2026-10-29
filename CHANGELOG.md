@@ -1,5 +1,10 @@
 # Changelog
 
+## β-014 · 2026-10-29
+
+- Reduce black-bag artwork from 30px to 22px and replace its black fill and slash gap with transparency. Preserve the dark active button background.
+- No APK update is required.
+
 ## β-013 · 2026-10-29
 
 - Add Metron diagnostics in the footer: persistent request and scan counters, last scan usage, last reported quotas, active pause, cache size, and recent request outcomes. No secrets or search terms are exposed.

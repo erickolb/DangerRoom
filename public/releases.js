@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-014', date: '2026-10-29', title: 'Lighter black-bag icon',
+  changes: ['Reduce the black-bag icon within its button and replace black artwork fills with transparency, preserving the dark active button background.'],
+}, {
   version: 'β-013', date: '2026-10-29', title: 'Metron diagnostics',
   changes: ['Add footer-linked provider diagnostics with persistent request counts, scan usage, quota snapshots, pause timers, caching, and recent response statuses. Refreshing diagnostics consumes no Metron requests.'],
 }, {
