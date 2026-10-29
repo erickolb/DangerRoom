@@ -17,6 +17,7 @@ const staticFiles = new Map([
   ['/camera.svg', ['camera.svg', 'image/svg+xml']],
   ['/slideshow.png', ['slideshow.png', 'image/png']],
   ['/black-bag.png', ['black-bag.png', 'image/png']],
+  ['/black-bag.svg', ['black-bag.svg', 'image/svg+xml']],
   ['/slideshow.js', ['slideshow.js', 'text/javascript; charset=utf-8']],
   ['/login.js', ['login.js', 'text/javascript; charset=utf-8']],
   ['/search-filters.js', ['search-filters.js', 'text/javascript; charset=utf-8']],

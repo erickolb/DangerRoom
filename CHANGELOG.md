@@ -1,5 +1,10 @@
 # Changelog
 
+## β-010 · 2026-10-29
+
+- Replace the downscaled black-bag raster in controls with a clean SVG tuned for 30px display. Preserve the black body, white arc, and slashed eye; simplify and strengthen their geometry and tighten the glow.
+- No APK update is required; the existing Android client loads the updated server asset.
+
 ## β-009 · 2026-10-29
 
 - Render the original black bag and white details with a white outer glow instead of inverting it into a white bag.

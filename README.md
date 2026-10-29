@@ -1,6 +1,6 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-009**.
+Comic inventory and reading journal. Current build: **β-010**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
@@ -104,7 +104,7 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 
 ## Credits
 
-- `public/black-bag.png` is an original generated design for DangerRoom's black-bag control.
+- `public/black-bag.png` is the original generated black-bag design; `public/black-bag.svg` is the clean vector adaptation used in small controls.
 
 - Slideshow by Sentya Irma from <a href="https://thenounproject.com/browse/icons/term/slideshow/" target="_blank" rel="noopener noreferrer" title="Slideshow Icons">Noun Project</a> (CC BY 3.0). `public/slideshow.png` is the Cover Slideshow menu icon; its embedded bottom-left credit text is removed.
 

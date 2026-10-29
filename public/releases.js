@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-010', date: '2026-10-29', title: 'Crisp black-bag controls',
+  changes: ['Use a clean, small-size SVG version of the black-bag design, with stronger eye/slash shapes, less unused padding, and a tighter white glow for legibility in collection and detail controls.'],
+}, {
   version: 'β-009', date: '2026-10-29', title: 'Black bags on comic details',
   changes: ['Keep the black-bag icon black with a white glow for contrast.', 'Add the black-bag toggle immediately after the duplicate-copy button on comic details in both Android and the browser. Collection-tile black-bag controls remain Android-only.'],
 }, {
