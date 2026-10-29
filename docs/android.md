@@ -43,6 +43,8 @@ cd android
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
+**Instrumentation tests:** use an emulator or a dedicated test device. Do not run `connectedDebugAndroidTest` on a provisioned personal device: test-runner cleanup can uninstall the target app and remove its local credentials. Unit tests and lint do not install or remove the app.
+
 For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds; published APKs are signed separately. Keep `applicationId=net.chateaulore.dangerroom`, retain the signing key, and increment versionCode for every future published Android build.
 
 Published version: **0.1.0-beta.19 / β-019**, Android version code **6**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.19`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.

@@ -11,6 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.Assert.*
 
+/** Use an emulator or dedicated test device: connected-test cleanup can uninstall the target app. */
 @RunWith(AndroidJUnit4::class)
 class BarcodePhotoTest {
     @Test fun recoversTheSupplementFromTheFailingTabletPhoto() {
