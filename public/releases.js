@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-018', date: '2026-10-29', title: 'Complete comic barcodes',
+  changes: ['Decode the five-digit UPC/EAN supplement from the barcode image and append it to the main barcode, retaining leading zeros. Warn in Android review when only the main barcode was read. Android update required for improved capture.'],
+}, {
   version: 'β-017', date: '2026-10-29', title: 'Bound scan lookup requests',
   changes: ['Skip text-search series-format enrichment during scans. Resolve only the current five candidate issues, avoiding unnecessary lookups for every series on the search results page.'],
 }, {

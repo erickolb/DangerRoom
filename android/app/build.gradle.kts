@@ -6,8 +6,8 @@ android {
         applicationId = "net.chateaulore.dangerroom"
         minSdk = 28
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.1.0-beta.8"
+        versionCode = 5
+        versionName = "0.1.0-beta.18"
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     val signing = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").map { providers.environmentVariable(it).orNull }
@@ -18,6 +18,7 @@ android {
     }
 }
 dependencies {
+    implementation("com.google.zxing:core:3.5.4")
     implementation("androidx.core:core-ktx:1.18.0")
     implementation("androidx.activity:activity-ktx:1.10.1")
     implementation("com.google.mlkit:barcode-scanning:17.3.0")

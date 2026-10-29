@@ -1,5 +1,11 @@
 # Changelog
 
+## β-018 · 2026-10-29
+
+- Android barcode capture now uses ZXing to read the five-digit UPC/EAN supplement and joins it to the main barcode without dropping leading zeros. For example, 759606215584 plus 00111 becomes 75960621558400111. Support horizontal and vertical barcodes.
+- Keep ML Kit for text and fallback main-barcode capture. Warn when review contains only a main barcode; never invent a supplement.
+- Publish Android versionCode 5 with signed APK and checksum.
+
 ## β-017 · 2026-10-29
 
 - Stop Scan Comic from enriching format metadata for every series on the search results page before resolving the five visible issue candidates. Fresh scans now use at most six API requests per cover-results page, or seven when an empty barcode search falls back to title. Cached responses reduce these counts.

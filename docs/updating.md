@@ -145,3 +145,7 @@ After updating to β-013 or later, open **Metron diagnostics** in the site foote
 ### Scan request fix in β-017
 
 Update the server to remove unnecessary series-format lookups from Scan Comic. A fresh cover-results page needs one search plus up to five issue-detail calls; an empty barcode match falling back to title adds one search. Previously, format enrichment could request every distinct series on the search page before displaying any covers. Existing provider pauses are still respected until they expire. Diagnostics show the actual request attempts for each scan. No APK update is needed.
+
+### Android barcode capture in β-018
+
+Install the signed [β-018 Android APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.18) over the existing app for five-digit barcode supplement capture. Updating the server alone does not update native camera recognition. Include both the main barcode and supplement in the photograph and review the complete UPC before searching. If review warns that only the main barcode was captured, retake the photo or append the printed five digits, preserving zeros.

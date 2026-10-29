@@ -210,12 +210,15 @@ class MainActivity : ComponentActivity() {
                     val scale = minOf(1.0, 2000.0 / maxOf(info.size.width, info.size.height)); decoder.setTargetSize(maxOf(1, (info.size.width * scale).toInt()), maxOf(1, (info.size.height * scale).toInt()))
                 }
                 photoSignature = CoverMatch.signature(bitmap)
+                val pixels = IntArray(bitmap.width * bitmap.height)
+                bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+                val completeBarcode = ComicBarcode.read(pixels, bitmap.width, bitmap.height)
                 val input = InputImage.fromBitmap(bitmap, 0)
                 val scanner = BarcodeScanning.getClient(); val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
                 val barcodeTask = scanner.process(input); val textTask = recognizer.process(input)
                 com.google.android.gms.tasks.Tasks.whenAllComplete(barcodeTask, textTask).addOnCompleteListener {
                     scanner.close(); recognizer.close()
-                    val upc = if (barcodeTask.isSuccessful) barcodeTask.result.firstOrNull { it.rawValue?.matches(Regex("[0-9]{8,18}")) == true }?.rawValue ?: "" else ""
+                    val upc = completeBarcode ?: if (barcodeTask.isSuccessful) barcodeTask.result.firstOrNull { it.rawValue?.matches(Regex("[0-9]{8,18}")) == true }?.rawValue ?: "" else ""
                     val blocks = if (textTask.isSuccessful) textTask.result.textBlocks else emptyList()
                     val lines = blocks.flatMap { it.lines }.filter { it.text.any(Char::isLetter) && it.text.length in 3..100 }
                     val title = lines.maxByOrNull { (it.boundingBox?.height() ?: 0) * (if ((it.boundingBox?.top ?: bitmap.height) < bitmap.height / 2) 2 else 1) }?.text ?: ""
@@ -231,7 +234,8 @@ class MainActivity : ComponentActivity() {
         val preview = ImageView(this).apply { setImageBitmap(bitmap); adjustViewBounds = true; contentDescription = "Photographed comic cover" }
         column.addView(preview, LinearLayout.LayoutParams(-1, dp(280)))
         val series = field("Series name", title); val number = field("Issue number", issueNumber); val upc = field("UPC", barcode)
-        text("Correct any text before searching. A barcode may omit the comic's five-digit supplement; compare the variant artwork in the results.")
+        text("Correct any text before searching. Include the five-digit supplement printed beside the main barcode for an exact comic match. If it was not captured, enter those digits in the UPC field before searching.")
+        if (barcode.length in 12..13) text("Only the main barcode was captured. Add the five-digit supplement (including leading zeros), or retake the photo with both barcodes clearly visible.")
         button("Find matching covers") {
             val query = Uri.Builder().appendQueryParameter("q", series.text.toString().trim()).appendQueryParameter("number", number.text.toString().trim()).appendQueryParameter("upc", upc.text.toString().trim()).appendQueryParameter("captured", "1").build().encodedQuery
             openWeb("/camera?$query"); bitmap.recycle(); capture.delete()
