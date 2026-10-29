@@ -89,3 +89,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .gallery-images{z-index:0}
 
 .metron-progress{display:flex;align-items:center;gap:.65rem}.metron-spinner{width:28px;height:28px;flex:none;filter:invert(1);animation:metron-spin 1.8s linear infinite}@keyframes metron-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.metron-spinner{animation:none}}
+
+.diagnostic-table{overflow-x:auto}.diagnostic-table table{width:100%;border-collapse:collapse}.diagnostic-table th,.diagnostic-table td{text-align:left;padding:.6rem;border-bottom:1px solid #784454}

@@ -100,7 +100,9 @@ export function createApp(options = {}) {
         }
         return send(200, { items: [...unique.values()] });
       }
+      if (req.method === 'GET' && url.pathname === '/api/metron/diagnostics') return send(200, metron.diagnostics());
       if (req.method === 'GET' && url.pathname === '/api/camera-search') {
+        return await (metron.trackScan ? work => metron.trackScan(work) : work => work())(async () => {
         const upc = url.searchParams.get('upc');
         const barcodeParams = new URLSearchParams({ upc: upc || '', page: url.searchParams.get('page') || '1' });
         let result = await metron.search(upc ? barcodeParams : url.searchParams);
@@ -121,6 +123,7 @@ export function createApp(options = {}) {
         const moreCovers = start + 5 < result.results.length;
         return send(200, { ...result, results: undefined, items, limited: moreCovers, next: moreCovers || result.next,
           next_page: moreCovers ? result.page : result.page + 1, next_cover_page: moreCovers ? coverPage + 1 : 1 });
+        });
       }
       if(req.method==='GET'&&url.pathname==='/api/series-types')return send(200,{items:await metron.seriesTypes()});
       if (req.method === 'GET' && url.pathname === '/api/search') {

@@ -79,6 +79,7 @@ async function route() {
     if(path==='/reading-log')return await readingLogPage(params,ticket);
     if (path === '/wants') return await wantList(params,ticket);
     if (path === '/changelog') return changelog();
+    if (path === '/metron-diagnostics') return await metronDiagnostics(ticket);
     if (path === '/collection') { collectionView = ['read','unread'].includes(params.get('view')) ? params.get('view') : 'owned'; return await collection(params, ticket); }
     const match = path.match(/^\/issues\/(\d+)$/);
     if (match) return await detail(match[1], params, ticket);
@@ -357,6 +358,15 @@ async function detail(id,params,ticket){
   }
   renderOwnedSeries();
   ctx.listeners.add(renderCopies);renderCopies();
+}
+
+async function metronDiagnostics(ticket) {
+  app.innerHTML='<h2>Metron diagnostics</h2><p role="status">Reading provider state…</p>';
+  const d=await api('/metron/diagnostics');if(ticket!==generation)return;
+  const time=v=>v?new Date(v).toLocaleString():'Unknown';
+  const remaining=Math.max(0,Math.ceil((d.blocked_until-d.server_time)/1000));
+  app.innerHTML=`<h2>Metron diagnostics</h2><button id="refresh-metron">Refresh</button><p>Snapshot: ${esc(time(d.server_time))}. Refresh reads DangerRoom’s local state and makes no Metron requests.</p><dl class="metadata">${field('Credentials',d.configured?'Configured (not yet proof of successful authentication)':'Not configured')}${field('Provider pause',remaining?`${remaining} seconds; until ${time(d.blocked_until)}`:'No active pause')}${field('Last response',time(d.last_response))}${field('Last HTTP status',d.recent[0]?.status ?? 'Unknown')}${field('Pending distinct lookups',String(d.in_flight))}${field('Minimum request spacing',`${d.interval_ms} ms`)}${field('Valid cached responses',String(d.cached_entries))}${field('Counters began',time(d.since))}${field('Metron request attempts',String(d.requests))}${field('Attempts from scans',String(d.scan_requests))}${field('Local cache hits',String(d.cache_hits))}${field('Last scan',d.last_scan?`${d.last_scan.requests} Metron request attempts; finished ${time(d.last_scan.finished)}`:'No scans recorded')}</dl><h3>Last reported quotas</h3><p>These are snapshots from Metron response headers, not live account balances. Unknown means the header was absent. Past reset times mean the snapshot may be stale; usage from other apps is not tracked here.</p><div class="diagnostic-table"><table><thead><tr><th>Window</th><th>Remaining / limit</th><th>Reset</th><th>Observed</th></tr></thead><tbody>${['Burst','Sustained'].map(name=>{const w=d.windows[name];return `<tr><th>${name==='Burst'?'Per minute':'Daily'}</th><td>${w?.remaining??'Unknown'} / ${w?.limit??'Unknown'}</td><td>${esc(time(w?.reset? w.reset*1000:null))}</td><td>${esc(time(w?.observed_at))}</td></tr>`;}).join('')}</tbody></table></div><h3>How much does scanning use?</h3><p>A scan uses one issue search, up to five issue-detail requests per cover-results page, and potentially one series-detail request for each distinct series missing format metadata across the entire search results page. An unmatched barcode with a title adds a fallback search. Cached responses use no Metron requests. Variants share an issue-detail response. OCR runs on the device; cover downloads and artwork comparison are separate from these API counters.</p><h3>Recent Metron attempts (latest 20)</h3><ul>${d.recent.map(r=>`<li>${esc(time(r.at))} · ${esc(r.source)} · ${esc(r.status)}</li>`).join('')||'<li>No requests recorded.</li>'}</ul><p>Counters persist across restarts and begin with this diagnostic feature. Attempts include failed requests; a shared lookup is counted once and attributed to the operation that initiated it.</p>`;
+  $('#refresh-metron').onclick=()=>metronDiagnostics(ticket).catch(e=>message(e.message,true));
 }
 
 function changelog() {

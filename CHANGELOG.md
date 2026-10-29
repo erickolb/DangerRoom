@@ -1,5 +1,11 @@
 # Changelog
 
+## β-013 · 2026-10-29
+
+- Add Metron diagnostics in the footer: persistent request and scan counters, last scan usage, last reported quotas, active pause, cache size, and recent request outcomes. No secrets or search terms are exposed.
+- Diagnostics refresh reads local state without spending provider quota; counters start with this feature and persist across restarts.
+- Explain scan request costs and cached/shared lookups. No APK update required.
+
 ## β-012 · 2026-10-29
 
 - Add a spinning Metron logo beside search progress, respecting reduced-motion preferences.

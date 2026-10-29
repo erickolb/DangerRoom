@@ -627,3 +627,23 @@ test('burst exhaustion explains remaining daily quota, supplies Android retry ti
   await h.metron.get('issue/43/', 1000);
   assert.equal(calls, 2);
 });
+
+
+test('diagnostics reads locally, counts scan requests, retains quota snapshots, and hides secrets', async t => {
+  const h = await harness(t);
+  const before = await h.request('/api/metron/diagnostics');
+  assert.equal(before.status, 200); assert.equal(before.data.requests, 0);
+  assert.equal(h.counts().lookups, 0);
+  assert.equal((await h.request('/api/camera-search?q=Test')).status, 200);
+  const d = (await h.request('/api/metron/diagnostics')).data;
+  assert.equal(d.requests, 2); assert.equal(d.scan_requests, 2);
+  assert.equal(d.last_scan.requests, 2); assert.equal(d.recent[0].status, 200);
+  assert.equal(d.windows.Burst.remaining, null);
+  assert.equal(JSON.stringify(d).includes('test-only'), false);
+  await h.request('/api/camera-search?q=Test');
+  const cached = (await h.request('/api/metron/diagnostics')).data;
+  assert.equal(cached.requests, 2); assert.equal(cached.last_scan.requests, 0);
+  assert.equal(h.counts().lookups, 2);
+  const stored = JSON.parse(h.metron.repo.db.prepare('SELECT payload FROM metron_diagnostics WHERE id=1').get().payload);
+  assert.equal(stored.requests, 2); assert.equal(stored.last_scan.requests, 0);
+});

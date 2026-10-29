@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-013', date: '2026-10-29', title: 'Metron diagnostics',
+  changes: ['Add footer-linked provider diagnostics with persistent request counts, scan usage, quota snapshots, pause timers, caching, and recent response statuses. Refreshing diagnostics consumes no Metron requests.'],
+}, {
   version: 'β-012', date: '2026-10-29', title: 'Search progress and clearer Metron limits',
   changes: ['Show a spinning Metron logo during text and camera searches, rename the camera page Scan Comic, and distinguish minute and daily request limits with retry times on Android.'],
 }, {

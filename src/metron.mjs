@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { createHash } from 'node:crypto';
 import { AppError, positiveId } from './errors.mjs';
 
@@ -58,12 +59,33 @@ export class Metron {
   constructor(repo, { token = '', username = '', password = '', fetchImpl = fetch, interval = 3100 } = {}) {
     this.repo = repo; this.fetch = fetchImpl; this.interval = interval;
     this.authorization = token ? `Bearer ${token}` : username && password ? `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}` : '';
+    this.activity = new AsyncLocalStorage();
+    this.repo.db.exec("CREATE TABLE IF NOT EXISTS metron_diagnostics (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)");
+    const saved = this.repo.db.prepare('SELECT payload FROM metron_diagnostics WHERE id=1').get();
+    this.observed = saved ? JSON.parse(saved.payload) : { since: Date.now(), requests: 0, scan_requests: 0, cache_hits: 0, windows: {}, recent: [] };
     this.inflight = new Map(); this.queue = Promise.resolve();
   }
   get configured() { return Boolean(this.authorization); }
+  persistDiagnostics() {
+    this.repo.db.prepare('INSERT OR REPLACE INTO metron_diagnostics VALUES (1,?)').run(JSON.stringify(this.observed));
+  }
+  async trackScan(work) {
+    const scan = { requests: 0, started: Date.now() };
+    return this.activity.run(scan, async () => {
+      try { return await work(); }
+      finally { this.observed.last_scan = { ...scan, finished: Date.now() }; this.persistDiagnostics(); }
+    });
+  }
+  diagnostics() {
+    return { ...this.observed, configured: this.configured, server_time: Date.now(),
+      blocked_until: this.repo.stateGet('blocked_until'), burst_until: this.repo.stateGet('burst_until'),
+      sustained_until: this.repo.stateGet('sustained_until'), next_request: this.repo.stateGet('next_request'),
+      interval_ms: this.interval, in_flight: this.inflight.size,
+      cached_entries: this.repo.db.prepare('SELECT COUNT(*) AS n FROM cache WHERE expires_at>?').get(Date.now()).n };
+  }
   async get(path, ttl) {
     const cached = this.repo.cacheGet(path);
-    if (cached) return cached;
+    if (cached) { this.observed.cache_hits++; this.persistDiagnostics(); return cached; }
     if (this.inflight.has(path)) return this.inflight.get(path);
     const task = this.queue.then(async () => {
       const existing = this.repo.cacheGet(path);
@@ -79,9 +101,25 @@ export class Metron {
       const delay = this.repo.stateGet('next_request') - now;
       if (delay > 0) await new Promise(resolve => setTimeout(resolve, Math.min(delay, this.interval)));
       this.repo.statePut('next_request', Date.now() + this.interval);
+      const scan = this.activity.getStore();
+      this.observed.requests++;
+      if (scan) { scan.requests++; this.observed.scan_requests++; }
+      const entry = { at: Date.now(), source: scan ? 'Scan Comic' : 'Other', status: 'pending' };
+      this.observed.recent.unshift(entry); this.observed.recent.length = Math.min(20, this.observed.recent.length);
+      this.persistDiagnostics();
       let response;
       try { response = await this.fetch(`https://metron.cloud/api/${path}`, { headers: { Authorization: this.authorization, Accept: 'application/json', 'User-Agent': 'DangerRoom/0.1.0-alpha.1 (personal comic inventory)' }, signal: AbortSignal.timeout(20000), redirect: 'error' }); }
-      catch { throw new AppError(502, 'Could not reach Metron. Try again shortly; saved comics remain available.'); }
+      catch { entry.status = 'network error'; this.persistDiagnostics(); throw new AppError(502, 'Could not reach Metron. Try again shortly; saved comics remain available.'); }
+      entry.status = response.status;
+      this.observed.last_response = Date.now();
+      for (const name of ['Burst', 'Sustained']) {
+        const read = field => {
+          const raw = response.headers.get(`X-RateLimit-${name}-${field}`);
+          return raw !== null && raw.trim() !== '' && Number.isFinite(Number(raw)) ? Number(raw) : null;
+        };
+        this.observed.windows[name] = { limit: read('Limit'), remaining: read('Remaining'), reset: read('Reset'), observed_at: Date.now() };
+      }
+      this.persistDiagnostics();
       let until = 0;
       for (const window of ['Burst', 'Sustained']) {
         if (response.headers.get(`X-RateLimit-${window}-Remaining`) === '0') {

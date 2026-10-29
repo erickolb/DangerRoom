@@ -137,3 +137,7 @@ Never use sudo docker compose down -v during routine updates or rollback. Keep a
 ## Metron search pauses
 
 Metron enforces a per-minute burst limit separately from its daily allowance. Scanning can need multiple API requests to resolve candidate issues and covers, so remaining daily quota does not rule out a temporary pause. DangerRoom respects Metron’s reset and Retry-After values; cached comics remain available. From β-012 onward, errors include the wait time in Android and distinguish burst versus daily limits when the response headers identify the exhausted window. Pauses recorded before this update retain a generic explanation until they expire. Wait for the stated interval before retrying.
+
+### Provider diagnostics
+
+After updating to β-013 or later, open **Metron diagnostics** in the site footer. It displays locally observed request attempts, scan usage, last reported rate-limit headers and reset times, active pauses, cache size, and recent response statuses. Refreshing the page does not call Metron. Counters persist in the existing SQLite database, start when this feature is installed, and do not include historical requests or other clients. Quota values are labeled snapshots, not live balances.
