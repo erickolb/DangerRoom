@@ -117,6 +117,9 @@ export function createApp(options = {}) {
         const items = [];
         for (const row of result.results.slice(start, start + 5)) {
           const issue = await metron.issue(positiveId(row.id));
+          issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));
+          const local = repo.issue(issue.id);
+          Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null,reading_log_count:local?.reading_log_count || 0});
           for (const edition of issue.editions) items.push({ issue, edition, barcode_match: Boolean(upc && edition.upc === upc) });
         }
         items.sort((a, b) => Number(b.barcode_match) - Number(a.barcode_match));

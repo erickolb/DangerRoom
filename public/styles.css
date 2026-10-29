@@ -93,3 +93,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .diagnostic-table{overflow-x:auto}.diagnostic-table table{width:100%;border-collapse:collapse}.diagnostic-table th,.diagnostic-table td{text-align:left;padding:.6rem;border-bottom:1px solid #784454}
 
 .android-app .want-card{display:flex;flex-direction:column}.android-app .want-card>.comic-link{flex:1}.android-app .want-card>.card-toggles{flex-shrink:0}
+
+.scan-card{display:flex;flex-direction:column}.scan-card>.camera-result{height:auto;flex:1}.scan-card>.card-toggles{flex-shrink:0;flex-wrap:nowrap;gap:6px;padding-left:10px;padding-right:10px}.scan-card .card-toggles .comic-toggle{flex:1 1 40px;min-width:0;padding:5px}

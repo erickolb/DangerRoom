@@ -1,3 +1,4 @@
+import { context, copyState, bindToggles } from './actions.js';
 import { comicTitleText } from './comic-title.js';
 import { mountSlideshow, showSlideshowSettings } from './slideshow.js';
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -24,7 +25,18 @@ export async function mobilePage(path, params, app, api, openEdition, current) {
     try {
       const data = await api(`/camera-search?${values}`);
       if (!current()||request!==searchGeneration) return;
-      results.innerHTML = data.items.length ? `<p>${data.count} issue candidates. Select the exact cover to open its collection, Want List, and reading controls.</p><div class="shelf">${data.items.map((row,i)=>`<article class="comic-card"><button class="camera-result" data-cover="${i}">${row.edition.source_image?`<img class="cover" src="${esc(row.edition.source_image)}" alt="${esc(row.edition.name)}">`:'<div class="cover missing-cover">Cover unavailable</div>'}<div class="card-info"><h3>${esc(comicTitleText(row.issue,{year:true}))}</h3><p>${esc(row.edition.name)}</p>${row.barcode_match?'<p class="barcode-match">Exact barcode match</p>':''}</div></button></article>`).join('')}</div>` : '<p>No matches. Try the series title without the barcode, or retake the photo.</p>';
+      results.innerHTML = data.items.length ? `<p>${data.count} issue candidates. Use the icons to add, want, or mark the exact cover as read. Tap a cover to open its details.</p><div class="shelf">${data.items.map((row,i)=>`<article class="comic-card scan-card"><button class="camera-result" data-cover="${i}">${row.edition.source_image?`<img class="cover" src="${esc(row.edition.source_image)}" alt="${esc(row.edition.name)}">`:'<div class="cover missing-cover">Cover unavailable</div>'}<div class="card-info"><h3>${esc(comicTitleText(row.issue,{year:true}))}</h3><p>${esc(row.edition.name)}</p>${row.barcode_match?'<p class="barcode-match">Exact barcode match</p>':''}</div></button><div class="comic-actions card-toggles" data-scan-actions="${i}"></div></article>`).join('')}</div>` : '<p>No matches. Try the series title without the barcode, or retake the photo.</p>';
+      if(data.items.length){
+        results.insertAdjacentHTML('afterbegin','<p class="form-error" data-scan-error role="alert"></p>');
+        const contexts=new Map();
+        data.items.forEach((row,i)=>{
+          let ctx=contexts.get(row.issue.id);
+          if(!ctx){ctx=context(row.issue,api,text=>{if(current()&&request===searchGeneration&&results.isConnected)results.querySelector('[data-scan-error]').textContent=text;});contexts.set(row.issue.id,ctx);}
+          const state=copyState(ctx,row.edition.key);
+          ctx.listeners.add(()=>{state.copyId=ctx.issue.copies?.find(copy=>copy.edition_key===state.editionKey)?.id || null;});
+          bindToggles(results.querySelector(`[data-scan-actions="${i}"]`),ctx,state);
+        });
+      }
       if (data.limited) results.insertAdjacentHTML('beforeend','<p>More candidate issues are available. Add the issue number to narrow the results, or continue to the next results.</p>');
       results.querySelectorAll('[data-cover]').forEach(b=>b.onclick=()=>{const row=data.items[Number(b.dataset.cover)];openEdition(row.issue.id,row.edition.key);});
       if(isAndroid&&params.has('captured')&&data.items.length){

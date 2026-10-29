@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-020', date: '2026-10-29', title: 'Scan result actions',
+  changes: ['Add the shared Add, Want, and Read controls directly to each exact-cover scan result. Reflect saved status and synchronize issue-wide reading across variants without extra provider requests.'],
+}, {
   version: 'β-019', date: '2026-10-29', title: 'Recover printed barcode supplements',
   changes: ['When supplement bars are too soft to decode, use the existing on-device OCR result only if a unique five-digit line is positioned beside the detected main UPC/EAN barcode. Preserve leading zeros and reject ambiguous candidates. Android update required.'],
 }, {

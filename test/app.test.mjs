@@ -666,3 +666,20 @@ test('broad scans skip format enrichment for all candidate series and use only f
   assert.equal((await h.request('/api/metron/diagnostics')).data.last_scan.requests,6);
   await h.request('/api/camera-search?q=Broad');assert.equal(paths.length,6);
 });
+
+
+test('scan results include exact-cover ownership and wants plus shared reading state without extra provider calls', async t => {
+  const h=await harness(t);
+  await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
+  const variant=editionsFor(raw)[1].key;
+  await h.request('/api/entries','POST',{issue_id:42,edition_key:variant,owned:true,read:true});
+  const response=await h.request('/api/camera-search?q=Test');
+  assert.equal(response.status,200);
+  const standard=response.data.items.find(row=>row.edition.key==='standard');
+  const owned=response.data.items.find(row=>row.edition.key===variant);
+  assert.equal(standard.edition.wanted,true);assert.equal(standard.edition.owned,false);
+  assert.equal(owned.edition.owned,true);assert.equal(owned.edition.wanted,false);
+  assert.equal(owned.issue.copies.length,1);assert.equal(owned.issue.copies[0].edition_key,variant);
+  assert.ok(standard.issue.read);assert.ok(owned.issue.read);assert.equal(owned.issue.saved,true);
+  assert.equal(h.counts().lookups,2);
+});

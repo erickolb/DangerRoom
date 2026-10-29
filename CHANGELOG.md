@@ -1,5 +1,10 @@
 # Changelog
 
+## β-020 · 2026-10-29
+
+- Add shared Add/Want/Read buttons to each scan-result cover, preserving exact variants and local ownership, Want List, and reading state. Share state across variants and align action rows. No Black Bag control here.
+- Enrich scan results using local state only, without additional Metron calls. No APK update required.
+
 ## β-019 · 2026-10-29
 
 - Fix the tablet-photo supplement failure: combine the detected main UPC with a unique five-digit OCR line positioned beside either end of that barcode when bars-only decoding fails. Preserve leading zeros; reject distant, overlapping, nonnumeric, and ambiguous candidates. Use the already-completed OCR pass without additional network calls.

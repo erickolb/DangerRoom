@@ -153,3 +153,7 @@ Install the signed [β-018 Android APK](https://github.com/erickolb/DangerRoom/r
 ### Tablet supplement recognition in β-019
 
 Install the signed [β-019 Android APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.19) over the existing app. This fixes cases where the main barcode is readable but the supplement bars are too soft: a unique five-digit line beside that barcode can be recovered from the existing on-device OCR result. Always review the full UPC before searching. Updating only the server cannot change camera recognition.
+
+### Scan-result actions in β-020
+
+Update the server to add Add, Want, and Read controls directly to scan-result tiles. The existing Android β-019 app loads these controls from the server; no APK update or device reconfiguration is needed. Ownership and Want List status apply to the exact cover, while reading status is shared by the issue.
