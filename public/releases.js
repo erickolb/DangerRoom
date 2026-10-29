@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-016', date: '2026-10-29', title: 'Aligned Android Want List actions',
+  changes: ['Align the centered Want List action buttons at the bottom of each Android tile so different title and cover-label lengths do not stagger buttons within a row.'],
+}, {
   version: 'β-015', date: '2026-10-29', title: 'Simplified black-bag icon',
   changes: ['Narrow the black-bag artwork by 15%, remove the arc, and center the slashed eye vertically. Preserve button dimensions and active styling.'],
 }, {

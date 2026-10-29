@@ -1,5 +1,10 @@
 # Changelog
 
+## β-016 · 2026-10-29
+
+- Use the collection-style flexible tile layout for Android Want List cards so buttons align across each row, preserving centered actions.
+- No APK update is required.
+
 ## β-015 · 2026-10-29
 
 - Apply the approved black-bag icon: 15% narrower artwork, no arc, and a vertically centered slashed eye. Button dimensions and dark active styling stay the same.
