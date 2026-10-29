@@ -2,12 +2,14 @@
 
 Run from the original DangerRoom checkout; changing the Compose project/directory name can select a different named volume. These commands build from source; no registry login or prepublished image is required. Keep .env and the named data volume across updates.
 
+The commands assume the checkout is at `~/DangerRoom`, the default location when cloning from your home directory. If yours is elsewhere, set `DANGERROOM_DIR` to its actual absolute path first. Do not type a placeholder such as `/path/to/DangerRoom` literally. The backup and update blocks below run in a subshell with `set -e`, so a failed directory change or command stops that block without closing your SSH session.
+
 ## Configure the instance address once
 
 Keep your instance's address in the checkout's private `.env`, so the commands below work across updates and new shell sessions:
 
 ```sh
-vi .env
+cd "${DANGERROOM_DIR:-$HOME/DangerRoom}" && vi .env
 ```
 
 For an HTTPS reverse proxy, add your own URL (the following hostname is an example):
@@ -31,7 +33,11 @@ Compose reads this setting from `.env` for every command below, including comman
 Run in a shell on your server:
 
 ```sh
-cd /path/to/DangerRoom
+(
+set -e
+cd "${DANGERROOM_DIR:-$HOME/DangerRoom}"
+test -f compose.yaml
+test -f .env
 git status --short
 git rev-parse HEAD > previous-revision.txt
 sudo docker image tag dangerroom:local dangerroom:rollback
@@ -44,6 +50,8 @@ chmod 600 "backups/environment-$backup_stamp.env"
 if [ -f compose.https.yaml ]; then cp compose.https.yaml "backups/compose.https-$backup_stamp.yaml"; fi
 sudo docker compose run --rm --no-deps --user root --cap-add DAC_OVERRIDE --entrypoint tar -v "$PWD/backups:/backups" dangerroom -czf "/backups/data-$backup_stamp.tgz" -C /data .
 sudo tar -tzf "backups/data-$backup_stamp.tgz" > /dev/null
+echo "Backup verified: $PWD/backups/data-$backup_stamp.tgz"
+)
 ```
 
 Confirm the backup exists and tar can list it before proceeding. It contains SQLite and any local covers; .env is stored separately and contains secrets. Maintain a separate recoverable S3 backup/versioning policy. If backup fails, restart the existing container and investigate before updating.
@@ -79,11 +87,17 @@ Set `REQUIRE_AUTH=false` (or leave it unset). The old `DANGERROOM_ADMIN_TOKEN` c
 Optional browser sign-in is available only if you deliberately set `REQUIRE_AUTH=true` and configure `DANGERROOM_ADMIN_TOKEN` to a random secret of at least 32 characters (`openssl rand -hex 32`). It is separate from Android device approval and is not needed for the default deployment.
 
 ```sh
+(
+set -e
+cd "${DANGERROOM_DIR:-$HOME/DangerRoom}"
+test -f compose.yaml
+test -f .env
 git pull --ff-only
 sudo docker compose build --pull
 sudo docker compose up -d --force-recreate
 sudo docker compose ps
 sudo docker compose logs --tail=100 dangerroom
+)
 ```
 
 ### Check health at the address exposed by your deployment
@@ -91,7 +105,7 @@ sudo docker compose logs --tail=100 dangerroom
 After recreating the container, run the repository's health-check script:
 
 ```sh
-bash scripts/health-check.sh
+cd "${DANGERROOM_DIR:-$HOME/DangerRoom}" && bash scripts/health-check.sh
 ```
 
 The script reads only `DANGERROOM_URL` from the updated container's environment, then checks its `/api/health` endpoint. Node runs inside the container; it does not need to be installed on the host. The script uses the checkout's `.env` and configured Compose overrides, without sourcing `.env` as shell code or printing other environment values. It exits unsuccessfully if the URL is missing, Compose fails, or the health request fails. Changes to `.env` require container recreation before the script sees them. The request runs from the server, so the configured address must be reachable there; it does not have to be accessible from the public internet.
