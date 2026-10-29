@@ -647,3 +647,22 @@ test('diagnostics reads locally, counts scan requests, retains quota snapshots, 
   const stored = JSON.parse(h.metron.repo.db.prepare('SELECT payload FROM metron_diagnostics WHERE id=1').get().payload);
   assert.equal(stored.requests, 2); assert.equal(stored.last_scan.requests, 0);
 });
+
+
+test('broad scans skip format enrichment for all candidate series and use only five issue details', async t => {
+  const paths=[];
+  const h=await harness(t,{metronOptions:{token:'test-only',interval:0,fetchImpl:async url=>{
+    const path=new URL(url).pathname;paths.push(path);
+    if(paths.length>20)return Response.json({}, {status:429,headers:{'Retry-After':'60'}});
+    if(path==='/api/issue/')return Response.json({count:30,next:null,results:Array.from({length:30},(_,i)=>({id:i+100,series:{id:i+200,name:`Series ${i}`},number:'1'}))});
+    const id=Number(path.match(/issue\/(\d+)\//)?.[1]);
+    assert.ok(id,'Scan must not fetch series format metadata');
+    return Response.json({...raw,id,series:{...raw.series,id:id+100}});
+  }}});
+  const scan=await h.request('/api/camera-search?q=Broad');
+  assert.equal(scan.status,200);assert.equal(scan.data.limited,true);
+  assert.equal(new Set(scan.data.items.map(row=>row.issue.id)).size,5);
+  assert.equal(paths.length,6);
+  assert.equal((await h.request('/api/metron/diagnostics')).data.last_scan.requests,6);
+  await h.request('/api/camera-search?q=Broad');assert.equal(paths.length,6);
+});

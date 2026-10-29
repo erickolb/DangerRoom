@@ -105,10 +105,10 @@ export function createApp(options = {}) {
         return await (metron.trackScan ? work => metron.trackScan(work) : work => work())(async () => {
         const upc = url.searchParams.get('upc');
         const barcodeParams = new URLSearchParams({ upc: upc || '', page: url.searchParams.get('page') || '1' });
-        let result = await metron.search(upc ? barcodeParams : url.searchParams);
+        let result = await metron.search(upc ? barcodeParams : url.searchParams, { enrichSeries: false });
         if (upc && !result.results.length && url.searchParams.get('q')) {
           const fallback = new URLSearchParams(url.searchParams); fallback.delete('upc');
-          result = await metron.search(fallback);
+          result = await metron.search(fallback, { enrichSeries: false });
         }
         const coverPage = positiveId(url.searchParams.get('cover_page') || '1', 'Cover page');
         const start = (coverPage - 1) * 5;

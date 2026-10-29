@@ -1,5 +1,10 @@
 # Changelog
 
+## β-017 · 2026-10-29
+
+- Stop Scan Comic from enriching format metadata for every series on the search results page before resolving the five visible issue candidates. Fresh scans now use at most six API requests per cover-results page, or seven when an empty barcode search falls back to title. Cached responses reduce these counts.
+- No APK update is required.
+
 ## β-016 · 2026-10-29
 
 - Use the collection-style flexible tile layout for Android Want List cards so buttons align across each row, preserving centered actions.

@@ -149,13 +149,13 @@ export class Metron {
     this.inflight.set(path, task);
     try { return await task; } finally { this.inflight.delete(path); }
   }
-  async search(params) {
+  async search(params, { enrichSeries = true } = {}) {
     const filters = searchFilters(params);
     const data = await this.get(`issue/?${filters}`, 6 * 60 * 60 * 1000);
     const pending=new Map();
     const results=await Promise.all(data.results.map(async r=>{
       let type=seriesType(r.series.series_type)||seriesType(r.series_type)||seriesType(this.repo.knownSeriesType?.(r.series.id));
-      if(!type){
+      if(!type && enrichSeries){
         if(!pending.has(r.series.id))pending.set(r.series.id,this.get(`series/${positiveId(r.series.id)}/`,24*60*60*1000).then(series=>{
           if(series.id!==r.series.id)throw new AppError(502,'Metron returned unexpected series data.');
           return seriesType(series.series_type);
