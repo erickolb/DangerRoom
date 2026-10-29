@@ -52,8 +52,8 @@ class MainActivity : ComponentActivity() {
             }
         })
         val splash = FrameLayout(this).apply { setBackgroundColor(Color.rgb(231, 0, 31)) }
-        val mask = ImageView(this).apply { setImageResource(R.drawable.mask); contentDescription = "DangerRoom mask"; scaleType = ImageView.ScaleType.FIT_CENTER }
-        splash.addView(mask, FrameLayout.LayoutParams(dp(192), dp(192), android.view.Gravity.CENTER))
+        val mask = ImageView(this).apply { setImageResource(R.drawable.splash_badge); contentDescription = "DangerRoom mask"; scaleType = ImageView.ScaleType.FIT_CENTER }
+        splash.addView(mask, FrameLayout.LayoutParams(dp(224), dp(224), android.view.Gravity.CENTER))
         setContentView(splash)
         val bars = androidx.core.view.WindowInsetsControllerCompat(window, splash)
         bars.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())

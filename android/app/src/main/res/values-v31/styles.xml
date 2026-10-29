@@ -14,6 +14,6 @@
         <item name="android:statusBarColor">#E7001F</item>
         <item name="android:navigationBarColor">#E7001F</item>
         <item name="android:windowSplashScreenBackground">#E7001F</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/mask</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_badge</item>
     </style>
 </resources>

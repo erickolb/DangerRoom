@@ -1,0 +1,15 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The 32dp insets move this centered shadow 16dp down and right. -->
+    <item android:width="192dp" android:height="192dp" android:gravity="center" android:left="32dp" android:top="32dp">
+        <shape android:shape="oval"><solid android:color="#9A0011" /></shape>
+    </item>
+    <item android:width="192dp" android:height="192dp" android:gravity="center">
+        <bitmap android:src="@drawable/mask" android:gravity="fill" android:filter="true" />
+    </item>
+    <item android:width="192dp" android:height="192dp" android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/transparent" />
+            <stroke android:width="1.5dp" android:color="#160D12" />
+        </shape>
+    </item>
+</layer-list>
