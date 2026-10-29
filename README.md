@@ -104,6 +104,8 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 
 ## Credits
 
+- Slideshow by Sentya Irma from <a href="https://thenounproject.com/browse/icons/term/slideshow/" target="_blank" rel="noopener noreferrer" title="Slideshow Icons">Noun Project</a> (CC BY 3.0). `public/slideshow.png` is the Cover Slideshow menu icon; its embedded bottom-left credit text is removed.
+
 - manual guide by Idad Muchlisin Ro Is from <a href="https://thenounproject.com/browse/icons/term/manual-guide/" target="_blank" rel="noopener noreferrer" title="manual guide Icons">Noun Project</a> (CC BY 3.0). `public/reading-log.png` is the Reading Log icon; its bottom text strip is cleared.
 
 - duplicate by Yafet bouchagra from <a href="https://thenounproject.com/browse/icons/term/duplicate/" target="_blank" rel="noopener noreferrer" title="duplicate Icons">Noun Project</a> (CC BY 3.0). `public/duplicate.png` is the add-another-copy icon.
