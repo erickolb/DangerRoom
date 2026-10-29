@@ -1,10 +1,10 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-007**.
+Comic inventory and reading journal. Current build: **β-008**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android companion](docs/android.md) adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download the signed Android beta](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.7). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android companion](docs/android.md) adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download the signed Android beta](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.8). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 ## Run locally
 
@@ -103,6 +103,8 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 [`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. Stay in α until the user announces a new phase. Keep the package prerelease suffix aligned. See [Changelog](CHANGELOG.md).
 
 ## Credits
+
+- `public/black-bag.png` is an original generated design for DangerRoom's black-bag control.
 
 - Slideshow by Sentya Irma from <a href="https://thenounproject.com/browse/icons/term/slideshow/" target="_blank" rel="noopener noreferrer" title="Slideshow Icons">Noun Project</a> (CC BY 3.0). `public/slideshow.png` is the Cover Slideshow menu icon; its embedded bottom-left credit text is removed.
 

@@ -1,9 +1,9 @@
 import { changeRead } from './reading-log.js';
-const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'duplicate' };
+const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'duplicate', black_bag:'black-bag' };
 const names = { owned:'Add to collection', wanted:'Add to Want List', read:'Mark as read', extra:'Add another copy', black_bag:'Black bag this cover' };
 export function actionButton(action, active = false, disabled = false) {
   const title = action === 'black_bag' ? active ? 'Remove black bag — include this cover in slideshows' : 'Black bag — exclude this cover from slideshows' : action === 'owned' && active ? 'Remove this copy from collection' : action === 'wanted' && active ? 'Remove from Want List' : action === 'read' && active ? 'Mark unread' : names[action];
-  return `<button type="button" class="comic-toggle ${action === 'extra' ? 'extra-copy' : ''}" data-action="${action}" aria-label="${action==='black_bag'?title:names[action]}" title="${title}" ${action !== 'extra' ? `aria-pressed="${Boolean(active)}"` : ''} ${disabled ? 'disabled' : ''}>${action==='black_bag'?'<span class="black-bag-symbol" aria-hidden="true">Ø</span>':`<img class="icon" src="/${icons[action]}.png" alt="">`}</button>`;
+  return `<button type="button" class="comic-toggle ${action === 'extra' ? 'extra-copy' : ''}" data-action="${action}" aria-label="${action==='black_bag'?title:names[action]}" title="${title}" ${action !== 'extra' ? `aria-pressed="${Boolean(active)}"` : ''} ${disabled ? 'disabled' : ''}><img class="icon" src="/${icons[action]}.png" alt=""></button>`;
 }
 export function context(issue, api, onError) {
   const ctx = { issue, editions:issue.editions || [], saved:issue.saved ?? Boolean(issue.saved_at), busy:false, listeners:new Set(), api,onError };

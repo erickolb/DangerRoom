@@ -76,7 +76,7 @@ export async function mountSlideshow(app, api, current) {
     previous.disabled = next.disabled = play.disabled = !rows.length;
     if (!rows.length) {
       loading = false; image.removeAttribute('src'); old.removeAttribute('src');
-      caption.textContent = 'No eligible owned covers. Add comics or remove a black bag using Ø in My Collection.';
+      caption.textContent = 'No eligible owned covers. Add comics or remove a black bag using the black-bag icon in My Collection.';
       pause(); return;
     }
     const row = rows[index]; loading = true; caption.textContent = 'Loading cover…'; revealControls();

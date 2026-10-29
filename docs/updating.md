@@ -54,6 +54,10 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
+### β-008: queued Android and slideshow changes
+
+Update the server for the new black-bag and slideshow icons, reordered menu with **Scan Comic**, centered Android Want List controls, main-menu slideshow settings, and direct full-screen slideshow launch with **Exit**. The icons and these screens are served by DangerRoom. Install the Android β-008 APK from the [Android guide](android.md) to receive the outlined startup badge and its lower-right shadow; that startup change is native to the APK. Existing device credentials remain valid.
+
 ### β-004: shared black bags and the Android menu
 
 β-004 stores slideshow black bags in SQLite schema 6. Follow the stopped-container backup above before updating. Update the server for the new menu, fourth Ø collection control, full-inventory slideshow, and automatic full-screen playback; these screens are served by DangerRoom. The new Android β-004 APK is linked in the [Android guide](android.md). Existing Android β-002 clients remain compatible with the updated server.

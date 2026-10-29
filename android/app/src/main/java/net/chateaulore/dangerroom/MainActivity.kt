@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
             } catch (error: Exception) { status.text = error.message }
         }
         if (saved != null) button("Back to menu") { openWeb() }
-        text("DangerRoom Android · β-007\nMask: Magnific / Flaticon. Cover artwork belongs to its rights holders. Full credits are in DangerRoom.", 13f)
+        text("DangerRoom Android · β-008\nMask: Magnific / Flaticon. Cover artwork belongs to its rights holders. Full credits are in DangerRoom.", 13f)
     }
     @Suppress("SetJavaScriptEnabled")
     private fun openWeb(hash: String = "/home") {

@@ -1,5 +1,14 @@
 # Changelog
 
+## β-008 · 2026-10-29
+
+- Use the approved generated black-bag icon instead of Ø, only in Android collection tiles. Use the original Slideshow icon by Sentya Irma, with embedded text cleared and attribution preserved.
+- Launch Cover Slideshow directly into full-screen playback. Pause stays full screen; Exit returns to the menu. Loading, empty, and error states use the full-screen black backdrop.
+- Move slideshow settings to the main menu beside Instance and device settings. Reorder the menu to Want List, My Collection, Search Metron, Scan Comic, Cover Slideshow, Reading Log.
+- Center the two Android Want List tile controls.
+- Add a thin near-black outline and a lower-right dark-red shadow to the startup badge, preserving the original mask artwork.
+- Android 0.1.0-beta.8, version code 4, with the existing release signing identity.
+
 ## β-007 · 2026-10-28
 
 - Replace the Android startup heading and tagline with just the mask, centered on a background matching its main red edge (#E7001F).
