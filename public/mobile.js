@@ -1,10 +1,11 @@
 import { comicTitleText } from './comic-title.js';
-import { mountSlideshow } from './slideshow.js';
+import { mountSlideshow, showSlideshowSettings } from './slideshow.js';
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const isAndroid = Boolean(window.DangerRoomAndroid);
 export function mobileHome(app) {
-  app.innerHTML = `<div class="mobile-menu">${[['/wants','shopping-list','Want List'],['/camera','camera','Comic Lookup by Camera'],['/','metron','Search Metron'],['/collection','boxes','My Collection'],['/slideshow','star','Cover Slideshow'],['/reading-log','reading-log','Reading Log']].map(([path, icon, label])=>`<a class="mobile-menu-item" href="#${path}"><img src="/${icon}.${['metron','camera'].includes(icon)?'svg':'png'}" alt="">${label}<span aria-hidden="true">›</span></a>`).join('')}</div><button id="mobile-settings" class="secondary">Instance and device settings</button>`;
+  app.innerHTML = `<div class="mobile-menu">${[['/wants','shopping-list','Want List'],['/camera','camera','Comic Lookup by Camera'],['/','metron','Search Metron'],['/collection','boxes','My Collection'],['/slideshow','star','Cover Slideshow'],['/reading-log','reading-log','Reading Log']].map(([path, icon, label])=>`<a class="mobile-menu-item" href="#${path}"><img src="/${icon}.${['metron','camera'].includes(icon)?'svg':'png'}" alt="">${label}<span aria-hidden="true">›</span></a>`).join('')}</div><div class="mobile-settings-actions"><button id="mobile-settings" class="secondary">Instance and device settings</button><button id="slideshow-settings" class="secondary">Slideshow settings</button></div>`;
   document.querySelector('#mobile-settings').onclick = () => window.DangerRoomAndroid.settings();
+  document.querySelector('#slideshow-settings').onclick = () => showSlideshowSettings(app);
 }
 export async function mobilePage(path, params, app, api, openEdition, current) {
   if (path === '/slideshow') { await mountSlideshow(app, api, current); return true; }

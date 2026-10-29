@@ -28,11 +28,11 @@ Confirm the issue/year and cover visually. Tap its tile to open the existing cov
 
 Only owned editions with saved artwork are eligible; duplicate copies of the same edition appear once. Different owned variants remain separate. The slideshow does not query Metron or require a League of Comic Geeks account.
 
-The slideshow uses the full owned inventory with no maximum or remembered subset. Settings contain only random display order, 3–600 seconds per cover (default 15), and cross-fades or cuts. Timing and playback preferences are stored separately per instance.
+The slideshow uses the full owned inventory with no maximum or remembered subset. Open **Slideshow settings** on the main menu beside **Instance and device settings**. Settings contain only random display order, 3–600 seconds per cover (default 15), and cross-fades or cuts. Timing and playback preferences are stored separately per instance.
 
 Manage black bags from the collection listing. In the Android app, toggle the fourth **Ø** control on My Collection tiles to add or remove a black bag. This control is not shown in the browser web app. This placeholder will be replaced with an icon later. Status is saved on the server for the exact cover: all duplicate copies share it, while other variants remain independent. Ownership, wants, reading history, and ratings are unaffected. The saved state applies across devices when they next load the collection or slideshow. Earlier device-local exclusions migrate to server black bags when that device next opens its slideshow.
 
-Play enters full screen automatically and keeps the screen awake. Controls and the caption fade away; tap the image to reveal previous/next, Pause, and Settings. Pausing or opening Settings leaves full screen. Playback pauses when the app leaves the foreground. Failed images are skipped for the current session. Images load as needed; this version does not retain an offline cover cache.
+**Cover Slideshow** on the main menu opens directly into full-screen playback and keeps the screen awake while playing. Loading, empty, and error states also stay on the full-screen black background. Controls and the caption fade away; tap the image to reveal previous/next, Pause/Play, and **Exit**. Pausing keeps the full-screen view; Exit returns to the main menu. Slideshow settings are managed only from the main menu. Playback pauses when the app leaves the foreground. Failed images are skipped for the current session. Images load as needed; this version does not retain an offline cover cache.
 
 ## Build and signing
 
