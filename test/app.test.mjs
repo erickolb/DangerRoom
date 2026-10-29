@@ -606,3 +606,24 @@ test('series-type catalog is cached and supports paginated or unpaginated provid
   let response=await h.request('/api/series-types');assert.equal(response.status,200);assert.deepEqual(response.data.items,[{id:9,name:'Hardcover'},{id:10,name:'Trade Paperback'}]);assert.equal(calls,2);
   response=await h.request('/api/series-types');assert.equal(response.status,200);assert.equal(calls,2);
 });
+
+
+test('burst exhaustion explains remaining daily quota, supplies Android retry time, and expires', async t => {
+  let calls = 0;
+  const h = await harness(t, { metronOptions: { token: 'test-only', interval: 0, fetchImpl: async () => {
+    calls++;
+    return Response.json(raw, { headers: { 'X-RateLimit-Burst-Remaining': '0', 'X-RateLimit-Burst-Reset': String(Math.ceil(Date.now()/1000)+30), 'X-RateLimit-Sustained-Remaining': '4000' } });
+  } } });
+  await h.request('/api/metron/issues/42');
+  const rate = await h.request('/api/search?q=Other');
+  assert.equal(rate.status, 429);
+  assert.match(rate.data.error, /per-minute/);
+  assert.match(rate.data.error, /Daily quota may still be available/);
+  assert.ok(rate.data.retry_after >= 29);
+  assert.equal(String(rate.data.retry_after), rate.headers.get('retry-after'));
+  assert.equal(calls, 1);
+  h.metron.repo.statePut('blocked_until', Date.now()-1);
+  h.metron.repo.statePut('burst_until', Date.now()-1);
+  await h.metron.get('issue/43/', 1000);
+  assert.equal(calls, 2);
+});

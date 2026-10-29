@@ -21,7 +21,7 @@ async function api(path, options = {}) {
   if(isAndroid){
     const result=await new Promise(resolve=>{const id=crypto.randomUUID();window.dangerroomResponses??={};window.dangerroomResponses[id]=result=>{delete window.dangerroomResponses[id];resolve(result);};window.DangerRoomAndroid.request(`/api${path}`,options.method||'GET',options.body||'',id);});
     if(result.status===401)throw Error('This device is not authorized. Check instance and device settings.');
-    if(result.status<200||result.status>=300)throw Error(result.data?.error||'Could not reach DangerRoom.');
+    if(result.status<200||result.status>=300)throw Error(`${result.data?.error||'Could not reach DangerRoom.'}${result.data?.retry_after ? ` Try again in ${result.data.retry_after} seconds.` : ''}`);
     return result.data;
   }
   const response = await fetch(`/api${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
@@ -119,7 +119,7 @@ async function search(params, ticket) {
     if (location.hash === hash) route(); else location.hash = hash;
   };
   if (!params.get('q') && !params.get('upc')) return;
-  $('#search-results').innerHTML = '<p class="loading" role="status">Searching Metron…</p>';
+  $('#search-results').innerHTML = '<p class="loading metron-progress" role="status"><img src="/metron.svg" alt="" class="metron-spinner">Searching Metron…</p>';
   const button = $('#search-form button'); button.disabled = true;
   try {
     const data = await api(`/search?${params}`);

@@ -133,3 +133,7 @@ If a build fails before startup, the previous container/volume remains available
 5. Verify health, data, and covers before accepting writes. Return to main only when ready to retry the update.
 
 Never use sudo docker compose down -v during routine updates or rollback. Keep at least one verified data/config backup and the previous image until the update is accepted.
+
+## Metron search pauses
+
+Metron enforces a per-minute burst limit separately from its daily allowance. Scanning can need multiple API requests to resolve candidate issues and covers, so remaining daily quota does not rule out a temporary pause. DangerRoom respects Metron’s reset and Retry-After values; cached comics remain available. From β-012 onward, errors include the wait time in Android and distinguish burst versus daily limits when the response headers identify the exhausted window. Pauses recorded before this update retain a generic explanation until they expire. Wait for the stated interval before retrying.

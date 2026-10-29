@@ -87,3 +87,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 
 .comic-actions .comic-toggle[data-action=black_bag] .icon{filter:drop-shadow(0 0 .75px #ffffffb3);opacity:1}
 .gallery-images{z-index:0}
+
+.metron-progress{display:flex;align-items:center;gap:.65rem}.metron-spinner{width:28px;height:28px;flex:none;filter:invert(1);animation:metron-spin 1.8s linear infinite}@keyframes metron-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.metron-spinner{animation:none}}

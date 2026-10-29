@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-012', date: '2026-10-29', title: 'Search progress and clearer Metron limits',
+  changes: ['Show a spinning Metron logo during text and camera searches, rename the camera page Scan Comic, and distinguish minute and daily request limits with retry times on Android.'],
+}, {
   version: 'β-011', date: '2026-10-29', title: 'Smooth cover transitions',
   changes: ['Prevent a new cover flashing before cross-fade by decoding it in a hidden image layer, then fading between stable layers. Cancel and clean up completed animation effects before reusing a layer.'],
 }, {

@@ -1,5 +1,12 @@
 # Changelog
 
+## β-012 · 2026-10-29
+
+- Add a spinning Metron logo beside search progress, respecting reduced-motion preferences.
+- Rename the camera page Scan Comic.
+- Explain short-term versus daily Metron limits and preserve retry times in Android errors.
+- No APK update is required.
+
 ## β-011 · 2026-10-29
 
 - Fix the flash of the upcoming cover before a cross-fade. Load and decode each next image in a hidden layer before fading, leaving the displayed image untouched until the transition.

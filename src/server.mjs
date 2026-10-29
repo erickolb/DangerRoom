@@ -216,7 +216,7 @@ export function createApp(options = {}) {
       throw new AppError(404, 'Page not found.');
     } catch (error) {
       if (error.retryAfter) res.setHeader('Retry-After', String(error.retryAfter));
-      if (!res.headersSent) send(error.status || 500, { error: error.status ? error.message : 'Something went wrong. Please try again.' });
+      if (!res.headersSent) send(error.status || 500, { error: error.status ? error.message : 'Something went wrong. Please try again.', ...(error.retryAfter ? { retry_after: error.retryAfter } : {}) });
       else res.end();
     }
   });

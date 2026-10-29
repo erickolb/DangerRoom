@@ -71,7 +71,11 @@ export class Metron {
       if (!this.configured) throw new AppError(503, 'Metron is not connected yet. Add METRON_API_TOKEN to .env and restart DangerRoom. Your saved collection remains available.');
       const now = Date.now();
       const blocked = this.repo.stateGet('blocked_until');
-      if (blocked > now) throw new AppError(429, 'Metron’s request limit is resting. Please try again later.', Math.ceil((blocked - now) / 1000));
+      if (blocked > now) {
+        const daily = this.repo.stateGet('sustained_until') > now;
+        const burst = this.repo.stateGet('burst_until') > now;
+        throw new AppError(429, daily ? 'Metron’s daily request limit has been reached.' : burst ? 'Metron’s per-minute request limit has been reached. Daily quota may still be available.' : 'Metron has asked DangerRoom to pause requests; this does not necessarily mean your daily quota is exhausted.', Math.ceil((blocked - now) / 1000));
+      }
       const delay = this.repo.stateGet('next_request') - now;
       if (delay > 0) await new Promise(resolve => setTimeout(resolve, Math.min(delay, this.interval)));
       this.repo.statePut('next_request', Date.now() + this.interval);
@@ -80,7 +84,13 @@ export class Metron {
       catch { throw new AppError(502, 'Could not reach Metron. Try again shortly; saved comics remain available.'); }
       let until = 0;
       for (const window of ['Burst', 'Sustained']) {
-        if (response.headers.get(`X-RateLimit-${window}-Remaining`) === '0') until = Math.max(until, Number(response.headers.get(`X-RateLimit-${window}-Reset`)) * 1000);
+        if (response.headers.get(`X-RateLimit-${window}-Remaining`) === '0') {
+          const reset = Number(response.headers.get(`X-RateLimit-${window}-Reset`)) * 1000;
+          if (Number.isFinite(reset) && reset > Date.now()) {
+            this.repo.statePut(window === 'Burst' ? 'burst_until' : 'sustained_until', reset);
+            until = Math.max(until, reset);
+          }
+        }
       }
       if (response.status === 429) {
         const retry = response.headers.get('Retry-After');

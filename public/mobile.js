@@ -10,7 +10,7 @@ export function mobileHome(app) {
 export async function mobilePage(path, params, app, api, openEdition, current) {
   if (path === '/slideshow') { await mountSlideshow(app, api, current); return true; }
   if (path !== '/camera') return false;
-  app.innerHTML = `<h2>Comic Lookup by Camera</h2><p>Photograph the cover straight on, filling the frame. A visible barcode helps identify the issue. Review the text, then choose the matching cover.</p>${isAndroid?'<button id="capture">Take a photo</button>':''}<form id="camera-query" class="search-main"><label>Series name<input name="q" maxlength="160" value="${esc(params.get('q'))}"></label><label>Issue number<input name="number" maxlength="30" value="${esc(params.get('number'))}"></label><label>UPC<input name="upc" inputmode="numeric" maxlength="18" value="${esc(params.get('upc'))}"></label><button>Find matching covers</button></form><p class="hint">Camera text is a search suggestion. Stylized logos, glare, and text-free variants may need a corrected title. Barcode matches are labeled; confirm the artwork before saving.</p><div id="camera-results" role="status"></div>`;
+  app.innerHTML = `<h2>Scan Comic</h2><p>Photograph the cover straight on, filling the frame. A visible barcode helps identify the issue. Review the text, then choose the matching cover.</p>${isAndroid?'<button id="capture">Take a photo</button>':''}<form id="camera-query" class="search-main"><label>Series name<input name="q" maxlength="160" value="${esc(params.get('q'))}"></label><label>Issue number<input name="number" maxlength="30" value="${esc(params.get('number'))}"></label><label>UPC<input name="upc" inputmode="numeric" maxlength="18" value="${esc(params.get('upc'))}"></label><button>Find matching covers</button></form><p class="hint">Camera text is a search suggestion. Stylized logos, glare, and text-free variants may need a corrected title. Barcode matches are labeled; confirm the artwork before saving.</p><div id="camera-results" role="status"></div>`;
   document.querySelector('#capture')?.addEventListener('click', () => window.DangerRoomAndroid.camera());
   let searchGeneration=0, nextPage=false;
   document.querySelector('#camera-query').onsubmit = async event => {
@@ -20,7 +20,7 @@ export async function mobilePage(path, params, app, api, openEdition, current) {
     const values = new URLSearchParams();
     for (const [key, value] of new FormData(event.target)) if (value.trim()) values.set(key, value.trim());
     const results = document.querySelector('#camera-results'), button = event.target.querySelector('button');
-    button.disabled = true; results.textContent = 'Finding issues and their covers…';
+    button.disabled = true; results.innerHTML = '<p class="loading metron-progress" role="status"><img src="/metron.svg" alt="" class="metron-spinner">Finding issues and their covers…</p>';
     try {
       const data = await api(`/camera-search?${values}`);
       if (!current()||request!==searchGeneration) return;
