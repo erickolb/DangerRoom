@@ -218,8 +218,14 @@ class MainActivity : ComponentActivity() {
                 val barcodeTask = scanner.process(input); val textTask = recognizer.process(input)
                 com.google.android.gms.tasks.Tasks.whenAllComplete(barcodeTask, textTask).addOnCompleteListener {
                     scanner.close(); recognizer.close()
-                    val upc = completeBarcode ?: if (barcodeTask.isSuccessful) barcodeTask.result.firstOrNull { it.rawValue?.matches(Regex("[0-9]{8,18}")) == true }?.rawValue ?: "" else ""
+                    val mainBarcode = if (barcodeTask.isSuccessful) barcodeTask.result.firstOrNull { it.rawValue?.matches(Regex("[0-9]{8,18}")) == true } else null
                     val blocks = if (textTask.isSuccessful) textTask.result.textBlocks else emptyList()
+                    val printedLines = blocks.flatMap { it.lines }.mapNotNull { line -> line.boundingBox?.let { box -> ComicBarcode.PrintedText(line.text, box.left, box.top, box.right, box.bottom) } }
+                    val supplementBarcode = mainBarcode?.takeIf { it.format == com.google.mlkit.vision.barcode.common.Barcode.FORMAT_UPC_A || it.format == com.google.mlkit.vision.barcode.common.Barcode.FORMAT_EAN_13 }
+                    val printedUpc = supplementBarcode?.boundingBox?.let { box ->
+                        ComicBarcode.withPrintedSupplement(supplementBarcode.rawValue ?: "", intArrayOf(box.left, box.top, box.right, box.bottom), printedLines)
+                    }
+                    val upc = completeBarcode ?: printedUpc ?: mainBarcode?.rawValue ?: ""
                     val lines = blocks.flatMap { it.lines }.filter { it.text.any(Char::isLetter) && it.text.length in 3..100 }
                     val title = lines.maxByOrNull { (it.boundingBox?.height() ?: 0) * (if ((it.boundingBox?.top ?: bitmap.height) < bitmap.height / 2) 2 else 1) }?.text ?: ""
                     val number = Regex("(?:#|ISSUE\\s+|NO\\.?\\s+)([0-9]{1,4}(?:\\.[0-9]+)?)", RegexOption.IGNORE_CASE).find(if(textTask.isSuccessful) textTask.result.text else "")?.groupValues?.get(1) ?: ""

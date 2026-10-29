@@ -18,3 +18,5 @@ node_modules/
 *.jks
 *.keystore
 /.signing/
+
+/android/.kotlin/

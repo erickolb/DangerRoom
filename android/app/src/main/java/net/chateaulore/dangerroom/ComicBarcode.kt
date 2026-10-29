@@ -16,6 +16,29 @@ object ComicBarcode {
         return base + supplement
     }
 
+    data class PrintedText(val text: String, val left: Int, val top: Int, val right: Int, val bottom: Int)
+
+    /** Only use a unique five-digit OCR line beside either end of the detected main barcode. */
+    fun withPrintedSupplement(main: String, box: IntArray, lines: List<PrintedText>): String? {
+        if (box.size != 4 || box[0]>=box[2] || box[1]>=box[3]) return null
+        val vertical = box[3]-box[1] > box[2]-box[0]
+        val start = if(vertical) box[1].toDouble() else box[0].toDouble()
+        val end = if(vertical) box[3].toDouble() else box[2].toDouble()
+        val crossStart = if(vertical) box[0].toDouble() else box[1].toDouble()
+        val crossEnd = if(vertical) box[2].toDouble() else box[3].toDouble()
+        val length=end-start
+        val candidates=lines.mapNotNull { line ->
+            val digits=line.text.filterNot(Char::isWhitespace)
+            if(!digits.matches(Regex("[0-9]{5}"))) return@mapNotNull null
+            val along=if(vertical) (line.top+line.bottom)/2.0 else (line.left+line.right)/2.0
+            val across=if(vertical) (line.left+line.right)/2.0 else (line.top+line.bottom)/2.0
+            val beside=(along < start && along >= start-length) || (along > end && along <= end+length)
+            val aligned=kotlin.math.abs(across-(crossStart+crossEnd)/2) <= maxOf((crossEnd-crossStart)*1.5,length*.25)
+            if(beside && aligned) digits else null
+        }.toSet()
+        return candidates.singleOrNull()?.let { combine(main,it) }
+    }
+
     fun read(pixels: IntArray, width: Int, height: Int): String? {
         val hints = mapOf(
             DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.UPC_A, BarcodeFormat.EAN_13),

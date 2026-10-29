@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-019', date: '2026-10-29', title: 'Recover printed barcode supplements',
+  changes: ['When supplement bars are too soft to decode, use the existing on-device OCR result only if a unique five-digit line is positioned beside the detected main UPC/EAN barcode. Preserve leading zeros and reject ambiguous candidates. Android update required.'],
+}, {
   version: 'β-018', date: '2026-10-29', title: 'Complete comic barcodes',
   changes: ['Decode the five-digit UPC/EAN supplement from the barcode image and append it to the main barcode, retaining leading zeros. Warn in Android review when only the main barcode was read. Android update required for improved capture.'],
 }, {

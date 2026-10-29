@@ -149,3 +149,7 @@ Update the server to remove unnecessary series-format lookups from Scan Comic. A
 ### Android barcode capture in β-018
 
 Install the signed [β-018 Android APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.18) over the existing app for five-digit barcode supplement capture. Updating the server alone does not update native camera recognition. Include both the main barcode and supplement in the photograph and review the complete UPC before searching. If review warns that only the main barcode was captured, retake the photo or append the printed five digits, preserving zeros.
+
+### Tablet supplement recognition in β-019
+
+Install the signed [β-019 Android APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.19) over the existing app. This fixes cases where the main barcode is readable but the supplement bars are too soft: a unique five-digit line beside that barcode can be recovered from the existing on-device OCR result. Always review the full UPC before searching. Updating only the server cannot change camera recognition.

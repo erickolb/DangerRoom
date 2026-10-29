@@ -6,6 +6,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ComicBarcodeTest {
+    @Test fun printedSupplementMustBeUniqueAndBesideTheMainBarcode() {
+        val main="759606215584"
+        val box=intArrayOf(450,990,565,1250)
+        val supplement=ComicBarcode.PrintedText("0 0 1 1 1",450,850,475,970)
+        assertEquals(main+"00111",ComicBarcode.withPrintedSupplement(main,box,listOf(supplement)))
+        assertNull(ComicBarcode.withPrintedSupplement(main,box,listOf(supplement.copy(text="OO111"))))
+        assertNull(ComicBarcode.withPrintedSupplement(main,box,listOf(supplement.copy(top=100,bottom=200))))
+        assertNull(ComicBarcode.withPrintedSupplement(main,box,listOf(supplement.copy(left=10,right=30))))
+        assertNull(ComicBarcode.withPrintedSupplement(main,box,listOf(supplement.copy(top=1050,bottom=1100))))
+        assertNull(ComicBarcode.withPrintedSupplement(main,box,listOf(supplement,supplement.copy(text="00211"))))
+        assertNull(ComicBarcode.withPrintedSupplement(main,box,emptyList()))
+        assertEquals(main+"00111",ComicBarcode.withPrintedSupplement(main,box,listOf(supplement,supplement)))
+        assertEquals(main+"00111",ComicBarcode.withPrintedSupplement(main,intArrayOf(990,450,1250,565),listOf(ComicBarcode.PrintedText("00111",850,450,970,475))))
+    }
+
     @Test fun combinesTheExactSupplementAndPreservesZeros() {
         assertEquals("75960621558400111", ComicBarcode.combine("759606215584", "00111"))
         assertEquals("75960621558400111", ComicBarcode.combine("0759606215584", "00111"))

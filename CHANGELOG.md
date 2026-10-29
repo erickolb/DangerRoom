@@ -1,5 +1,11 @@
 # Changelog
 
+## β-019 · 2026-10-29
+
+- Fix the tablet-photo supplement failure: combine the detected main UPC with a unique five-digit OCR line positioned beside either end of that barcode when bars-only decoding fails. Preserve leading zeros; reject distant, overlapping, nonnumeric, and ambiguous candidates. Use the already-completed OCR pass without additional network calls.
+- Regression-tested on the connected Fire tablet using the supplied failing photo and a cropped barcode fixture.
+- Publish signed Android versionCode 6; install the new APK for this native capture fix.
+
 ## β-018 · 2026-10-29
 
 - Android barcode capture now uses ZXing to read the five-digit UPC/EAN supplement and joins it to the main barcode without dropping leading zeros. For example, 759606215584 plus 00111 becomes 75960621558400111. Support horizontal and vertical barcodes.
