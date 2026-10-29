@@ -2,7 +2,7 @@ import { changeRead } from './reading-log.js';
 const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'duplicate', black_bag:'black-bag' };
 const names = { owned:'Add to collection', wanted:'Add to Want List', read:'Mark as read', extra:'Add another copy', black_bag:'Black bag this cover' };
 export function actionButton(action, active = false, disabled = false) {
-  const title = action === 'black_bag' ? active ? 'Remove black bag — include this cover in slideshows' : 'Black bag — exclude this cover from slideshows' : action === 'owned' && active ? 'Remove this copy from collection' : action === 'wanted' && active ? 'Remove from Want List' : action === 'read' && active ? 'Mark unread' : names[action];
+  const title = action === 'black_bag' ? 'Black Bag - Hide from Cover Slideshow display' : action === 'owned' && active ? 'Remove this copy from collection' : action === 'wanted' && active ? 'Remove from Want List' : action === 'read' && active ? 'Mark unread' : names[action];
   return `<button type="button" class="comic-toggle ${action === 'extra' ? 'extra-copy' : ''}" data-action="${action}" aria-label="${action==='black_bag'?title:names[action]}" title="${title}" ${action !== 'extra' ? `aria-pressed="${Boolean(active)}"` : ''} ${disabled ? 'disabled' : ''}><img class="icon" src="/${icons[action]}.png" alt=""></button>`;
 }
 export function context(issue, api, onError) {
@@ -24,7 +24,7 @@ export function bindToggles(container,ctx,state,{actions=['owned','wanted','read
   function render(){
     const selected=ctx.editions.find(e=>e.key===state.editionKey);
     const focused=container.contains(document.activeElement) ? document.activeElement.dataset.action : null;
-    container.innerHTML=actions.map(action=>actionButton(action,action==='owned'?Boolean(state.copyId):action==='wanted'?selected?.wanted:action==='black_bag'?selected?.black_bagged:Boolean(ctx.issue.read),ctx.busy || !selected || action==='wanted' && selected.owned)).join('')+(extra?actionButton('extra',false,ctx.busy || !selected?.owned):'');
+    container.innerHTML=actions.map(action=>actionButton(action,action==='owned'?Boolean(state.copyId):action==='wanted'?selected?.wanted:action==='black_bag'?selected?.black_bagged:Boolean(ctx.issue.read),ctx.busy || !selected || action==='wanted' && selected.owned || action==='extra' && !selected.owned)).join('')+(extra?actionButton('extra',false,ctx.busy || !selected?.owned):'');
     container.querySelectorAll('button').forEach(button=>button.onclick=()=>perform(button.dataset.action));
     if(focused && !ctx.busy)container.querySelector(`[data-action=${focused}]`)?.focus({preventScroll:true});
   }

@@ -62,6 +62,10 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
+### β-009: black-bag details controls and contrast
+
+Update the server to show the black-bag toggle immediately after duplicate copy on comic details in both Android and the browser. The icon now stays black with a white glow for contrast. Browser collection tiles still omit that toggle. These changes use the existing Android β-008 APK; no APK reinstall is required.
+
 ### β-008: queued Android and slideshow changes
 
 Update the server for the new black-bag and slideshow icons, reordered menu with **Scan Comic**, centered Android Want List controls, main-menu slideshow settings, and direct full-screen slideshow launch with **Exit**. The icons and these screens are served by DangerRoom. Install the Android β-008 APK from the [Android guide](android.md) to receive the outlined startup badge and its lower-right shadow; that startup change is native to the APK. Existing device credentials remain valid.

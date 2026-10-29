@@ -25,7 +25,7 @@ jobs:
             if curl --fail http://127.0.0.1:4340/api/health; then break; fi
             sleep 1
           done
-          curl --fail http://127.0.0.1:4340/api/health | grep 'β-008'
+          curl --fail http://127.0.0.1:4340/api/health | grep 'β-009'
           docker exec dangerroom-test sh -c 'test "$(id -u)" != 0 && test -s /data/dangerroom.sqlite'
           curl --fail http://127.0.0.1:4340/api/collection
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4340/mobile/api/collection)" = 401

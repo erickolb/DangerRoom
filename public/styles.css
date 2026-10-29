@@ -84,3 +84,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .android-app .want-card .card-toggles{justify-content:center}
 
 .comic-actions .comic-toggle[data-action=black_bag] .icon{width:30px;height:30px;flex-shrink:0}
+
+.comic-actions .comic-toggle[data-action=black_bag] .icon{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #ffffffb3);opacity:1}

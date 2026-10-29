@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-009', date: '2026-10-29', title: 'Black bags on comic details',
+  changes: ['Keep the black-bag icon black with a white glow for contrast.', 'Add the black-bag toggle immediately after the duplicate-copy button on comic details in both Android and the browser. Collection-tile black-bag controls remain Android-only.'],
+}, {
   version: 'β-008', date: '2026-10-29', title: 'Slideshow from the menu',
   changes: ['Replace the Ø placeholder with the approved generated black-bag icon; use the cleaned and attributed Slideshow icon on the menu.', 'Launch Cover Slideshow directly into full-screen playback, including full-screen loading and empty states. Keep Pause full screen and provide Exit to return to the menu.', 'Move slideshow settings beside Instance and device settings on the main menu; center Android Want List controls, reorder My Collection/Search Metron/Scan Comic, and add the approved outline and drop shadow to the startup mask.'],
 }, {

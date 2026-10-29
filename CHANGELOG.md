@@ -1,5 +1,11 @@
 # Changelog
 
+## β-009 · 2026-10-29
+
+- Render the original black bag and white details with a white outer glow instead of inverting it into a white bag.
+- Add the black-bag toggle immediately to the right of duplicate copy on Android and browser comic details. Use the tooltip “Black Bag - Hide from Cover Slideshow display”.
+- Keep browser collection tiles at three controls; Android collection tiles retain their black-bag toggle. No APK update is required.
+
 ## β-008 · 2026-10-29
 
 - Use the approved generated black-bag icon instead of Ø, only in Android collection tiles. Use the original Slideshow icon by Sentya Irma, with embedded text cleared and attribution preserved.
