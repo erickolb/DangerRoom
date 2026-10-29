@@ -1,5 +1,10 @@
 # Changelog
 
+## β-015 · 2026-10-29
+
+- Apply the approved black-bag icon: 15% narrower artwork, no arc, and a vertically centered slashed eye. Button dimensions and dark active styling stay the same.
+- No APK update is required.
+
 ## β-014 · 2026-10-29
 
 - Reduce black-bag artwork from 30px to 22px and replace its black fill and slash gap with transparency. Preserve the dark active button background.

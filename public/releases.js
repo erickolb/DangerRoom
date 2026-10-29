@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-015', date: '2026-10-29', title: 'Simplified black-bag icon',
+  changes: ['Narrow the black-bag artwork by 15%, remove the arc, and center the slashed eye vertically. Preserve button dimensions and active styling.'],
+}, {
   version: 'β-014', date: '2026-10-29', title: 'Lighter black-bag icon',
   changes: ['Reduce the black-bag icon within its button and replace black artwork fills with transparency, preserving the dark active button background.'],
 }, {
