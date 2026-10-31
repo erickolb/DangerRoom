@@ -1,5 +1,11 @@
 # Changelog
 
+## Hardlight 0.1.0 · 2026-10-31
+
+- Publish the first non-prerelease Hardlight Android build, versionCode 8, signed using the repository’s GitHub Actions secrets. Display name remains Danger Room and app ID remains `net.chateaulore.hardlight`.
+- Retain the existing feature set and update path from Hardlight β-021. The DangerRoom server remains β-021.
+- Obtainium can track the normal release without enabling prereleases.
+
 ## β-021 · 2026-10-31
 
 - Adopt `net.chateaulore.hardlight` as the Android application ID, with display name **Danger Room** and nickname **Hardlight**. Keep the DangerRoom server name and existing client/server bridge compatible.

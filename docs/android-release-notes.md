@@ -1,11 +1,14 @@
-Hardlight is the Android client for the DangerRoom web app. Its installed display name is **Danger Room**; its application ID is **net.chateaulore.hardlight**.
+Hardlight **0.1.0** is the Android client for DangerRoom. It appears on your device as **Danger Room**, with application ID **net.chateaulore.hardlight**.
 
-This first Hardlight release installs separately from the older `net.chateaulore.dangerroom` client and can coexist with it. Configure the instance hostname and server-issued device ID/secret in the new app. The old app and server collection are not changed. This APK uses the signing key configured by the repository owner in GitHub Actions; future Hardlight releases must retain that key and app ID.
+- Configure your own HTTPS DangerRoom instance with server-issued device credentials.
+- Browse your Want List, collection, reading log, and Metron search.
+- Scan comics with full UPC and five-digit supplement recognition, with nearby printed-digit recovery when supplement bars are unreadable. Review results and save the exact cover using Add/Want/Read controls.
+- Play a full-screen cover slideshow using owned covers and black-bag exclusions.
 
-Download **DangerRoom.apk** and check **SHA256SUMS.txt**. **SIGNING-CERTIFICATE.txt** contains public certificate metadata for verifying the signer. Android 9 or newer; versionCode 7.
+Android 9 or newer; **versionCode 8**. Install **DangerRoom.apk** over Hardlight β-021 to retain settings. The older `net.chateaulore.dangerroom` client is a separate installation; configuring Hardlight does not modify it or your server collection.
 
-Includes full comic barcode capture with positional OCR recovery for printed five-digit supplements, exact-cover Add/Want/Read controls from an updated server, and the existing collection, Want List, reading log, search, and full-screen cover slideshow.
+This is a normal GitHub release, not a prerelease. Obtainium can track it without enabling prereleases. Use the repository source and the `net.chateaulore.hardlight` application ID.
 
-For Obtainium, use this GitHub repository as the source and enable prerelease updates while releases are labeled beta. Track the new Hardlight application ID. Subsequent signed Hardlight APKs install as updates over this release.
+The APK is signed with the repository’s configured GitHub Actions secrets. Verify the download using **SHA256SUMS.txt**; **SIGNING-CERTIFICATE.txt** provides public signer metadata. The DangerRoom server retains its own release version.
 
-[Android installation and configuration](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Server update instructions](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md)
+[Android installation](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Download website](https://erickolb.github.io/DangerRoom/)
