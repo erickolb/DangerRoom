@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased · Android β-021
+## β-021 · 2026-10-31
 
 - Adopt `net.chateaulore.hardlight` as the Android application ID, with display name **Danger Room** and nickname **Hardlight**. Keep the DangerRoom server name and existing client/server bridge compatible.
 - Increment Android versionCode to 7. This installs alongside the previous app ID and needs its own instance/device configuration.
-- Show the actual installed Android version in connection-screen credits. Signed release publication is pending signing-key selection.
+- Show the actual installed Android version in connection-screen credits. Publish signed APKs with checksums and certificate metadata through GitHub Actions using repository signing secrets.
+- Add Install with Obtainium to the download website, with beta-update instructions.
 
 ## β-020 · 2026-10-29
 

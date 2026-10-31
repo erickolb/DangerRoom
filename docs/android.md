@@ -1,20 +1,20 @@
-# DangerRoom for Android · β-019
+# Danger Room (Hardlight) for Android · β-021
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-008 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [DangerRoom's β-019 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.19), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-008 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [Hardlight's β-021 release](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0-beta.21), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
 
-## Hardlight identity (next Android release: β-021)
+## Hardlight identity
 
 **Hardlight** is the nickname for the DangerRoom Android client. Its installed display name is **Danger Room** and its application ID is `net.chateaulore.hardlight`. The website and server remain DangerRoom.
 
-The first Hardlight build is a separate Android installation from the older `net.chateaulore.dangerroom` client. Both can coexist; the new app needs its own instance/device configuration. Nothing is removed from the old app or server. In Obtainium, use `erickolb/DangerRoom` as the release source and select the new app ID once a signed Hardlight APK is published. Continue using the same signing key and app ID for subsequent updates.
+The first Hardlight build is a separate Android installation from the older `net.chateaulore.dangerroom` client. Both can coexist; the new app needs its own instance/device configuration. Nothing is removed from the old app or server. Use **Install with Obtainium** on the download website to add `erickolb/DangerRoom` as the release source. Enable **Include prereleases** during beta and track the `net.chateaulore.hardlight` app ID. Install Obtainium first if the link does not open. Continue using the same signing key and app ID for subsequent updates.
 
-The currently published APK linked above is still β-019 with the previous app ID. The β-021 source change is awaiting the signing-key selection before publication.
+The currently published APK uses the Hardlight app ID and the repository owner’s GitHub Actions signing key.
 
 ## Install and connect
 
 1. Download the APK, open it, and allow your browser to install apps if Android asks. Install updates over the existing app.
 2. Ask the DangerRoom administrator to issue a credential for this device. Each installation should have its own credential.
-3. Open DangerRoom. Its startup screen shows only the centered outlined mask with a matching dark-red shadow on a red background, then leads to connection settings on first use.
+3. Open **Danger Room** (Hardlight). Its startup screen shows only the centered outlined mask with a matching dark-red shadow on a red background, then leads to connection settings on first use.
 4. Enter the instance hostname (for example `dangerroom.chateaulore.net`), device ID, and secret. A custom HTTPS port is supported. Paths, HTTP, and credentials embedded in the address are rejected.
 5. Tap **Save and test connection**. The app verifies that the credential is enabled before saving it in Android Keystore-encrypted storage. Backups and device transfers exclude credentials. Reinstalling requires provisioning again.
 
@@ -53,6 +53,6 @@ cd android
 
 **Instrumentation tests:** use an emulator or a dedicated test device. Do not run `connectedDebugAndroidTest` on a provisioned personal device: test-runner cleanup can uninstall the target app and remove its local credentials. Unit tests and lint do not install or remove the app.
 
-For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds; published APKs are signed separately. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
+For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v0.1.0-beta.21`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
 
-Published version: **0.1.0-beta.19 / β-019**, Android version code **6**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.19`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+Published version: **0.1.0-beta.21 / β-021**, Android version code **7**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v0.1.0-beta.21`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.

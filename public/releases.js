@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-021', date: '2026-10-31', title: 'Hardlight Android identity',
+  changes: ['The Android client is nicknamed Hardlight, with application ID net.chateaulore.hardlight and display name Danger Room. Publish signed releases through GitHub Actions and add Install with Obtainium to the download website. Hardlight installs separately from the older app ID.'],
+}, {
   version: 'β-020', date: '2026-10-29', title: 'Scan result actions',
   changes: ['Add the shared Add, Want, and Read controls directly to each exact-cover scan result. Reflect saved status and synchronize issue-wide reading across variants without extra provider requests.'],
 }, {

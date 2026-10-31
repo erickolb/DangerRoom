@@ -157,3 +157,7 @@ Install the signed [β-019 Android APK](https://github.com/erickolb/DangerRoom/r
 ### Scan-result actions in β-020
 
 Update the server to add Add, Want, and Read controls directly to scan-result tiles. The existing Android β-019 app loads these controls from the server; no APK update or device reconfiguration is needed. Ownership and Want List status apply to the exact cover, while reading status is shared by the issue.
+
+### Hardlight Android identity in β-021
+
+The Android client is now nicknamed **Hardlight**, displayed as **Danger Room**, with application ID `net.chateaulore.hardlight`. It installs separately from the older `net.chateaulore.dangerroom` app and needs its own instance/device setup. The server and its collection are unchanged. Install the signed release from the [download website](https://erickolb.github.io/DangerRoom/), or choose **Install with Obtainium** and enable prerelease updates during beta. Future Hardlight updates retain this app ID and signing key.
