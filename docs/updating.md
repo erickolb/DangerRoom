@@ -165,3 +165,7 @@ The Android client is now nicknamed **Hardlight**, displayed as **Danger Room**,
 ### Hardlight 0.1.0 Android release
 
 Install [Hardlight 0.1.0](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.0) over the existing Hardlight β-021 app to keep its configuration. Android versionCode is 8 and the app ID remains `net.chateaulore.hardlight`. This is a normal GitHub release, so Obtainium does not need prerelease updates enabled. The server remains β-021 and needs no container update for this version-only Android release.
+
+### Hardlight 0.1.1 launcher icon
+
+Update through Obtainium or install the signed [Hardlight 0.1.1 APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.1) over the existing Hardlight app. This applies the approved launcher icon and advances Android versionCode to 9. App ID, signing key, and local settings are retained. No server/container update is required.
