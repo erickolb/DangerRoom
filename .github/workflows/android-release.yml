@@ -56,6 +56,10 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs release-artifacts/DangerRoom.apk > release-artifacts/SIGNING-CERTIFICATE.txt
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging release-artifacts/DangerRoom.apk | grep -F "application-label:'Danger Room'"
           (cd release-artifacts && sha256sum DangerRoom.apk > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hardlight-release
+          path: release-artifacts/
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -68,7 +72,3 @@ jobs:
           gh release create "$RELEASE_TAG" release-artifacts/DangerRoom.apk release-artifacts/SHA256SUMS.txt release-artifacts/SIGNING-CERTIFICATE.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "Danger Room (Hardlight) $RELEASE_TAG" --notes-file docs/android-release-notes.md "${prerelease[@]}"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Hardlight-release
-          path: release-artifacts/
