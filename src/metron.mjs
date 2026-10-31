@@ -38,6 +38,12 @@ export function essentialIssue(raw) {
   };
 }
 export function searchFilters(params) {
+  if (params.has('cover_hash')) {
+    const hash = params.get('cover_hash');
+    const page = positiveId(params.get('page') || 1, 'Page');
+    if (!/^[a-f0-9]{16}$/i.test(hash) || page > 10000) throw new AppError(400, 'Retake the cover photo to generate a valid cover fingerprint.');
+    return new URLSearchParams({ cover_hash: hash.toLowerCase(), page: String(page) });
+  }
   const q = (params.get('q') || '').trim();
   const number = (params.get('number') || '').trim();
   const year = (params.get('year') || '').trim();

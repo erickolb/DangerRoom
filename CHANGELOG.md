@@ -1,5 +1,11 @@
 # Changelog
 
+## β-022 / Hardlight 0.1.2 · 2026-10-31
+
+- Default Scan Cover to cropped, on-device pHash and Metron exact cover-hash lookup. No automatic text/barcode fallback.
+- Preserve OCR/barcode lookup behind an unchecked Scan settings modal checkbox.
+- Android versionCode 10; requires server β-022. Exact main-cover matching is experimental.
+
 ## Hardlight 0.1.1 · 2026-10-31
 
 - Apply the approved loading-screen style to the Android launcher icon: red background, thin near-black circle outline, and dark-red lower-right shadow. Include an adaptive foreground/background and five legacy icon densities.

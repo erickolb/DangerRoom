@@ -634,13 +634,13 @@ test('diagnostics reads locally, counts scan requests, retains quota snapshots, 
   const before = await h.request('/api/metron/diagnostics');
   assert.equal(before.status, 200); assert.equal(before.data.requests, 0);
   assert.equal(h.counts().lookups, 0);
-  assert.equal((await h.request('/api/camera-search?q=Test')).status, 200);
+  assert.equal((await h.request('/api/camera-search?legacy=1&q=Test')).status, 200);
   const d = (await h.request('/api/metron/diagnostics')).data;
   assert.equal(d.requests, 2); assert.equal(d.scan_requests, 2);
   assert.equal(d.last_scan.requests, 2); assert.equal(d.recent[0].status, 200);
   assert.equal(d.windows.Burst.remaining, null);
   assert.equal(JSON.stringify(d).includes('test-only'), false);
-  await h.request('/api/camera-search?q=Test');
+  await h.request('/api/camera-search?legacy=1&q=Test');
   const cached = (await h.request('/api/metron/diagnostics')).data;
   assert.equal(cached.requests, 2); assert.equal(cached.last_scan.requests, 0);
   assert.equal(h.counts().lookups, 2);
@@ -659,12 +659,12 @@ test('broad scans skip format enrichment for all candidate series and use only f
     assert.ok(id,'Scan must not fetch series format metadata');
     return Response.json({...raw,id,series:{...raw.series,id:id+100}});
   }}});
-  const scan=await h.request('/api/camera-search?q=Broad');
+  const scan=await h.request('/api/camera-search?legacy=1&q=Broad');
   assert.equal(scan.status,200);assert.equal(scan.data.limited,true);
   assert.equal(new Set(scan.data.items.map(row=>row.issue.id)).size,5);
   assert.equal(paths.length,6);
   assert.equal((await h.request('/api/metron/diagnostics')).data.last_scan.requests,6);
-  await h.request('/api/camera-search?q=Broad');assert.equal(paths.length,6);
+  await h.request('/api/camera-search?legacy=1&q=Broad');assert.equal(paths.length,6);
 });
 
 
@@ -673,7 +673,7 @@ test('scan results include exact-cover ownership and wants plus shared reading s
   await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
   const variant=editionsFor(raw)[1].key;
   await h.request('/api/entries','POST',{issue_id:42,edition_key:variant,owned:true,read:true});
-  const response=await h.request('/api/camera-search?q=Test');
+  const response=await h.request('/api/camera-search?legacy=1&q=Test');
   assert.equal(response.status,200);
   const standard=response.data.items.find(row=>row.edition.key==='standard');
   const owned=response.data.items.find(row=>row.edition.key===variant);

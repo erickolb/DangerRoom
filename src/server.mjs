@@ -103,10 +103,12 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/metron/diagnostics') return send(200, metron.diagnostics());
       if (req.method === 'GET' && url.pathname === '/api/camera-search') {
         return await (metron.trackScan ? work => metron.trackScan(work) : work => work())(async () => {
-        const upc = url.searchParams.get('upc');
-        const barcodeParams = new URLSearchParams({ upc: upc || '', page: url.searchParams.get('page') || '1' });
-        let result = await metron.search(upc ? barcodeParams : url.searchParams, { enrichSeries: false });
-        if (upc && !result.results.length && url.searchParams.get('q')) {
+        const hash = url.searchParams.get('cover_hash');
+        const legacy = url.searchParams.get('legacy') === '1';
+        const upc = legacy ? url.searchParams.get('upc') : null;
+        if (!legacy && !/^[a-f0-9]{16}$/i.test(hash || '')) throw new AppError(400, 'Cover scanning now requires a photo fingerprint. Update Hardlight and retake the cover photo.');
+        let result = await metron.search(legacy ? (upc ? new URLSearchParams({ upc, page: url.searchParams.get('page') || '1' }) : url.searchParams) : new URLSearchParams({ cover_hash: hash.toLowerCase(), page: url.searchParams.get('page') || '1' }), { enrichSeries: false });
+        if (legacy && upc && !result.results.length && url.searchParams.get('q')) {
           const fallback = new URLSearchParams(url.searchParams); fallback.delete('upc');
           result = await metron.search(fallback, { enrichSeries: false });
         }
@@ -122,8 +124,8 @@ export function createApp(options = {}) {
           Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null,reading_log_count:local?.reading_log_count || 0});
           for (const edition of issue.editions) items.push({ issue, edition, barcode_match: Boolean(upc && edition.upc === upc) });
         }
-        items.sort((a, b) => Number(b.barcode_match) - Number(a.barcode_match));
         const moreCovers = start + 5 < result.results.length;
+        if (legacy) items.sort((a, b) => Number(b.barcode_match) - Number(a.barcode_match));
         return send(200, { ...result, results: undefined, items, limited: moreCovers, next: moreCovers || result.next,
           next_page: moreCovers ? result.page : result.page + 1, next_cover_page: moreCovers ? coverPage + 1 : 1 });
         });

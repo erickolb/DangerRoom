@@ -169,3 +169,7 @@ Install [Hardlight 0.1.0](https://github.com/erickolb/DangerRoom/releases/tag/v0
 ### Hardlight 0.1.1 launcher icon
 
 Update through Obtainium or install the signed [Hardlight 0.1.1 APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.1) over the existing Hardlight app. This applies the approved launcher icon and advances Android versionCode to 9. App ID, signing key, and local settings are retained. No server/container update is required.
+
+## β-022 / Hardlight 0.1.2
+
+Update this container before installing Hardlight 0.1.2. The default scan sends a cover fingerprint instead of text or UPC. No new environment variables or database migration are required. Follow the backup and rebuild procedure above, then confirm `/api/health` reports β-022. OCR/barcode lookup requires enabling Hardlight’s Scan settings checkbox.

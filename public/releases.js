@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-022', date: '2026-10-31', title: 'Artwork fingerprint scans',
+  changes: ['Hardlight 0.1.2 crops cover photos and queries Metron by pHash only by default. Preserve OCR and barcodes behind an unchecked Scan settings checkbox. Exact matching may miss camera photos and variants. Server update required.'],
+}, {
   version: 'β-021', date: '2026-10-31', title: 'Hardlight Android identity',
   changes: ['The Android client is nicknamed Hardlight, with application ID net.chateaulore.hardlight and display name Danger Room. Publish signed releases through GitHub Actions and add Install with Obtainium to the download website. Hardlight installs separately from the older app ID.'],
 }, {
