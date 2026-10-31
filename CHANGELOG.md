@@ -1,5 +1,10 @@
 # Changelog
 
+## Hardlight 0.1.1 · 2026-10-31
+
+- Apply the approved loading-screen style to the Android launcher icon: red background, thin near-black circle outline, and dark-red lower-right shadow. Include an adaptive foreground/background and five legacy icon densities.
+- Android versionCode 9; no server update required.
+
 ## Hardlight 0.1.0 · 2026-10-31
 
 - Publish the first non-prerelease Hardlight Android build, versionCode 8, signed using the repository’s GitHub Actions secrets. Display name remains Danger Room and app ID remains `net.chateaulore.hardlight`.
