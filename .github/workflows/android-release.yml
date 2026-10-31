@@ -1,0 +1,74 @@
+name: Publish signed Android release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag matching the Android versionName (v followed by the version)
+        required: true
+        default: v0.1.0-beta.21
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Validate, build, and sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/hardlight-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]] || { echo 'Invalid release tag'; exit 1; }
+          : "${KEYSTORE_BASE64:?Missing signing keystore}"
+          : "${ANDROID_KEYSTORE_PASSWORD:?Missing keystore password}"
+          : "${ANDROID_KEY_ALIAS:?Missing signing alias}"
+          : "${ANDROID_KEY_PASSWORD:?Missing key password}"
+          umask 077
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          chmod +x android/gradlew
+          android/gradlew -p android :app:testDebugUnitTest :app:lintDebug :app:assembleRelease
+          metadata=android/app/build/outputs/apk/release/output-metadata.json
+          test "$(jq -r '.applicationId' "$metadata")" = 'net.chateaulore.hardlight'
+          test "v$(jq -r '.elements[0].versionName' "$metadata")" = "$RELEASE_TAG"
+          mkdir -p release-artifacts
+          cp android/app/build/outputs/apk/release/app-release.apk release-artifacts/DangerRoom.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs release-artifacts/DangerRoom.apk > release-artifacts/SIGNING-CERTIFICATE.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging release-artifacts/DangerRoom.apk | grep -F "application-label:'Danger Room'"
+          (cd release-artifacts && sha256sum DangerRoom.apk > SHA256SUMS.txt)
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          prerelease=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then prerelease=(--prerelease); fi
+          gh release create "$RELEASE_TAG" release-artifacts/DangerRoom.apk release-artifacts/SHA256SUMS.txt release-artifacts/SIGNING-CERTIFICATE.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Danger Room (Hardlight) $RELEASE_TAG" --notes-file docs/android-release-notes.md "${prerelease[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hardlight-release
+          path: release-artifacts/
