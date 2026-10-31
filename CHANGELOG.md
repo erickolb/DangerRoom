@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased · Android β-021
+
+- Adopt `net.chateaulore.hardlight` as the Android application ID, with display name **Danger Room** and nickname **Hardlight**. Keep the DangerRoom server name and existing client/server bridge compatible.
+- Increment Android versionCode to 7. This installs alongside the previous app ID and needs its own instance/device configuration.
+- Show the actual installed Android version in connection-screen credits. Signed release publication is pending signing-key selection.
+
 ## β-020 · 2026-10-29
 
 - Add shared Add/Want/Read buttons to each scan-result cover, preserving exact variants and local ownership, Want List, and reading state. Share state across variants and align action rows. No Black Bag control here.

@@ -3,12 +3,12 @@ android {
     namespace = "net.chateaulore.dangerroom"
     compileSdk = 36
     defaultConfig {
-        applicationId = "net.chateaulore.dangerroom"
+        applicationId = "net.chateaulore.hardlight"
         minSdk = 28
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 6
-        versionName = "0.1.0-beta.19"
+        versionCode = 7
+        versionName = "0.1.0-beta.21"
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     val signing = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").map { providers.environmentVariable(it).orNull }
