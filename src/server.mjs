@@ -10,12 +10,10 @@ import { AppError, positiveId } from './errors.mjs';
 import { releases } from '../public/releases.js';
 import { validateRating } from './ratings.mjs';
 import { Devices, equalSecret } from './devices.mjs';
-import { ScanCaptures, MAX_CAPTURE_BYTES } from './scan-captures.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
   ['/mobile.js', ['mobile.js', 'text/javascript; charset=utf-8']],
-  ['/camera.svg', ['camera.svg', 'image/svg+xml']],
   ['/slideshow.png', ['slideshow.png', 'image/png']],
   ['/black-bag.png', ['black-bag.png', 'image/png']],
   ['/black-bag.svg', ['black-bag.svg', 'image/svg+xml']],
@@ -53,7 +51,6 @@ export function createApp(options = {}) {
   const dataDir = resolve(options.dataDir || process.env.DATA_DIR || join(root, 'data'));
   const db = openDatabase(dataDir), repo = new Repository(db);
   const devices = new Devices(db);
-  const scanCaptures = new ScanCaptures(db);
   const requireAuth = options.requireAuth ?? process.env.REQUIRE_AUTH === 'true';
   const adminToken = options.adminToken ?? process.env.DANGERROOM_ADMIN_TOKEN ?? '';
   if (requireAuth && adminToken.length < 32) { db.close(); throw Error('Set DANGERROOM_ADMIN_TOKEN to a random secret of at least 32 characters before enabling REQUIRE_AUTH.'); }
@@ -93,25 +90,6 @@ export function createApp(options = {}) {
       const device = devices.authenticate(req);
       if (mobile && !device) throw new AppError(401, 'Configure an approved device ID and secret.');
       if (requireAuth && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/covers/')) && !device && !devices.session(req)) throw new AppError(401, 'Sign in with your browser access key.');
-      if (url.pathname === '/api/scan-captures' || url.pathname.startsWith('/api/scan-captures/')) {
-        // Captured photographs always require authentication, even on trusted-browser instances.
-        if (!device && !devices.session(req)) throw new AppError(401, 'Authorize a device or sign in to access scan photographs.');
-        if (req.method === 'POST' && url.pathname === '/api/scan-captures') {
-          if (!device) throw new AppError(403, 'An approved device is required to submit a capture.');
-          if (req.headers['content-type']?.split(';')[0] !== 'image/png') throw new AppError(415, 'Send a lossless PNG scan image.');
-          if (Number(req.headers['content-length']) > MAX_CAPTURE_BYTES) throw new AppError(413, 'Scan image exceeds the 25 MB limit.');
-          const chunks=[]; let size=0;
-          for await (const chunk of req) { size+=chunk.length; if(size>MAX_CAPTURE_BYTES)throw new AppError(413,'Scan image exceeds the 25 MB limit.');chunks.push(chunk); }
-          return send(201,scanCaptures.save({captureId:url.searchParams.get('capture_id'),hash:url.searchParams.get('cover_hash'),mode:url.searchParams.get('mode'),clientVersion:url.searchParams.get('client_version')},Buffer.concat(chunks)));
-        }
-        if (req.method === 'GET' && url.pathname === '/api/scan-captures') return send(200,{items:scanCaptures.list()});
-        const captureMatch=url.pathname.match(/^\/api\/scan-captures\/(\d+)\/image$/);
-        if (req.method === 'GET' && captureMatch) {
-          const bytes=scanCaptures.image(positiveId(captureMatch[1]));
-          res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'no-store'});return res.end(bytes);
-        }
-        throw new AppError(404,'Scan capture route not found.');
-      }
       if (req.method === 'GET' && url.pathname === '/api/device') return send(200, { authorized: device, version: releases[0].version });
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, mobile_api: 1 });
       if (req.method === 'GET' && url.pathname === '/api/slideshow') {
@@ -122,35 +100,6 @@ export function createApp(options = {}) {
         return send(200, { items: [...unique.values()] });
       }
       if (req.method === 'GET' && url.pathname === '/api/metron/diagnostics') return send(200, metron.diagnostics());
-      if (req.method === 'GET' && url.pathname === '/api/camera-search') {
-        return await (metron.trackScan ? work => metron.trackScan(work) : work => work())(async () => {
-        const hash = url.searchParams.get('cover_hash');
-        const legacy = url.searchParams.get('legacy') === '1';
-        const upc = legacy ? url.searchParams.get('upc') : null;
-        if (!legacy && !/^[a-f0-9]{16}$/i.test(hash || '')) throw new AppError(400, 'Cover scanning now requires a photo fingerprint. Update Hardlight and retake the cover photo.');
-        let result = await metron.search(legacy ? (upc ? new URLSearchParams({ upc, page: url.searchParams.get('page') || '1' }) : url.searchParams) : new URLSearchParams({ cover_hash: hash.toLowerCase(), page: url.searchParams.get('page') || '1' }), { enrichSeries: false });
-        if (legacy && upc && !result.results.length && url.searchParams.get('q')) {
-          const fallback = new URLSearchParams(url.searchParams); fallback.delete('upc');
-          result = await metron.search(fallback, { enrichSeries: false });
-        }
-        const coverPage = positiveId(url.searchParams.get('cover_page') || '1', 'Cover page');
-        const start = (coverPage - 1) * 5;
-        if (start >= result.results.length && result.results.length) throw new AppError(400, 'That cover page is not available. Start a new lookup.');
-        // Bound detail requests without skipping the rest of a provider page.
-        const items = [];
-        for (const row of result.results.slice(start, start + 5)) {
-          const issue = await metron.issue(positiveId(row.id));
-          issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));
-          const local = repo.issue(issue.id);
-          Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null,reading_log_count:local?.reading_log_count || 0});
-          for (const edition of issue.editions) items.push({ issue, edition, barcode_match: Boolean(upc && edition.upc === upc) });
-        }
-        const moreCovers = start + 5 < result.results.length;
-        if (legacy) items.sort((a, b) => Number(b.barcode_match) - Number(a.barcode_match));
-        return send(200, { ...result, results: undefined, items, limited: moreCovers, next: moreCovers || result.next,
-          next_page: moreCovers ? result.page : result.page + 1, next_cover_page: moreCovers ? coverPage + 1 : 1 });
-        });
-      }
       if(req.method==='GET'&&url.pathname==='/api/series-types')return send(200,{items:await metron.seriesTypes()});
       if (req.method === 'GET' && url.pathname === '/api/search') {
         const result=await metron.search(url.searchParams);

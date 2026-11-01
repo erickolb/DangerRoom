@@ -170,14 +170,10 @@ Install [Hardlight 0.1.0](https://github.com/erickolb/DangerRoom/releases/tag/v0
 
 Update through Obtainium or install the signed [Hardlight 0.1.1 APK](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.1) over the existing Hardlight app. This applies the approved launcher icon and advances Android versionCode to 9. App ID, signing key, and local settings are retained. No server/container update is required.
 
-## β-022 / Hardlight 0.1.2
+## β-025 / Hardlight 1.0.0
 
-Update this container before installing Hardlight 0.1.2. The default scan sends a cover fingerprint instead of text or UPC. No new environment variables or database migration are required. Follow the backup and rebuild procedure above, then confirm `/api/health` reports β-022. OCR/barcode lookup requires enabling Hardlight’s Scan settings checkbox.
+Update the container using the backup and rebuild procedure above, then verify /api/health reports β-025 before installing Hardlight 1.0.0. The new server provides a five-section Android menu and removes all camera-search and retained-scan endpoints. The Android APK removes the corresponding camera/recognition code and dependencies.
 
-## β-023 / Hardlight 0.1.3
+Schema 7 automatically drops the retired scan_captures table, deleting its retained diagnostic images and hashes, and clears cover-hash search cache entries. Collection covers, copies, wants, ratings, Reading Log, device credentials, and slideshow black bags are preserved. Make the normal stopped-container backup before updating; exported diagnostic snapshots and older backups are separate files and are not removed by this upgrade. No new environment variables or upload limits are needed.
 
-The Android app now uses Lumiere’s four-corner scanner and perspective correction before hashing. Server β-022 already supports this lookup; update the container using the procedure above for the revised in-app guidance and β-023 changelog. No environment or database changes are needed. Install the signed Hardlight 0.1.3 APK over the existing app; Google Play services may download scanner components on first use.
-
-## β-024 / Hardlight 0.1.4
-
-Update the container before installing Hardlight 0.1.4. It uploads a lossless PNG and pHash before a camera search; the server atomically retains only the last ten submitted image/hash pairs, including failed matches, in an additive SQLite table. Existing inventory is unchanged. Keep the data volume and normal SQLite backups; no new environment variables are needed. Permit 25 MiB image uploads through your reverse proxy (for Nginx, client_max_body_size 25m). Follow the backup/rebuild instructions above, verify /api/health reports β-024, then update Android. See [scan diagnostics](scan-diagnostics.md) for authenticated retrieval and the server list/export commands.
+Install the signed [Hardlight 1.0.0 APK](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.0) over Hardlight 0.1.4 to keep connection and slideshow settings. Application ID remains net.chateaulore.hardlight and versionCode advances to 13. The Android update clears obsolete scan settings and its old app-owned camera file.

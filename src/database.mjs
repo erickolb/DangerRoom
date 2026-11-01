@@ -49,7 +49,9 @@ export function openDatabase(directory) {
     CREATE INDEX IF NOT EXISTS reading_log_issue ON reading_log(issue_id);
     CREATE TABLE IF NOT EXISTS black_bags (issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
       PRIMARY KEY(issue_id,edition_key), FOREIGN KEY(issue_id,edition_key) REFERENCES editions(issue_id,key));
-    PRAGMA user_version=6;`);
+    DROP TABLE IF EXISTS scan_captures;
+    DELETE FROM cache WHERE key LIKE 'issue/?cover_hash=%';
+    PRAGMA user_version=7;`);
   return db;
 }
 export class Repository {

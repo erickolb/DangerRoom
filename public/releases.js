@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-025', date: '2026-11-01', title: 'Hardlight 1.0.0: retire camera search',
+  changes: ['Remove experimental cover scanning, OCR, barcode capture, artwork matching, scan settings, retained-scan endpoints, and export utilities from Hardlight and DangerRoom. Upgrade removes retained diagnostic scans. Release Hardlight 1.0.0 with five menu sections, preserving text search, exact cover selection, inventory, wants, ratings, Reading Log, and slideshow.'],
+}, {
   version: 'β-024', date: '2026-11-01', title: 'Retain ten diagnostic scans',
   changes: ['Hardlight 0.1.4 uploads each submitted scan as an exact lossless PNG with its pHash. Retain the last ten image/hash pairs across devices, including failed Metron matches. Show scan IDs and add authenticated retrieval plus server export commands. Server update required before installing the new app.'],
 }, {

@@ -17,16 +17,6 @@ async function app(t, options = {}) {
   return { ...instance, dataDir, request: (path, init = {}) => fetch(origin + path, init) };
 }
 const credentials = device => ({ 'X-Device-Id': device.deviceId, Authorization: `Bearer ${device.token}` });
-test('fingerprint scans forward only the hash, preserve variants, and never fall back to OCR strings', async t => {
-  const calls=[];
-  const metron={configured:true,search:async (params, options)=>{calls.push(params.toString());assert.equal(options.enrichSeries,false);return {count:0,page:1,next:false,results:[]};}};
-  const h=await app(t,{metron});
-  const response=await h.request('/api/camera-search?cover_hash=C585EB18BF1E5423&q=Heroes&upc=123456789012');
-  assert.equal(response.status,200);assert.deepEqual((await response.json()).items,[]);
-  assert.deepEqual(calls,['cover_hash=c585eb18bf1e5423&page=1']);
-  for(const query of ['q=Heroes','cover_hash=bad','cover_hash='])assert.equal((await h.request('/api/camera-search?'+query)).status,400);
-  assert.equal(calls.length,1);
-});
 test('default deployment trusts browser access while requiring server-issued Android credentials', async t => {
   const h = await app(t);
   const health = await (await h.request('/api/health')).json();
@@ -82,14 +72,6 @@ test('slideshow uses unique owned editions, never wants or read-only covers',asy
   const result=await (await h.request('/api/slideshow')).json();
   assert.equal(result.items.length,1);assert.equal(result.items[0].issue.id,42);assert.equal(result.items[0].edition.cover_file,file);
 });
-test('camera lookup preserves variants and places exact UPC first, with title fallback and bounded detail calls',async t=>{
-  const calls=[],issue={id:42,series:{id:4,name:'Heroes'},number:'1',editions:[{key:'standard',upc:'123456789012'},{key:'variant-'+ 'a'.repeat(64),name:'Cover B',upc:'12345678901200121'}]};
-  const metron={configured:true,search:async params=>{calls.push(params.toString());return{count:1,page:1,next:false,results:params.get('upc')==='99999999'?[]:[{id:42}]};},issue:async()=>issue};
-  const h=await app(t,{metron});
-  const result=await(await h.request('/api/camera-search?legacy=1&upc=12345678901200121&q=Heroes')).json();
-  assert.equal(result.items[0].edition.name,'Cover B');assert.equal(result.items[0].barcode_match,true);assert.equal(result.items[1].barcode_match,false);
-  await h.request('/api/camera-search?legacy=1&upc=99999999&q=Heroes');assert.equal(calls.at(-1),'legacy=1&q=Heroes');
-});
 test('gallery uses the full inventory minus black bags, ignoring old selection limits',()=>{
   const items=Array.from({length:1100},(_,i)=>({issue:{id:i+1},edition:{key:'standard',black_bagged:i===1}}));
   const result=chooseCovers(items,{maximum:3,remember:true,randomSelection:true,shuffle:false});
@@ -116,14 +98,4 @@ test('black bags persist per cover, affect every duplicate copy, and preserve ot
   assert.equal((await set('missing',true)).status,404);assert.equal((await set('standard','yes')).status,400);
   assert.equal((await h.request('/mobile/api/issues/42/black-bag',{method:'PATCH',headers:{'Content-Type':'application/json'},body:'{"edition_key":"standard","black_bagged":false}'})).status,401);
   assert.equal((await set('standard',false)).status,200);items=(await(await h.request('/api/slideshow')).json()).items;assert.equal(items.length,2);
-});
-test('camera pagination expands five issues at a time without dropping remaining provider results',async t=>{
-  const fetched=[];
-  const h=await app(t,{metron:{configured:true,search:async()=>({count:12,page:1,next:false,results:Array.from({length:12},(_,i)=>({id:i+1}))}),issue:async id=>{fetched.push(id);return{id,editions:[{key:'standard'}]};}}});
-  const first=await(await h.request('/api/camera-search?legacy=1&q=Heroes')).json();
-  assert.deepEqual(fetched,[1,2,3,4,5]);assert.equal(first.next_page,1);assert.equal(first.next_cover_page,2);
-  const second=await(await h.request('/api/camera-search?legacy=1&q=Heroes&cover_page=2')).json();
-  assert.deepEqual(second.items.map(r=>r.issue.id),[6,7,8,9,10]);
-  const third=await(await h.request('/api/camera-search?legacy=1&q=Heroes&cover_page=3')).json();
-  assert.deepEqual(third.items.map(r=>r.issue.id),[11,12]);assert.equal(third.next,false);
 });

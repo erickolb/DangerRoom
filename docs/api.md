@@ -1,6 +1,6 @@
 # DangerRoom API and data model
 
-All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`; scan capture uploads use `image/png`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted by default, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Optional `REQUIRE_AUTH=true` additionally protects the browser API and saved covers with a browser session or device credentials, and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
+All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted by default, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Optional `REQUIRE_AUTH=true` additionally protects the browser API and saved covers with a browser session or device credentials, and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
 
 ## Android and authentication (β-002)
 
@@ -13,7 +13,6 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | `GET /api/device` | Authentication check. Mobile settings require `authorized:true`, meaning an enabled device. |
 | `GET /api/slideshow` | `{items}` of all unique owned `(issue ID, edition key)` pairs with saved cover files, excluding black bags. No provider calls or selection limit. |
 | `PATCH /api/issues/:id/black-bag` | `{edition_key,black_bagged:boolean}` toggles a saved cover's slideshow exclusion and returns the refreshed issue. Shared across copies/devices; does not change ownership, wants, reading, or rating. |
-| `GET /api/camera-search?cover_hash=…&page=1&cover_page=1` | Exact main-cover hash lookup, expanding five issues per response into exact-cover candidates. Follow next_page/next_cover_page. Optional `legacy=1&q=…&upc=…` restores UPC/title lookup. No inventory writes. Diagnostic PNGs are submitted separately before lookup. |
 
 Additive `devices(id,label,token_hash,enabled)` and `web_sessions(token_hash,expires_at)` tables do not change existing inventory records. Issue/want/log migrations remain unchanged. Device management is a server CLI operation; there is no public provisioning endpoint. See [Android setup](android.md).
 
@@ -50,7 +49,7 @@ Status errors use `{error}`. HTTP 429 includes `Retry-After`. Provider credentia
 
 ## Cover storage locations (α-006)
 
-`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 6. `black_bags(issue_id,edition_key)` references saved editions and records per-cover slideshow exclusions; existing covers start unbagged. Issue editions expose `black_bagged`. See [S3 configuration and migration](s3.md).
+`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 7. `black_bags(issue_id,edition_key)` references saved editions and records per-cover slideshow exclusions; existing covers start unbagged. Issue editions expose `black_bagged`. See [S3 configuration and migration](s3.md).
 
 `GET /api/issues/:id/owned-series` returns `{ items }` from saved collection data only. It groups owned issues by matching series title across runs (case-insensitive, trimmed, Unicode-normalized), sorts by start year, volume, and numeric issue, and returns one row per issue with `copy_count`. It prefers owned variant artwork. Read-only and wanted-only entries are excluded.
 
@@ -79,8 +78,7 @@ Search results now expose `series.series_type` for title badges. If the issue li
 
 `GET /api/series-types` supplies the series-type dropdown catalog from the provider's `series_type/` endpoint. Catalog pages are cached for 24 hours and honor existing pacing/cooldowns. Search URL `series_types=10,13` stores OR selections for client-side filtering of the current provider page, combined with `hide_owned=1`. An empty selection shows all types; `0` means an absent format. Provider totals and page links remain intact.
 
-## Retained scan captures (β-024)
 
-`POST /api/scan-captures?capture_id=UUID&cover_hash=HEX16&mode=perspective-corrected|legacy&client_version=VERSION` accepts image/png up to 25 MiB and 4096 pixels per side, requires an approved device, and returns HTTP 201 with retained metadata and sequential scan ID. It saves image and metadata together and prunes older pairs beyond ten per instance. A retry with the same UUID reuses its record; conflicting content returns 409.
+## Removed camera APIs (β-025)
 
-`GET /api/scan-captures` returns metadata only, newest first. `GET /api/scan-captures/:id/image` returns the original uploaded PNG or 404 if pruned. Both require a device or administrator browser session even when ordinary browser access is public; /mobile/ always requires a device. Responses are no-store. The additive scan_captures table holds the image BLOB, supplied pHash, algorithm, mode, version, timestamp, dimensions, checksum, UUID, and ID. [Export and comparison guide](scan-diagnostics.md).
+Camera lookup and retained-scan APIs, including /api/camera-search and /api/scan-captures, have been removed and return 404 for authenticated requests, including under /mobile/. Schema 7 removes the scan_captures table and cover-hash lookup cache entries. Normal text search, issue metadata, inventory, wants, ratings, Reading Log, slideshow, and device authorization remain supported.

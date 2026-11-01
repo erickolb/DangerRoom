@@ -242,7 +242,7 @@ test('ratings migration preserves old inventory, starts unrated, and persists ha
   db = openDatabase(dir); repo = new Repository(db);
   try {
     assert.equal(repo.issue(42).user_rating, 2.5); assert.ok(repo.issue(42).read);
-    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version, 6);
+    assert.equal(repo.collection('owned').length, 1); assert.equal(db.prepare('PRAGMA user_version').get().user_version,7);
   } finally { db.close(); }
 });
 
@@ -327,7 +327,7 @@ test('want-list migration preserves inventory and ratings and persists wants thr
   assert.equal(repo.wantList().length,0);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.collection('owned').length,1);
   repo.addWant(essentialIssue(raw),editionsFor(raw)[1],null);db.close();
   db=openDatabase(dir);repo=new Repository(db);
-  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,6);}finally{db.close();}
+  try{assert.equal(repo.wantList().length,1);assert.equal(repo.issue(42).user_rating,3.5);assert.equal(repo.db.prepare('PRAGMA user_version').get().user_version,7);}finally{db.close();}
 });
 test('ownership wins a want-list race, even when a stale cover selection is submitted', async t => {
   const h=await harness(t), issue=essentialIssue(raw),edition=editionsFor(raw)[0];
@@ -522,7 +522,7 @@ test('reading-log schema migration preserves old collection and logs persist aft
   try{
     const migrated=new Repository(db);assert.equal(migrated.issue(42).reading_log_count,0);assert.equal(migrated.issue(42).copies.length,1);assert.equal(migrated.issue(42).user_rating,3);
     migrated.setRead(42,true,'standard',{log_date:'2026-10-27'});db.close();db=openDatabase(dir);
-    assert.equal(new Repository(db).issueLog(42)[0].read_date,'2026-10-27');assert.equal(db.prepare('PRAGMA user_version').get().user_version,6);
+    assert.equal(new Repository(db).issueLog(42)[0].read_date,'2026-10-27');assert.equal(db.prepare('PRAGMA user_version').get().user_version,7);
   }finally{db.close();await rm(dir,{recursive:true,force:true});}
 });
 
@@ -629,57 +629,15 @@ test('burst exhaustion explains remaining daily quota, supplies Android retry ti
 });
 
 
-test('diagnostics reads locally, counts scan requests, retains quota snapshots, and hides secrets', async t => {
-  const h = await harness(t);
-  const before = await h.request('/api/metron/diagnostics');
-  assert.equal(before.status, 200); assert.equal(before.data.requests, 0);
-  assert.equal(h.counts().lookups, 0);
-  assert.equal((await h.request('/api/camera-search?legacy=1&q=Test')).status, 200);
-  const d = (await h.request('/api/metron/diagnostics')).data;
-  assert.equal(d.requests, 2); assert.equal(d.scan_requests, 2);
-  assert.equal(d.last_scan.requests, 2); assert.equal(d.recent[0].status, 200);
-  assert.equal(d.windows.Burst.remaining, null);
-  assert.equal(JSON.stringify(d).includes('test-only'), false);
-  await h.request('/api/camera-search?legacy=1&q=Test');
-  const cached = (await h.request('/api/metron/diagnostics')).data;
-  assert.equal(cached.requests, 2); assert.equal(cached.last_scan.requests, 0);
-  assert.equal(h.counts().lookups, 2);
-  const stored = JSON.parse(h.metron.repo.db.prepare('SELECT payload FROM metron_diagnostics WHERE id=1').get().payload);
-  assert.equal(stored.requests, 2); assert.equal(stored.last_scan.requests, 0);
-});
-
-
-test('broad scans skip format enrichment for all candidate series and use only five issue details', async t => {
-  const paths=[];
-  const h=await harness(t,{metronOptions:{token:'test-only',interval:0,fetchImpl:async url=>{
-    const path=new URL(url).pathname;paths.push(path);
-    if(paths.length>20)return Response.json({}, {status:429,headers:{'Retry-After':'60'}});
-    if(path==='/api/issue/')return Response.json({count:30,next:null,results:Array.from({length:30},(_,i)=>({id:i+100,series:{id:i+200,name:`Series ${i}`},number:'1'}))});
-    const id=Number(path.match(/issue\/(\d+)\//)?.[1]);
-    assert.ok(id,'Scan must not fetch series format metadata');
-    return Response.json({...raw,id,series:{...raw.series,id:id+100}});
-  }}});
-  const scan=await h.request('/api/camera-search?legacy=1&q=Broad');
-  assert.equal(scan.status,200);assert.equal(scan.data.limited,true);
-  assert.equal(new Set(scan.data.items.map(row=>row.issue.id)).size,5);
-  assert.equal(paths.length,6);
-  assert.equal((await h.request('/api/metron/diagnostics')).data.last_scan.requests,6);
-  await h.request('/api/camera-search?legacy=1&q=Broad');assert.equal(paths.length,6);
-});
-
-
-test('scan results include exact-cover ownership and wants plus shared reading state without extra provider calls', async t => {
+test('diagnostics reads locally and counts provider requests and cache hits', async t => {
   const h=await harness(t);
-  await h.request('/api/wants','POST',{issue_id:42,edition_key:'standard'});
-  const variant=editionsFor(raw)[1].key;
-  await h.request('/api/entries','POST',{issue_id:42,edition_key:variant,owned:true,read:true});
-  const response=await h.request('/api/camera-search?legacy=1&q=Test');
-  assert.equal(response.status,200);
-  const standard=response.data.items.find(row=>row.edition.key==='standard');
-  const owned=response.data.items.find(row=>row.edition.key===variant);
-  assert.equal(standard.edition.wanted,true);assert.equal(standard.edition.owned,false);
-  assert.equal(owned.edition.owned,true);assert.equal(owned.edition.wanted,false);
-  assert.equal(owned.issue.copies.length,1);assert.equal(owned.issue.copies[0].edition_key,variant);
-  assert.ok(standard.issue.read);assert.ok(owned.issue.read);assert.equal(owned.issue.saved,true);
-  assert.equal(h.counts().lookups,2);
+  assert.equal((await h.request('/api/metron/diagnostics')).data.requests,0);
+  await h.metron.get('issue/42/',1000);
+  const d=(await h.request('/api/metron/diagnostics')).data;
+  assert.equal(d.requests,1);assert.equal(d.recent[0].status,200);
+  assert.equal('scan_requests' in d,false);assert.equal('last_scan' in d,false);
+  assert.equal(JSON.stringify(d).includes('test-only'),false);
+  await h.metron.get('issue/42/',1000);
+  const cached=(await h.request('/api/metron/diagnostics')).data;
+  assert.equal(cached.requests,1);assert.equal(cached.cache_hits,1);
 });

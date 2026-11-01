@@ -15,10 +15,4 @@ class InputTest {
         assertTrue(Input.apiPath("/api/search?q=Batman"))
         for (path in listOf("https://other.example/api/x", "//other.example/api/x", "/covers/x", "/api/../session", "/api/\\other", "/api/search#fragment")) assertFalse(path, Input.apiPath(path))
     }
-    @Test fun artworkDistancesAreAdvisoryAndBrightnessNormalized() {
-        val cover = IntArray(192) { it % 128 }
-        assertEquals(0.0, CoverMatch.distance(cover, cover), 0.001)
-        assertEquals(0.0, CoverMatch.distance(cover, cover.map { it + 20 }.toIntArray()), 0.001)
-        assertTrue(CoverMatch.distance(cover, cover.reversedArray()) > 10)
-    }
 }

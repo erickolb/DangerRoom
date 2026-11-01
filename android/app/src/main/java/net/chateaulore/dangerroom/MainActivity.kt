@@ -1,35 +1,16 @@
 package net.chateaulore.dangerroom
 
-import android.graphics.BitmapFactory
-import org.json.JSONArray
-import java.net.HttpURLConnection
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.ImageDecoder
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
 import android.widget.*
 import androidx.activity.ComponentActivity
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
-import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
-import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import androidx.activity.OnBackPressedCallback
-import androidx.core.content.FileProvider
 import org.json.JSONObject
-import java.io.File
 import java.net.URI
 import java.util.concurrent.Executors
 
@@ -39,31 +20,20 @@ class MainActivity : ComponentActivity() {
     private var web: WebView? = null
     private lateinit var column: LinearLayout
     private lateinit var status: TextView
-    private var photoSignature: IntArray? = null
-    private val matcher = Executors.newSingleThreadExecutor()
-    private val scanPreferences by lazy { getSharedPreferences("scan-settings", MODE_PRIVATE) }
-    private val legacyScan get() = scanPreferences.getBoolean("legacy-lookup", false)
-    private var captureGeneration = 0
     private val worker = Executors.newSingleThreadExecutor()
-    private val capture get() = File(filesDir, "captures/comic.jpg")
     private var screen = "splash"
-    private var correctedCover: Bitmap? = null
-    private val coverScanner = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode != RESULT_OK) { openWeb("/camera"); return@registerForActivityResult }
-        val uri = GmsDocumentScanningResult.fromActivityResultIntent(result.data)?.pages?.singleOrNull()?.imageUri
-        if (uri == null) { scannerError("No corrected cover was returned. Please try again."); return@registerForActivityResult }
-        prepareCorrectedCover(uri)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         store = ConnectionStore(this); connection = store.load()
+        getSharedPreferences("scan-settings", MODE_PRIVATE).edit().clear().apply()
+        java.io.File(filesDir, "captures/comic.jpg").delete()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val current = web
                 if (screen == "web" && current != null) current.evaluateJavascript("location.hash === '#/home'", { home -> if (home == "true") finish() else current.evaluateJavascript("location.hash='#/home'", null) })
-                else if (connection != null) { if (screen in listOf("review", "recognition")) { capture.delete() }; openWeb() } else finish()
+                else if (connection != null) openWeb() else finish()
             }
         })
         val splash = FrameLayout(this).apply { setBackgroundColor(Color.rgb(231, 0, 31)) }
@@ -85,7 +55,6 @@ class MainActivity : ComponentActivity() {
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun destroyWeb() { web?.let { it.removeJavascriptInterface("DangerRoomAndroid"); it.stopLoading(); it.destroy() }; web = null; window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
     private fun base(title: String) {
-        correctedCover?.recycle(); correctedCover = null
         destroyWeb()
         column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(30), dp(24), dp(30)); setBackgroundColor(Color.rgb(25, 12, 18)) }
         val scroll = ScrollView(this).apply { addView(column); fitsSystemWindows = true }
@@ -128,7 +97,6 @@ class MainActivity : ComponentActivity() {
     }
     @Suppress("SetJavaScriptEnabled")
     private fun openWeb(hash: String = "/home") {
-        correctedCover?.recycle(); correctedCover = null
         val c = connection ?: return settings()
         screen = "web"; destroyWeb()
         val view = WebView(this); web = view
@@ -172,209 +140,10 @@ class MainActivity : ComponentActivity() {
             }
         }
         @JavascriptInterface fun settings() { runOnUiThread { if (web === owner) this@MainActivity.settings() } }
-        @JavascriptInterface fun scanSettings() { runOnUiThread { if (web === owner) this@MainActivity.scanSettings() } }
-        @JavascriptInterface fun scanOcrEnabled(): Boolean = legacyScan
-        @JavascriptInterface fun camera() { runOnUiThread { if (web === owner) this@MainActivity.camera() } }
         @JavascriptInterface fun keepAwake(enabled: Boolean) { runOnUiThread { if (web === owner) { if (enabled) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) } } }
         @JavascriptInterface fun fullscreen(enabled: Boolean) { runOnUiThread { if (web === owner) { val controller=androidx.core.view.WindowInsetsControllerCompat(window, owner);if(enabled){controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());controller.systemBarsBehavior=androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE}else controller.show(androidx.core.view.WindowInsetsCompat.Type.systemBars()) } } }
-        @JavascriptInterface fun rank(candidates: String, id: String) {
-            if (!id.matches(Regex("[a-f0-9-]{36}"))) return
-            val signature = photoSignature
-            matcher.execute {
-                val scores = JSONObject()
-                runCatching {
-                    require(signature != null)
-                    val urls = JSONArray(candidates)
-                    for (i in 0 until minOf(urls.length(), 24)) {
-                        val source = urls.optString(i)
-                        runCatching {
-                            val uri = URI(source)
-                            require(uri.scheme == "https" && uri.host in listOf("metron.cloud", "static.metron.cloud") && uri.userInfo == null && uri.port == -1 && uri.path.startsWith("/media/"))
-                            val conn = uri.toURL().openConnection() as HttpURLConnection
-                            try {
-                                conn.connectTimeout = 5000; conn.readTimeout = 5000; conn.instanceFollowRedirects = false
-                                require(conn.responseCode == 200)
-                                val bytes = conn.inputStream.use { stream -> val out=java.io.ByteArrayOutputStream();val buffer=ByteArray(8192);while(true){val count=stream.read(buffer);if(count<0)break;require(out.size()+count<=25*1024*1024);out.write(buffer,0,count)};out.toByteArray() }
-                                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }; BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-                                require(bounds.outWidth > 0 && bounds.outHeight > 0)
-                                val options = BitmapFactory.Options().apply { inSampleSize = maxOf(1, maxOf(bounds.outWidth, bounds.outHeight) / 256) }
-                                val bitmap = requireNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options))
-                                scores.put(source, CoverMatch.distance(signature, CoverMatch.signature(bitmap))); bitmap.recycle()
-                            } finally { conn.disconnect() }
-                        }
-                    }
-                }
-                runOnUiThread { if (web === owner) owner.evaluateJavascript("window.dangerroomResponses?.[${JSONObject.quote(id)}]?.($scores)", null) }
-            }
-        }
-    }
-    private fun scanSettings() {
-        val choices = booleanArrayOf(legacyScan)
-        AlertDialog.Builder(this).setTitle("Scan Cover settings")
-            .setMultiChoiceItems(arrayOf("Enable OCR and barcode lookup"), choices) { _, _, checked -> choices[0] = checked }
-            .setPositiveButton("Save") { _, _ -> scanPreferences.edit().putBoolean("legacy-lookup", choices[0]).apply(); openWeb("/camera") }
-            .setNegativeButton("Cancel", null).show()
-    }
-    private fun camera() {
-        captureGeneration++
-        photoSignature = null
-        if (!legacyScan) { startCoverScanner(); return }
-        capture.parentFile?.mkdirs(); screen = "camera"
-        val uri = FileProvider.getUriForFile(this, "$packageName.photos", capture)
-        try {
-            startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION).apply { clipData = android.content.ClipData.newRawUri("Comic photo", uri) }, 10)
-        } catch (_: android.content.ActivityNotFoundException) { Toast.makeText(this, "Enable a camera app to take a photo.", Toast.LENGTH_LONG).show(); screen = "web" }
-    }
-    private fun scannerError(message: String) {
-        if (isDestroyed) return
-        openWeb("/camera")
-        AlertDialog.Builder(this).setTitle("Cover scanner unavailable").setMessage(message)
-            .setPositiveButton("Try again") { _, _ -> camera() }.setNegativeButton("Cancel", null).show()
-    }
-    private fun startCoverScanner() {
-        screen = "scanner-loading"; base("Prepare cover scan")
-        text("Place all four corner posts on the cover’s corners. Use the scanner’s magnified view for precise placement, then finish to review the straightened artwork.")
-        status.text = "Opening cover scanner… First use may download scanner components through Google Play services."
-        val generation = captureGeneration
-        val scanner = GmsDocumentScanning.getClient(GmsDocumentScannerOptions.Builder()
-            .setGalleryImportAllowed(false).setPageLimit(1)
-            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
-            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE).build())
-        scanner.getStartScanIntent(this).addOnSuccessListener {
-            if (!isDestroyed && screen == "scanner-loading" && generation == captureGeneration) {
-                screen = "scanner"
-                runCatching { coverScanner.launch(IntentSenderRequest.Builder(it).build()) }
-                    .onFailure { scannerError("Could not open the cover scanner. Check Google Play services and try again.") }
-            }
-        }.addOnFailureListener {
-            if (!isDestroyed && screen == "scanner-loading" && generation == captureGeneration)
-                scannerError("Check Google Play services and connectivity for the scanner’s first download, then try again. You can also use Search Metron from the menu.")
-        }
-    }
-    private fun prepareCorrectedCover(uri: Uri) {
-        screen = "recognition"; base("Preparing corrected cover…")
-        text("Perspective is corrected on your phone. When you search, DangerRoom retains the corrected image and its fingerprint among your instance’s last ten scans.")
-        val generation = captureGeneration
-        worker.execute {
-            try {
-                val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri)) { decoder, info, _ ->
-                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                    val scale = minOf(1.0, 4096.0 / maxOf(info.size.width, info.size.height))
-                    decoder.setTargetSize(maxOf(1, (info.size.width * scale).toInt()), maxOf(1, (info.size.height * scale).toInt()))
-                }
-                runOnUiThread { if (!isDestroyed && screen == "recognition" && generation == captureGeneration) review(bitmap) else bitmap.recycle() }
-            } catch (_: Exception) {
-                runOnUiThread { if (!isDestroyed && screen == "recognition" && generation == captureGeneration) scannerError("The corrected cover could not be opened. Please retake it.") }
-            }
-        }
-    }
-    @Deprecated("Platform camera result")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != 10) return
-        if (resultCode != RESULT_OK || !capture.exists() || capture.length() == 0L) { capture.delete(); openWeb("/camera"); return }
-        recognizeLegacy()
-    }
-    private fun review(bitmap: Bitmap) {
-        screen = "review"; base("Review straightened cover")
-        correctedCover = bitmap
-        text("Check that all four edges follow the cover and that the artwork is upright. Retake to adjust the corner posts again.")
-        val preview = ImageView(this).apply { setImageBitmap(bitmap); scaleType = ImageView.ScaleType.FIT_CENTER; contentDescription = "Perspective-corrected comic cover" }
-        column.addView(preview, LinearLayout.LayoutParams(-1, dp(400)))
-        text("DangerRoom will retain this corrected image and its fingerprint for comparison, replacing the oldest of the last ten scans. Only the fingerprint is sent to Metron. No text or barcode is read.")
-        val find = button("Find matching covers") {}
-        val generation = captureGeneration
-        val captureId = java.util.UUID.randomUUID().toString()
-        val instance = requireNotNull(connection)
-        find.setOnClickListener {
-            find.isEnabled = false
-            val selected = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-            status.text = "Retaining scan image and fingerprint…"
-            worker.execute {
-                try {
-                    val hash = CoverHash.fromBitmap(selected)
-                    val id = retainScan(selected, hash, "perspective-corrected", captureId, instance)
-                    runOnUiThread { if (!isDestroyed && screen == "review" && generation == captureGeneration) openWeb("/camera?cover_hash=$hash&captured=1&capture_id=$id") }
-                } catch (error: Exception) { runOnUiThread { if (!isDestroyed && screen == "review" && generation == captureGeneration) { status.text = "Scan was not submitted: ${error.message ?: "Check the connection and try again."}"; find.isEnabled = true } } }
-                finally { selected.recycle() }
-            }
-        }
-        button("Retake photo") { camera() }
-        button("Cancel") { capture.delete(); openWeb() }
-    }
-    private fun retainScan(bitmap: Bitmap, hash: String, mode: String, captureId: String, instance: Connection): Long {
-        val png=java.io.ByteArrayOutputStream().use { out ->
-            require(bitmap.compress(Bitmap.CompressFormat.PNG,100,out)) { "Could not encode the scan image." }
-            out.toByteArray()
-        }
-        val version=packageManager.getPackageInfo(packageName,0).versionName ?: "unknown"
-        return Api(instance).saveScan(captureId,hash,mode,version,png)
-    }
-    private fun recognizeLegacy() {
-        screen = "recognition"; base("Reading the cover…")
-        text("Recognizing text and barcode on this device. When you search, DangerRoom retains this image and its fingerprint among the last ten scans.")
-        worker.execute {
-            try {
-                val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(capture)) { decoder, info, _ ->
-                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                    val scale = minOf(1.0, 2000.0 / maxOf(info.size.width, info.size.height)); decoder.setTargetSize(maxOf(1, (info.size.width * scale).toInt()), maxOf(1, (info.size.height * scale).toInt()))
-                }
-                photoSignature = CoverMatch.signature(bitmap)
-                val pixels = IntArray(bitmap.width * bitmap.height)
-                bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-                val completeBarcode = ComicBarcode.read(pixels, bitmap.width, bitmap.height)
-                val input = InputImage.fromBitmap(bitmap, 0)
-                val scanner = BarcodeScanning.getClient(); val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                val barcodeTask = scanner.process(input); val textTask = recognizer.process(input)
-                com.google.android.gms.tasks.Tasks.whenAllComplete(barcodeTask, textTask).addOnCompleteListener {
-                    scanner.close(); recognizer.close()
-                    val mainBarcode = if (barcodeTask.isSuccessful) barcodeTask.result.firstOrNull { it.rawValue?.matches(Regex("[0-9]{8,18}")) == true } else null
-                    val blocks = if (textTask.isSuccessful) textTask.result.textBlocks else emptyList()
-                    val printedLines = blocks.flatMap { it.lines }.mapNotNull { line -> line.boundingBox?.let { box -> ComicBarcode.PrintedText(line.text, box.left, box.top, box.right, box.bottom) } }
-                    val supplementBarcode = mainBarcode?.takeIf { it.format == com.google.mlkit.vision.barcode.common.Barcode.FORMAT_UPC_A || it.format == com.google.mlkit.vision.barcode.common.Barcode.FORMAT_EAN_13 }
-                    val printedUpc = supplementBarcode?.boundingBox?.let { box ->
-                        ComicBarcode.withPrintedSupplement(supplementBarcode.rawValue ?: "", intArrayOf(box.left, box.top, box.right, box.bottom), printedLines)
-                    }
-                    val upc = completeBarcode ?: printedUpc ?: mainBarcode?.rawValue ?: ""
-                    val lines = blocks.flatMap { it.lines }.filter { it.text.any(Char::isLetter) && it.text.length in 3..100 }
-                    val title = lines.maxByOrNull { (it.boundingBox?.height() ?: 0) * (if ((it.boundingBox?.top ?: bitmap.height) < bitmap.height / 2) 2 else 1) }?.text ?: ""
-                    val number = Regex("(?:#|ISSUE\\s+|NO\\.?\\s+)([0-9]{1,4}(?:\\.[0-9]+)?)", RegexOption.IGNORE_CASE).find(if(textTask.isSuccessful) textTask.result.text else "")?.groupValues?.get(1) ?: ""
-                    if (!isDestroyed) reviewLegacy(bitmap, title, number, upc) else bitmap.recycle()
-                }
-            } catch (_: Exception) { runOnUiThread { if (!isDestroyed) { openWeb("/camera"); Toast.makeText(this, "Photo could not be read. Retake it or enter a title.", Toast.LENGTH_LONG).show() } } }
-        }
-    }
-    private fun reviewLegacy(bitmap: Bitmap, title: String, issueNumber: String, barcode: String) {
-        if (screen != "recognition") { bitmap.recycle(); return }
-        screen = "review"; base("Review cover lookup")
-        correctedCover = bitmap
-        val preview = ImageView(this).apply { setImageBitmap(bitmap); adjustViewBounds = true; contentDescription = "Photographed comic cover" }
-        column.addView(preview, LinearLayout.LayoutParams(-1, dp(280)))
-        val series = field("Series name", title); val number = field("Issue number", issueNumber); val upc = field("UPC", barcode)
-        text("Correct any text before searching. Include the five-digit supplement printed beside the main barcode for an exact comic match. If it was not captured, enter those digits in the UPC field before searching.")
-        if (barcode.length in 12..13) text("Only the main barcode was captured. Add the five-digit supplement (including leading zeros), or retake the photo with both barcodes clearly visible.")
-        text("Submitting retains this image and its perceptual hash on DangerRoom among the latest ten scans, including when no comic matches.")
-        val captureId = java.util.UUID.randomUUID().toString()
-        val instance = requireNotNull(connection)
-        val generation = captureGeneration
-        val find = button("Find matching covers") {}
-        find.setOnClickListener {
-            val query = Uri.Builder().appendQueryParameter("q", series.text.toString().trim()).appendQueryParameter("number", number.text.toString().trim()).appendQueryParameter("upc", upc.text.toString().trim()).appendQueryParameter("captured", "1").build().encodedQuery
-            find.isEnabled = false
-            val selected = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-            status.text = "Retaining scan image and fingerprint…"
-            worker.execute {
-                try {
-                    val id = retainScan(selected, CoverHash.fromBitmap(selected), "legacy", captureId, instance)
-                    runOnUiThread { if (!isDestroyed && screen == "review" && generation == captureGeneration) { capture.delete(); openWeb("/camera?$query&capture_id=$id") } }
-                } catch(error: Exception) { runOnUiThread { if (!isDestroyed && screen == "review" && generation == captureGeneration) { status.text = "Scan was not submitted: ${error.message ?: "Check the connection and try again."}";find.isEnabled = true } } }
-                finally { selected.recycle() }
-            }
-        }
-        button("Retake photo") { camera() }
-        button("Cancel") { capture.delete(); openWeb() }
     }
     override fun onPause() { super.onPause(); web?.evaluateJavascript("document.dispatchEvent(new Event('dangerroompause'))", null); window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); web?.onPause() }
     override fun onResume() { super.onResume(); web?.onResume() }
-    override fun onDestroy() { correctedCover?.recycle(); correctedCover = null; destroyWeb(); worker.shutdownNow(); matcher.shutdownNow(); super.onDestroy() }
+    override fun onDestroy() { destroyWeb(); worker.shutdownNow(); super.onDestroy() }
 }

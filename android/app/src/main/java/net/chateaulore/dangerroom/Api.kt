@@ -2,7 +2,6 @@ package net.chateaulore.dangerroom
 
 import java.net.HttpURLConnection
 import java.net.URI
-import android.net.Uri
 import org.json.JSONObject
 
 object Input {
@@ -22,20 +21,6 @@ class Api(private val connection: Connection) {
     fun request(path: String, method: String = "GET", body: String = ""): Response {
         val bytes=body.toByteArray(); require(bytes.size <= 8192)
         return exchange(path,method,bytes,"application/json")
-    }
-    fun saveScan(captureId: String, hash: String, mode: String, version: String, png: ByteArray): Long {
-        require(png.size <= 25 * 1024 * 1024) { "Scan image exceeds 25 MB. Retake the cover at a lower camera resolution." }
-        val query=Uri.Builder().appendQueryParameter("capture_id",captureId).appendQueryParameter("cover_hash",hash)
-            .appendQueryParameter("mode",mode).appendQueryParameter("client_version",version).build().encodedQuery
-        val response=exchange("/mobile/api/scan-captures?$query","POST",png,"image/png")
-        val data=runCatching { JSONObject(String(response.bytes)) }.getOrNull()
-        require(response.status == 201) { when(response.status) {
-            404,405 -> "Update DangerRoom to β-024 or later to retain scans, then try again."
-            413 -> "Scan upload is too large for the server or reverse proxy. Check its 25 MB upload limit."
-            else -> data?.optString("error")?.takeIf { it.isNotBlank() }
-                ?: "Could not retain this scan (HTTP ${response.status}). Check the server connection."
-        } }
-        return requireNotNull(data).getLong("id")
     }
     private fun exchange(path: String, method: String, body: ByteArray, contentType: String): Response {
         require(path.startsWith("/") && !path.startsWith("//") && !path.contains("\\") && !path.contains(".."))

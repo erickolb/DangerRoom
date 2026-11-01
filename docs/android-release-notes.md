@@ -1,11 +1,13 @@
-Hardlight **0.1.4** retains the last ten submitted cover scans on your DangerRoom instance for image-matching diagnostics.
+**Hardlight 1.0.0** is the first major release of the DangerRoom Android companion.
 
-Before searching, the app uploads a lossless PNG of the exact bitmap used for pHash, its 16-digit hash, capture mode, UUID, and app version. The server adds dimensions, receipt time, a checksum, and a retained scan ID. Failed Metron matches are retained. Cancelled/retaken previews are not uploaded. Both perspective-corrected and optional OCR/barcode modes are supported; OCR remains off by default.
+The menu contains **Want List, My Collection, Search Metron, Cover Slideshow, and Reading Log**. Text-based Metron search, exact variant selection, collection tracking, personal ratings, reading history, and slideshow settings remain available.
 
-The result screen shows **Retained scan #ID**. Scans are stored together in SQLite, shared across devices, with only the newest ten retained. Authentication is required to retrieve photographs. A server CLI exports the PNGs and a manifest for comparison. Only the fingerprint or legacy search terms are sent to Metron.
+Experimental camera cover search has been removed entirely: no OCR, barcode capture, perspective correction, image hashing, scan settings, or scan uploads. Camera and recognition SDKs are no longer bundled.
 
-**Update DangerRoom to β-024 before installing this APK.** Reverse proxies must allow PNG uploads up to 25 MiB. An upload failure stays on the preview for retry instead of silently searching without a retained image.
+**Update DangerRoom to β-025 or later before installing this APK.** The server removes scan lookup/retention endpoints and its export utility. Schema 7 deletes retained diagnostic scan images and hashes while preserving collection data and saved provider artwork.
 
-Android 9 or newer; versionCode **12**; app ID **net.chateaulore.hardlight**. Install over signed Hardlight 0.1.3. Signed APK, SHA256SUMS.txt, and SIGNING-CERTIFICATE.txt included; supported by Obtainium.
+Android 9 or newer; **versionCode 13**; display name **Danger Room**; application ID **net.chateaulore.hardlight**. Install over signed Hardlight 0.1.4 to retain credentials and slideshow preferences. Obsolete scan settings and the app-owned camera file are cleared.
 
-[Server updates](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) · [Scan diagnostics and export](https://github.com/erickolb/DangerRoom/blob/main/docs/scan-diagnostics.md)
+Includes signed **DangerRoom.apk**, **SHA256SUMS.txt**, and **SIGNING-CERTIFICATE.txt**. Obtainium can track this normal release.
+
+[Server update instructions](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) · [Android installation](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Download website](https://erickolb.github.io/DangerRoom/)

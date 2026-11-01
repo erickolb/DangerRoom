@@ -5,7 +5,7 @@ on:
       tag:
         description: Release tag matching the Android versionName (v followed by the version)
         required: true
-        default: v0.1.4
+        default: v1.0.0
         type: string
 permissions:
   contents: write

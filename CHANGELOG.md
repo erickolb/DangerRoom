@@ -1,5 +1,13 @@
 # Changelog
 
+## β-025 / Hardlight 1.0.0 · 2026-11-01
+
+- Release Hardlight 1.0.0, Android versionCode 13, retaining the application ID and signing certificate for in-place updates.
+- Remove experimental camera cover search, OCR, barcodes, perspective correction, hashing, scan settings, camera file provider, recognition dependencies, and related tests/assets.
+- Remove DangerRoom scan lookup/retention APIs, diagnostic export utilities, and scan-only metrics. Schema 7 deletes retained diagnostic scan images/hashes and cover-hash search caches while preserving inventory, wants, ratings, logs, and provider covers.
+- Keep five menu sections: Want List, My Collection, Search Metron, Cover Slideshow, and Reading Log. Update the server before Android so the served menu matches the app.
+
+
 ## β-024 / Hardlight 0.1.4 · 2026-11-01
 
 - Retain the last ten submitted scan images and client pHashes in SQLite, atomically pruning older pairs. Upload exact lossless PNGs before Metron search in both camera modes, with idempotent retries and visible scan IDs.
