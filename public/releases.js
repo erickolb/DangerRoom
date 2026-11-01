@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-024', date: '2026-11-01', title: 'Retain ten diagnostic scans',
+  changes: ['Hardlight 0.1.4 uploads each submitted scan as an exact lossless PNG with its pHash. Retain the last ten image/hash pairs across devices, including failed Metron matches. Show scan IDs and add authenticated retrieval plus server export commands. Server update required before installing the new app.'],
+}, {
   version: 'β-023', date: '2026-11-01', title: 'Straighten cover photographs',
   changes: ['Hardlight 0.1.3 uses Lumiere’s four-corner document scanner with magnified corner placement and perspective correction. Review the straightened artwork before hashing. OCR remains off by default. Requires Google Play services; existing β-022 servers support the lookup.'],
 }, {

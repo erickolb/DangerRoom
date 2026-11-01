@@ -1,5 +1,12 @@
 # Changelog
 
+## β-024 / Hardlight 0.1.4 · 2026-11-01
+
+- Retain the last ten submitted scan images and client pHashes in SQLite, atomically pruning older pairs. Upload exact lossless PNGs before Metron search in both camera modes, with idempotent retries and visible scan IDs.
+- Require authentication for all scan-image retrieval; add list/export CLI and diagnostic comparison guide, including the Absolute Martian Manhunter #6 Amy Reeder variant case.
+- Android versionCode 12; requires server β-024. Update upload limits on reverse proxies if necessary. Only hashes and search terms go to Metron; captured PNGs remain on your DangerRoom instance.
+
+
 ## β-023 / Hardlight 0.1.3 · 2026-11-01
 
 - Replace the two-corner crop with Lumiere’s ML Kit document scanner: four-corner placement, magnified adjustment, perspective correction, and a corrected cover preview before hashing.

@@ -10,6 +10,7 @@ import { AppError, positiveId } from './errors.mjs';
 import { releases } from '../public/releases.js';
 import { validateRating } from './ratings.mjs';
 import { Devices, equalSecret } from './devices.mjs';
+import { ScanCaptures, MAX_CAPTURE_BYTES } from './scan-captures.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
@@ -52,6 +53,7 @@ export function createApp(options = {}) {
   const dataDir = resolve(options.dataDir || process.env.DATA_DIR || join(root, 'data'));
   const db = openDatabase(dataDir), repo = new Repository(db);
   const devices = new Devices(db);
+  const scanCaptures = new ScanCaptures(db);
   const requireAuth = options.requireAuth ?? process.env.REQUIRE_AUTH === 'true';
   const adminToken = options.adminToken ?? process.env.DANGERROOM_ADMIN_TOKEN ?? '';
   if (requireAuth && adminToken.length < 32) { db.close(); throw Error('Set DANGERROOM_ADMIN_TOKEN to a random secret of at least 32 characters before enabling REQUIRE_AUTH.'); }
@@ -91,6 +93,25 @@ export function createApp(options = {}) {
       const device = devices.authenticate(req);
       if (mobile && !device) throw new AppError(401, 'Configure an approved device ID and secret.');
       if (requireAuth && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/covers/')) && !device && !devices.session(req)) throw new AppError(401, 'Sign in with your browser access key.');
+      if (url.pathname === '/api/scan-captures' || url.pathname.startsWith('/api/scan-captures/')) {
+        // Captured photographs always require authentication, even on trusted-browser instances.
+        if (!device && !devices.session(req)) throw new AppError(401, 'Authorize a device or sign in to access scan photographs.');
+        if (req.method === 'POST' && url.pathname === '/api/scan-captures') {
+          if (!device) throw new AppError(403, 'An approved device is required to submit a capture.');
+          if (req.headers['content-type']?.split(';')[0] !== 'image/png') throw new AppError(415, 'Send a lossless PNG scan image.');
+          if (Number(req.headers['content-length']) > MAX_CAPTURE_BYTES) throw new AppError(413, 'Scan image exceeds the 25 MB limit.');
+          const chunks=[]; let size=0;
+          for await (const chunk of req) { size+=chunk.length; if(size>MAX_CAPTURE_BYTES)throw new AppError(413,'Scan image exceeds the 25 MB limit.');chunks.push(chunk); }
+          return send(201,scanCaptures.save({captureId:url.searchParams.get('capture_id'),hash:url.searchParams.get('cover_hash'),mode:url.searchParams.get('mode'),clientVersion:url.searchParams.get('client_version')},Buffer.concat(chunks)));
+        }
+        if (req.method === 'GET' && url.pathname === '/api/scan-captures') return send(200,{items:scanCaptures.list()});
+        const captureMatch=url.pathname.match(/^\/api\/scan-captures\/(\d+)\/image$/);
+        if (req.method === 'GET' && captureMatch) {
+          const bytes=scanCaptures.image(positiveId(captureMatch[1]));
+          res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'no-store'});return res.end(bytes);
+        }
+        throw new AppError(404,'Scan capture route not found.');
+      }
       if (req.method === 'GET' && url.pathname === '/api/device') return send(200, { authorized: device, version: releases[0].version });
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, mobile_api: 1 });
       if (req.method === 'GET' && url.pathname === '/api/slideshow') {

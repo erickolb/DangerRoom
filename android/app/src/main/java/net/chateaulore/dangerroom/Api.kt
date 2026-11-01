@@ -2,6 +2,7 @@ package net.chateaulore.dangerroom
 
 import java.net.HttpURLConnection
 import java.net.URI
+import android.net.Uri
 import org.json.JSONObject
 
 object Input {
@@ -19,6 +20,24 @@ object Input {
 data class Response(val status: Int, val bytes: ByteArray, val type: String)
 class Api(private val connection: Connection) {
     fun request(path: String, method: String = "GET", body: String = ""): Response {
+        val bytes=body.toByteArray(); require(bytes.size <= 8192)
+        return exchange(path,method,bytes,"application/json")
+    }
+    fun saveScan(captureId: String, hash: String, mode: String, version: String, png: ByteArray): Long {
+        require(png.size <= 25 * 1024 * 1024) { "Scan image exceeds 25 MB. Retake the cover at a lower camera resolution." }
+        val query=Uri.Builder().appendQueryParameter("capture_id",captureId).appendQueryParameter("cover_hash",hash)
+            .appendQueryParameter("mode",mode).appendQueryParameter("client_version",version).build().encodedQuery
+        val response=exchange("/mobile/api/scan-captures?$query","POST",png,"image/png")
+        val data=runCatching { JSONObject(String(response.bytes)) }.getOrNull()
+        require(response.status == 201) { when(response.status) {
+            404,405 -> "Update DangerRoom to β-024 or later to retain scans, then try again."
+            413 -> "Scan upload is too large for the server or reverse proxy. Check its 25 MB upload limit."
+            else -> data?.optString("error")?.takeIf { it.isNotBlank() }
+                ?: "Could not retain this scan (HTTP ${response.status}). Check the server connection."
+        } }
+        return requireNotNull(data).getLong("id")
+    }
+    private fun exchange(path: String, method: String, body: ByteArray, contentType: String): Response {
         require(path.startsWith("/") && !path.startsWith("//") && !path.contains("\\") && !path.contains(".."))
         require(method in listOf("GET", "POST", "PATCH", "DELETE"))
         val url = URI(Input.origin(connection.url) + path).toURL()
@@ -28,9 +47,8 @@ class Api(private val connection: Connection) {
             conn.setRequestProperty("X-Device-Id", connection.device)
             conn.setRequestProperty("Authorization", "Bearer ${connection.token}")
             if (body.isNotEmpty()) {
-                val bytes = body.toByteArray(); require(bytes.size <= 8192)
-                conn.doOutput = true; conn.setRequestProperty("Content-Type", "application/json"); conn.setFixedLengthStreamingMode(bytes.size)
-                conn.outputStream.use { it.write(bytes) }
+                conn.doOutput = true; conn.setRequestProperty("Content-Type", contentType); conn.setFixedLengthStreamingMode(body.size)
+                conn.outputStream.use { it.write(body) }
             }
             val status = conn.responseCode
             val bytes = (if (status in 200..299) conn.inputStream else conn.errorStream)?.use { stream ->

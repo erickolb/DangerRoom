@@ -177,3 +177,7 @@ Update this container before installing Hardlight 0.1.2. The default scan sends 
 ## β-023 / Hardlight 0.1.3
 
 The Android app now uses Lumiere’s four-corner scanner and perspective correction before hashing. Server β-022 already supports this lookup; update the container using the procedure above for the revised in-app guidance and β-023 changelog. No environment or database changes are needed. Install the signed Hardlight 0.1.3 APK over the existing app; Google Play services may download scanner components on first use.
+
+## β-024 / Hardlight 0.1.4
+
+Update the container before installing Hardlight 0.1.4. It uploads a lossless PNG and pHash before a camera search; the server atomically retains only the last ten submitted image/hash pairs, including failed matches, in an additive SQLite table. Existing inventory is unchanged. Keep the data volume and normal SQLite backups; no new environment variables are needed. Permit 25 MiB image uploads through your reverse proxy (for Nginx, client_max_body_size 25m). Follow the backup/rebuild instructions above, verify /api/health reports β-024, then update Android. See [scan diagnostics](scan-diagnostics.md) for authenticated retrieval and the server list/export commands.

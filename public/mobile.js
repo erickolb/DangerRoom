@@ -2,6 +2,10 @@ import { context, copyState, bindToggles } from './actions.js';
 import { comicTitleText } from './comic-title.js';
 import { mountSlideshow, showSlideshowSettings } from './slideshow.js';
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function captureNotice(app, params) {
+  const id=params.get('capture_id');
+  if (/^[1-9][0-9]*$/.test(id || '')) app.insertAdjacentHTML('afterbegin',`<p class="hint">Retained scan #${id} on DangerRoom for comparison. Only the latest ten scans are kept.</p>`);
+}
 export const isAndroid = Boolean(window.DangerRoomAndroid);
 export function mobileHome(app) {
   app.innerHTML = `<div class="mobile-menu">${[['/wants','shopping-list','Want List'],['/collection','boxes','My Collection'],['/','metron','Search Metron'],['/camera','camera','Scan Cover'],['/slideshow','slideshow','Cover Slideshow'],['/reading-log','reading-log','Reading Log']].map(([path, icon, label])=>`<a class="mobile-menu-item" href="#${path}"><img src="/${icon}.${['metron','camera'].includes(icon)?'svg':'png'}" alt="">${label}<span aria-hidden="true">›</span></a>`).join('')}</div><div class="mobile-settings-actions"><button id="mobile-settings" class="secondary">Instance and device settings</button><button id="slideshow-settings" class="secondary">Slideshow settings</button></div>`;
@@ -13,6 +17,7 @@ export async function mobilePage(path, params, app, api, openEdition, current) {
   if (path !== '/camera') return false;
   if (isAndroid && window.DangerRoomAndroid.scanOcrEnabled?.()) {
   app.innerHTML = `<h2>Scan Cover</h2><p>Photograph the cover straight on, filling the frame. A visible barcode helps identify the issue. Review the text, then choose the matching cover.</p>${isAndroid?'<button id="capture">Take a photo</button><button id="scan-settings" class="secondary">Scan settings</button>':''}<form id="camera-query" class="search-main"><label>Series name<input name="q" maxlength="160" value="${esc(params.get('q'))}"></label><label>Issue number<input name="number" maxlength="30" value="${esc(params.get('number'))}"></label><label>UPC<input name="upc" inputmode="numeric" maxlength="18" value="${esc(params.get('upc'))}"></label><button>Find matching covers</button></form><p class="hint">Camera text is a search suggestion. Stylized logos, glare, and text-free variants may need a corrected title. Barcode matches are labeled; confirm the artwork before saving.</p><div id="camera-results" role="status"></div>`;
+  captureNotice(app,params);
   document.querySelector('#scan-settings')?.addEventListener('click', () => window.DangerRoomAndroid.scanSettings());
   document.querySelector('#capture')?.addEventListener('click', () => window.DangerRoomAndroid.camera());
   let searchGeneration=0, nextPage=false;
@@ -61,7 +66,8 @@ export async function mobilePage(path, params, app, api, openEdition, current) {
     return true;
   }
   const hash = params.get('cover_hash') || '';
-  app.innerHTML = `<h2>Scan Cover</h2><p>Use the scanner’s four corner posts and magnified view to mark the cover’s edges, then review its perspective-corrected artwork. This experimental search uses only the artwork fingerprint; no OCR or barcode recognition.</p>${isAndroid?'<button id="capture">Take a photo</button><button id="scan-settings" class="secondary">Scan settings</button>':'<p>Open Hardlight to photograph a cover.</p>'}<form id="camera-query"><input type="hidden" name="cover_hash" value="${esc(hash)}"><button ${/^[a-f0-9]{16}$/i.test(hash)?'':'disabled'}>Find matching covers</button></form><p class="hint">Metron requires an exact fingerprint match against its main cover. Glare, perspective, and variant artwork may prevent a match. Confirm the issue and exact cover before saving.</p><div id="camera-results" role="status"></div>`;
+  app.innerHTML = `<h2>Scan Cover</h2><p>Use the scanner’s four corner posts and magnified view to mark the cover’s edges, then review its perspective-corrected artwork. Your instance retains the last ten submitted images and fingerprints for comparison. Metron receives only the fingerprint; OCR and barcodes are off by default.</p>${isAndroid?'<button id="capture">Take a photo</button><button id="scan-settings" class="secondary">Scan settings</button>':'<p>Open Hardlight to photograph a cover.</p>'}<form id="camera-query"><input type="hidden" name="cover_hash" value="${esc(hash)}"><button ${/^[a-f0-9]{16}$/i.test(hash)?'':'disabled'}>Find matching covers</button></form><p class="hint">Metron requires an exact fingerprint match against its main cover. Glare, perspective, and variant artwork may prevent a match. Confirm the issue and exact cover before saving.</p><div id="camera-results" role="status"></div>`;
+  captureNotice(app,params);
   document.querySelector('#scan-settings')?.addEventListener('click', () => window.DangerRoomAndroid.scanSettings());
   document.querySelector('#capture')?.addEventListener('click', () => window.DangerRoomAndroid.camera());
   let searchGeneration=0, nextPage=false;

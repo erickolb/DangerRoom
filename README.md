@@ -1,10 +1,10 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-023**.
+Comic inventory and reading journal. Current build: **β-024**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android companion](docs/android.md), nicknamed **Hardlight**, adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download Hardlight 0.1.3 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.3). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android companion](docs/android.md), nicknamed **Hardlight**, adds a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, camera-assisted Metron lookup with exact variant selection, and an owned-cover slideshow. [Download Hardlight 0.1.4 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v0.1.4). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 ## Run locally
 
@@ -68,6 +68,10 @@ Toggle the shopping-list icon after selecting a cover, or on a read-only comic's
 Wants are specific to a cover, unlike read status and ratings. Owning the standard cover does not stop you wanting a variant. Adding an owned copy removes only that exact want in the same database transaction; trying to want an owned cover does nothing, with the option slightly greyed out. Reading/rating alone does not claim ownership or remove a want. Duplicate wants share one list entry. Removing an owned copy does not automatically restore an old want.
 
 Only issue ID/name/number, series ID/name/start year/volume, cover date, official Metron URL, selected edition key/name/source image, a local cover filename, and added timestamp are stored in the wants table. Want-only entries create no inventory issue, edition, copy, reading, or rating records. The existing temporary provider lookup cache may contain the full API response while resolving variants. Images reuse the local original-file store, sufficient for thumbnails; an absent provider image displays as unavailable. Acquiring a cover reuses its file when the source URL matches. A failed image download does not save the want. This feature stores wants locally and does not modify Metron's wish list.
+
+## Scan diagnostics
+
+Hardlight 0.1.4 uploads the submitted cover bitmap as a lossless PNG with its pHash. DangerRoom β-024 retains the latest ten image/hash pairs across devices, including failed searches, and displays a scan ID for comparison. [Retrieve the scans and compare with Metron](docs/scan-diagnostics.md). Update the server before the Android app.
 
 ## Storage and API use
 

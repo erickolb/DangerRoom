@@ -1,0 +1,72 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {mkdtemp,rm,readFile,readdir} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {once} from 'node:events';
+import {createApp} from '../src/server.mjs';
+import {openDatabase} from '../src/database.mjs';
+import {ScanCaptures,MAX_CAPTURE_BYTES} from '../src/scan-captures.mjs';
+import {exportCaptures} from '../scripts/scan-captures.mjs';
+
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/afsAAAAASUVORK5CYII=','base64');
+const metadata=()=>({captureId:randomUUID(),hash:'c585eb18bf1e5423',mode:'perspective-corrected',clientVersion:'0.1.4'});
+async function harness(t){
+  const connections=[];
+  const directory=await mkdtemp(join(tmpdir(),'dangerroom-scans-'));
+  const app=createApp({dataDir:directory,adminToken:'test-key-'.repeat(8),metron:{configured:true,search:async()=>{throw Error('Provider offline');}}});
+  app.server.listen(0,'127.0.0.1');await once(app.server,'listening');
+  t.after(async()=>{for(const db of connections)db.close();await new Promise(resolve=>app.server.close(resolve));await rm(directory,{recursive:true,force:true});});
+  const device=app.devices.add('Diagnostic phone');
+  const headers={'X-Device-Id':device.deviceId,Authorization:`Bearer ${device.token}`};
+  const request=(path,options={})=>fetch(`http://127.0.0.1:${app.server.address().port}${path}`,options);
+  const post=(data=metadata(),bytes=png)=>request('/mobile/api/scan-captures?'+new URLSearchParams({capture_id:data.captureId,cover_hash:data.hash,mode:data.mode,client_version:data.clientVersion}),{method:'POST',headers:{...headers,'Content-Type':'image/png'},body:bytes});
+  return {...app,directory,device,headers,request,post,open:()=>{const db=openDatabase(directory);connections.push(db);return db;}};
+}
+test('scan photographs require authentication even with public browser access; approved uploads survive failed lookup',async t=>{
+  const h=await harness(t);
+  assert.equal((await h.request('/api/collection')).status,200);
+  for(const path of ['/api/scan-captures','/api/scan-captures/1/image','/mobile/api/scan-captures'])assert.equal((await h.request(path)).status,401);
+  assert.equal((await h.request('/api/scan-captures',{method:'POST',headers:{'Content-Type':'image/png'},body:png})).status,401);
+  const response=await h.post();assert.equal(response.status,201);const row=await response.json();
+  assert.equal(row.width,1);assert.equal(row.height,1);assert.equal(row.algorithm,'imagehash-phash-8x8');
+  assert.equal((await h.request('/mobile/api/camera-search?cover_hash='+row.cover_hash,{headers:h.headers})).status,500);
+  const image=await h.request(`/mobile/api/scan-captures/${row.id}/image`,{headers:h.headers});
+  assert.equal(image.status,200);assert.equal(image.headers.get('cache-control'),'no-store');assert.deepEqual(Buffer.from(await image.arrayBuffer()),png);
+  const list=await(await h.request('/api/scan-captures',{headers:h.headers})).json();assert.equal(list.items.length,1);assert.equal(list.items[0].image,undefined);
+  const login=await h.request('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:'test-key-'.repeat(8)})});
+  const cookie=login.headers.get('set-cookie').split(';')[0];
+  assert.equal((await h.request('/api/scan-captures',{headers:{Cookie:cookie}})).status,200);
+  assert.equal((await h.request('/api/scan-captures',{method:'POST',headers:{Cookie:cookie,'Content-Type':'image/png'},body:png})).status,403);
+  h.devices.revoke(h.device.deviceId);
+  assert.equal((await h.request('/api/scan-captures',{headers:h.headers})).status,401);
+});
+test('concurrent captures retain exactly ten pairs across restart; retries preserve IDs and export exact PNG bytes',async t=>{
+  const h=await harness(t);
+  const data=Array.from({length:12},metadata);
+  const rows=await Promise.all(data.map(async m=>{const r=await h.post(m);assert.equal(r.status,201);return r.json();}));
+  const ordered=rows.sort((a,b)=>b.id-a.id);
+  const db=h.open();const captures=new ScanCaptures(db);
+  assert.deepEqual(captures.list().map(r=>r.id),ordered.slice(0,10).map(r=>r.id));
+  assert.throws(()=>captures.image(ordered.at(-1).id),/latest ten/);
+  const recent=data.find(m=>m.captureId===ordered[1].capture_id);
+  const retry=await(await h.post(recent)).json();assert.equal(retry.id,ordered[1].id);assert.equal(captures.list()[0].id,ordered[0].id);
+  const conflict=await h.post({...recent,hash:'0000000000000000'});assert.equal(conflict.status,409);assert.equal(captures.list().length,10);
+  const out=join(h.directory,'export');const manifest=exportCaptures(captures,out);
+  assert.equal((await readdir(out)).length,11);assert.equal(manifest.length,10);
+  assert.deepEqual(JSON.parse(await readFile(join(out,'manifest.json'),'utf8')),manifest);
+  for(const row of manifest)assert.deepEqual(await readFile(join(out,row.filename)),png);
+  assert.equal(h.repo.db.prepare('SELECT COUNT(*) AS n FROM issues').get().n,0);
+});
+test('invalid scan uploads do not evict valid records',async t=>{
+  const h=await harness(t);const good=await h.post();assert.equal(good.status,201);
+  assert.equal((await h.post({...metadata(),hash:'not-a-hash'})).status,400);
+  assert.equal((await h.post({...metadata(),captureId:'../../image'})).status,400);
+  assert.equal((await h.post(metadata(),Buffer.from('not png'))).status,400);
+  const db=h.open();const captures=new ScanCaptures(db);
+  assert.throws(()=>captures.save(metadata(),Buffer.alloc(MAX_CAPTURE_BYTES+1)),/25 MB/);
+  const huge=Buffer.from(png);huge.writeUInt32BE(99999,16);
+  assert.throws(()=>captures.save(metadata(),huge),/dimensions/);
+  assert.equal(captures.list().length,1);
+});

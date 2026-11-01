@@ -1,6 +1,6 @@
 # DangerRoom API and data model
 
-All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted by default, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Optional `REQUIRE_AUTH=true` additionally protects the browser API and saved covers with a browser session or device credentials, and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
+All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`; scan capture uploads use `image/png`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted by default, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Optional `REQUIRE_AUTH=true` additionally protects the browser API and saved covers with a browser session or device credentials, and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
 
 ## Android and authentication (β-002)
 
@@ -13,7 +13,7 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | `GET /api/device` | Authentication check. Mobile settings require `authorized:true`, meaning an enabled device. |
 | `GET /api/slideshow` | `{items}` of all unique owned `(issue ID, edition key)` pairs with saved cover files, excluding black bags. No provider calls or selection limit. |
 | `PATCH /api/issues/:id/black-bag` | `{edition_key,black_bagged:boolean}` toggles a saved cover's slideshow exclusion and returns the refreshed issue. Shared across copies/devices; does not change ownership, wants, reading, or rating. |
-| `GET /api/camera-search?q=…&number=…&upc=…&page=1&cover_page=1` | Barcode search first, title fallback on zero barcode hits; expands five issues per response into exact cover candidates. Follow `next_page`/`next_cover_page` while `next` is true to include every issue on each provider page. `{count,page,next,previous,limited,next_page,next_cover_page,items:[{issue,edition,barcode_match}]}`. Candidate images compare on Android; photos never reach this API. No automatic inventory writes. |
+| `GET /api/camera-search?cover_hash=…&page=1&cover_page=1` | Exact main-cover hash lookup, expanding five issues per response into exact-cover candidates. Follow next_page/next_cover_page. Optional `legacy=1&q=…&upc=…` restores UPC/title lookup. No inventory writes. Diagnostic PNGs are submitted separately before lookup. |
 
 Additive `devices(id,label,token_hash,enabled)` and `web_sessions(token_hash,expires_at)` tables do not change existing inventory records. Issue/want/log migrations remain unchanged. Device management is a server CLI operation; there is no public provisioning endpoint. See [Android setup](android.md).
 
@@ -78,3 +78,9 @@ Mark-as-read requests may additionally include `rating` (0.5–5 in half-star st
 Search results now expose `series.series_type` for title badges. If the issue list omits it, DangerRoom first reuses stored issue/Want List types or retained issue-detail cache data for that series. Otherwise a single shared `/api/series/:id/` provider lookup per series is cached for 24 hours, using the existing request pacing and cooldown handling. No per-issue lookup is needed for badges. Types without a TPB/HC badge retain their existing title presentation.
 
 `GET /api/series-types` supplies the series-type dropdown catalog from the provider's `series_type/` endpoint. Catalog pages are cached for 24 hours and honor existing pacing/cooldowns. Search URL `series_types=10,13` stores OR selections for client-side filtering of the current provider page, combined with `hide_owned=1`. An empty selection shows all types; `0` means an absent format. Provider totals and page links remain intact.
+
+## Retained scan captures (β-024)
+
+`POST /api/scan-captures?capture_id=UUID&cover_hash=HEX16&mode=perspective-corrected|legacy&client_version=VERSION` accepts image/png up to 25 MiB and 4096 pixels per side, requires an approved device, and returns HTTP 201 with retained metadata and sequential scan ID. It saves image and metadata together and prunes older pairs beyond ten per instance. A retry with the same UUID reuses its record; conflicting content returns 409.
+
+`GET /api/scan-captures` returns metadata only, newest first. `GET /api/scan-captures/:id/image` returns the original uploaded PNG or 404 if pruned. Both require a device or administrator browser session even when ordinary browser access is public; /mobile/ always requires a device. Responses are no-store. The additive scan_captures table holds the image BLOB, supplied pHash, algorithm, mode, version, timestamp, dimensions, checksum, UUID, and ID. [Export and comparison guide](scan-diagnostics.md).

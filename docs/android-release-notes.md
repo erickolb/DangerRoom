@@ -1,13 +1,11 @@
-Hardlight **0.1.3** adds perspective correction using the same ML Kit document scanner as Lumiere.
+Hardlight **0.1.4** retains the last ten submitted cover scans on your DangerRoom instance for image-matching diagnostics.
 
-Capture the cover, place all four corner posts accurately using the scanner’s magnified view, and finish to straighten its perspective. Review the corrected cover before **Find matching covers**, or Retake/Cancel. The corrected image is hashed on your phone; only the fingerprint goes to DangerRoom.
+Before searching, the app uploads a lossless PNG of the exact bitmap used for pHash, its 16-digit hash, capture mode, UUID, and app version. The server adds dimensions, receipt time, a checksum, and a retained scan ID. Failed Metron matches are retained. Cancelled/retaken previews are not uploaded. Both perspective-corrected and optional OCR/barcode modes are supported; OCR remains off by default.
 
-Scanner base mode avoids document-cleanup filters. Google Play services is required and may download scanning components on first use. If unavailable, Retry/Cancel are offered; Search Metron remains available from the menu.
+The result screen shows **Retained scan #ID**. Scans are stored together in SQLite, shared across devices, with only the newest ten retained. Authentication is required to retrieve photographs. A server CLI exports the PNGs and a manifest for comparison. Only the fingerprint or legacy search terms are sent to Metron.
 
-OCR/barcodes remain off by default and can still be enabled in Scan settings. Metron still requires an exact main-cover hash match; glare and variant artwork may prevent results.
+**Update DangerRoom to β-024 before installing this APK.** Reverse proxies must allow PNG uploads up to 25 MiB. An upload failure stays on the preview for retry instead of silently searching without a retained image.
 
-Android 9 or newer; versionCode **11**; app ID **net.chateaulore.hardlight**. Requires server **β-022 or later**; no new server API is required. Install over signed Hardlight 0.1.2 to retain settings.
+Android 9 or newer; versionCode **12**; app ID **net.chateaulore.hardlight**. Install over signed Hardlight 0.1.3. Signed APK, SHA256SUMS.txt, and SIGNING-CERTIFICATE.txt included; supported by Obtainium.
 
-Includes signed DangerRoom.apk, SHA256SUMS.txt, and SIGNING-CERTIFICATE.txt. Normal release supported by Obtainium.
-
-[Android setup](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Server updates](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md)
+[Server updates](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) · [Scan diagnostics and export](https://github.com/erickolb/DangerRoom/blob/main/docs/scan-diagnostics.md)
