@@ -1,5 +1,13 @@
 # Changelog
 
+## β-027 / Hardlight 1.0.1 · 2026-11-01
+
+- Count image failures per cover; retain each cover until its third strike. A successful load of a cover with strikes resets all remaining strikes. Successful covers with no strikes do not reset broken covers.
+- Wait 3 seconds before the next attempt after a failure; time out image loading and decoding after 20 seconds. Preserve the outgoing image during failures.
+- Show a spinner when no covers remain and reinitialize the full eligible collection with fresh strikes every 10 minutes. Inventory errors and empty collections use the same wait. Exit cancels pending timers and loads.
+- Release signed Hardlight 1.0.1 with Android versionCode 14 and the existing application ID and signing certificate. Update the server to β-027 to receive the slideshow behavior; existing APKs also receive the server fix after reopening the slideshow.
+
+
 ## β-025 / Hardlight 1.0.0 · 2026-11-01
 
 - Release Hardlight 1.0.0, Android versionCode 13, retaining the application ID and signing certificate for in-place updates.

@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-027', date: '2026-11-01', title: 'Hardlight 1.0.1: three-strike slideshow recovery',
+  changes: ['Keep failed covers in rotation until three strikes. A previously failed cover loading successfully clears all remaining cover strikes. Wait 3 seconds after a failure and time out stalled image loads after 20 seconds. When the playlist is empty, show a spinner and reinitialize every 10 minutes. Update the server for playback changes; Hardlight 1.0.1 retains credentials and settings.'],
+}, {
   version: 'β-026', date: '2026-11-01', title: 'Recover slideshow after server restarts',
   changes: ['Retry unavailable cover images and inventory automatically every 15 seconds. Preserve the last visible cover and playback intent during outages, distinguish image failures from an empty collection, and recover without reopening the slideshow. Server update only; existing Hardlight APKs remain compatible.'],
 }, {

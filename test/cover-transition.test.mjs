@@ -20,6 +20,19 @@ class ImageLayer {
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
+test('a stalled image times out and leaves the visible cover intact', async () => {
+  const a = new ImageLayer(), b = new ImageLayer();
+  const transition = createCoverTransition(a, b, 600, 10);
+  const first = transition.show('visible', 'Visible', false);
+  await b.load(); await first;
+  await assert.rejects(transition.show('stalled', 'Stalled', false), /timed out/);
+  assert.equal(b.src, 'visible'); assert.equal(b.style.opacity, '1');
+  assert.equal(a.onload, null); assert.equal(a.onerror, null);
+  const recovered = transition.show('recovered', 'Recovered', false);
+  await a.load(); assert.equal(await recovered, true);
+  assert.equal(a.style.opacity, '1');
+});
+
 test('cover transitions keep the outgoing source visible until the hidden cover is decoded and faded', async () => {
   const a = new ImageLayer(), b = new ImageLayer(), transition = createCoverTransition(a, b);
   const first = transition.show('red-cover', 'Red', true);

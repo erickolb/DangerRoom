@@ -1,7 +1,7 @@
 // Never change the source of the visible layer. Prepare the hidden layer first,
 // then animate the two existing elements; old animation fill must not leak into
 // the next transition (especially on Android WebView).
-export function createCoverTransition(first, second, duration = 600) {
+export function createCoverTransition(first, second, duration = 600, loadTimeout = 20000) {
   let front = first, back = second, revision = 0, pending = null, active = null;
   first.style.opacity = second.style.opacity = '0';
 
@@ -22,8 +22,10 @@ export function createCoverTransition(first, second, duration = 600) {
     return new Promise((resolve, reject) => {
       let settled = false;
       const abort = () => done(Error('Cover loading cancelled.'));
+      const timeout = setTimeout(() => done(Error('Cover loading timed out.')), loadTimeout);
       function done(error) {
         if (settled) return;
+        clearTimeout(timeout);
         settled = true; image.onload = image.onerror = null;
         if (pending === abort) pending = null;
         if (error) reject(error); else resolve();

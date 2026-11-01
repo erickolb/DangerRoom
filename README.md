@@ -1,10 +1,10 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-026**.
+Comic inventory and reading journal. Current build: **β-027**.
 
 [Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android companion](docs/android.md), nicknamed **Hardlight**, adds a mask startup screen, configurable HTTPS instance, device credentials, five-section menu, Metron search with exact variant selection, and an owned-cover slideshow. [Download Hardlight 1.0.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.0). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android companion](docs/android.md), nicknamed **Hardlight**, adds a mask startup screen, configurable HTTPS instance, device credentials, five-section menu, Metron search with exact variant selection, and an owned-cover slideshow. [Download Hardlight 1.0.1 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.1). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 ## Run locally
 

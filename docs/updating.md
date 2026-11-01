@@ -62,6 +62,16 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
+### β-027 / Hardlight 1.0.1: three-strike slideshow recovery
+
+Follow the backup, rebuild, and recreate commands below, then exit and reopen Cover Slideshow once to load the updated server code. Existing Hardlight APKs also receive this fix; installing the signed [Hardlight 1.0.1 APK](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.1) over 1.0.0 retains device credentials and settings. Android versionCode is 14. Installing the APK alone does not apply the server fix.
+
+Each failed image receives one strike and stays in rotation until strike three. Loading an image that already has strikes clears every remaining image's strikes. Loading a zero-strike image leaves other strikes untouched. After a failure, the next image is attempted after 3 seconds; a stalled load or decode times out after 20 seconds. The previous visible image remains displayed. Strike counts exist only in the current slideshow session and never change collection records or black bags.
+
+If the lineup is exhausted, a spinner appears and the slideshow waits 10 minutes before fetching the full eligible collection and resetting all strikes, including covers previously dropped from playback. Failed inventory requests and genuinely empty collections also wait 10 minutes before another initialization attempt. These intervals replace β-026's 15-second retry. Exiting cancels pending playback and recovery work. No schema migration is added.
+
+For verification, start a slideshow and briefly restart with `sudo docker compose restart dangerroom`: failed covers should remain in subsequent rotations until three failures. A successful load of a previously failed cover should restore the full surviving lineup's strike allowance. A prolonged outage should eventually show the spinner and recover on a 10-minute initialization attempt once service returns.
+
 ### β-026: slideshow recovery after container restarts
 
 Rebuild and recreate the server using the commands below. Existing Hardlight APKs remain compatible; exit and reopen the slideshow once after updating to load the new JavaScript.

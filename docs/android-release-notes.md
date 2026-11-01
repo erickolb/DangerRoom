@@ -1,12 +1,12 @@
-**Hardlight 1.0.0** is the first major release of the DangerRoom Android companion.
+**Hardlight 1.0.1** improves Cover Slideshow recovery during container restarts and connection interruptions.
 
-The menu contains **Want List, My Collection, Search Metron, Cover Slideshow, and Reading Log**. Text-based Metron search, exact variant selection, collection tracking, personal ratings, reading history, and slideshow settings remain available.
+- Failed covers stay in rotation until three strikes. If a previously failed cover loads successfully, all remaining covers' strikes reset to zero. Healthy covers with no strikes do not reset other covers' failures.
+- Failed loads wait 3 seconds before trying the next cover. Stalled image loading or decoding times out after 20 seconds. The last visible cover stays on screen during failures.
+- An empty playlist shows a spinner and waits 10 minutes before rebuilding from the full eligible collection with fresh strike counts. Failed initialization repeats at 10-minute intervals. Covers removed after three strikes return on reinitialization.
 
-Experimental camera cover search has been removed entirely: no OCR, barcode capture, perspective correction, image hashing, scan settings, or scan uploads. Camera and recognition SDKs are no longer bundled.
+**Update DangerRoom to β-027 before using the new slideshow behavior.** Playback code is served by the container; existing APKs also receive the fix after exiting and reopening the slideshow once after the server update. Updating only the APK does not update the server.
 
-**Update DangerRoom to β-025 or later before installing this APK.** The server removes scan lookup/retention endpoints and its export utility. Schema 7 deletes retained diagnostic scan images and hashes while preserving collection data and saved provider artwork.
-
-Android 9 or newer; **versionCode 13**; display name **Danger Room**; application ID **net.chateaulore.hardlight**. Install over signed Hardlight 0.1.4 to retain credentials and slideshow preferences. Obsolete scan settings and the app-owned camera file are cleared.
+Android 9 or newer; **versionCode 14**; display name **Danger Room**; application ID **net.chateaulore.hardlight**. Install over signed Hardlight 1.0.0 to retain device credentials and slideshow preferences. No database migration is required for this update.
 
 Includes signed **DangerRoom.apk**, **SHA256SUMS.txt**, and **SIGNING-CERTIFICATE.txt**. Obtainium can track this normal release.
 

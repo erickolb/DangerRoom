@@ -47,11 +47,15 @@ export async function mountSlideshow(app, api, current) {
   const { key, stored, settings } = preferences();
   let rows = [], index = 0, playing = true, loading = true, disposed = false;
   let timer = null, controlsTimer = null, retryTimer = null, generation = 0;
-  let inventory = [], refreshing = false;
-  const failed = new Set();
+  let refreshing = false;
+  const strikes = new Map();
   // Cover the app immediately, including while inventory or artwork is loading.
   app.innerHTML = `<div id="gallery-stage" class="gallery-fullscreen gallery-immersive gallery-playing gallery-controls-visible" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite">Opening owned covers…</p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover" disabled>‹</button><button id="play-covers" disabled>Pause</button><button id="next-cover" aria-label="Next cover" disabled>›</button><button id="exit-gallery">Exit</button></div></div></div>`;
   const stage = app.querySelector('#gallery-stage'), caption = app.querySelector('#gallery-caption');
+  const spinner = document.createElement('span');
+  spinner.className = 'gallery-spinner'; spinner.hidden = true;
+  spinner.setAttribute('role', 'status'); spinner.setAttribute('aria-label', 'Waiting to retry slideshow');
+  stage.append(spinner);
   const image = app.querySelector('#gallery-cover'), old = app.querySelector('#gallery-old');
   const transition = createCoverTransition(image, old);
   const play = app.querySelector('#play-covers'), previous = app.querySelector('#previous-cover'), next = app.querySelector('#next-cover');
@@ -74,7 +78,7 @@ export async function mountSlideshow(app, api, current) {
   }
   function retry() {
     clearTimeout(retryTimer);
-    if (current() && !disposed) retryTimer = setTimeout(refresh, 15000);
+    if (current() && !disposed) retryTimer = setTimeout(refresh, 10 * 60 * 1000);
   }
   async function display() {
     clearTimeout(timer);
@@ -83,24 +87,33 @@ export async function mountSlideshow(app, api, current) {
     previous.disabled = next.disabled = play.disabled = !rows.length;
     if (!rows.length) {
       loading = false;
-      caption.textContent = inventory.length
-        ? 'Cover images are temporarily unavailable. Retrying automatically…'
-        : 'No eligible owned covers. Add comics or remove a black bag using the black-bag icon in My Collection. Checking again automatically…';
+      spinner.hidden = false;
+      caption.textContent = 'Waiting for covers. Retrying the slideshow in 10 minutes…';
       revealControls(); retry(); return;
     }
+    spinner.hidden = true;
     const row = rows[index]; loading = true; caption.textContent = 'Loading cover…'; revealControls();
     try {
       const alt = `${comicTitleText(row.issue, { year: true })} · ${row.edition.name}`;
       const shown = await transition.show(`/covers/${row.edition.cover_file}`, alt, settings.fade, () => ticket === generation && current() && !disposed);
       if (!shown || ticket !== generation || !current() || disposed) return;
+      if (strikes.get(`${row.issue.id}:${row.edition.key}`)) strikes.clear();
       loading = false;
       caption.textContent = `${alt} · ${index + 1} / ${rows.length}`;
       revealControls(); schedule();
     } catch {
       if (ticket !== generation || !current() || disposed) return;
-      failed.add(`${row.issue.id}:${row.edition.key}`);
-      rows = rows.filter(r => !failed.has(`${r.issue.id}:${r.edition.key}`));
-      index = rows.length ? index % rows.length : 0; display();
+      const key = `${row.issue.id}:${row.edition.key}`;
+      const count = (strikes.get(key) || 0) + 1;
+      strikes.set(key, count);
+      if (count >= 3) rows.splice(index, 1);
+      else index++;
+      index = rows.length ? index % rows.length : 0;
+      loading = false;
+      if (!rows.length) { display(); return; }
+      caption.textContent = 'Cover unavailable. Trying the next cover in 3 seconds…';
+      revealControls();
+      if (playing) timer = setTimeout(display, 3000);
     }
   }
   function advance(direction) { if (rows.length) { index = (index + direction + rows.length) % rows.length; display(); } }
@@ -109,7 +122,7 @@ export async function mountSlideshow(app, api, current) {
     if (playing) pause();
     else if (rows.length) {
       playing = true; play.textContent = 'Pause'; stage.classList.add('gallery-playing');
-      window.DangerRoomAndroid?.keepAwake(true); revealControls(); schedule();
+      window.DangerRoomAndroid?.keepAwake(true); revealControls(); display();
     }
   };
   function exit() { pause(); leaveFullscreen(); location.hash = window.DangerRoomAndroid ? '#/home' : '#/'; }
@@ -125,7 +138,6 @@ export async function mountSlideshow(app, api, current) {
     document.removeEventListener('visibilitychange', visibility);
     document.removeEventListener('dangerroompause', pause);
     document.removeEventListener('fullscreenchange', fullscreenChange);
-    window.removeEventListener('online', recover);
   };
   // Register cleanup before the first request so exiting while loading also restores the menu.
   window.addEventListener('hashchange', cleanup);
@@ -136,8 +148,6 @@ export async function mountSlideshow(app, api, current) {
   if (!window.DangerRoomAndroid) stage.requestFullscreen?.().catch(() => {});
   stage.focus();
   window.DangerRoomAndroid?.keepAwake(true);
-  function recover() { if (!rows.length) { clearTimeout(retryTimer); refresh(); } }
-  window.addEventListener('online', recover);
   async function refresh() {
     if (refreshing || !current() || disposed) return;
     refreshing = true;
@@ -151,13 +161,14 @@ export async function mountSlideshow(app, api, current) {
         if (!current() || disposed) return;
       }
       try { localStorage.setItem(key, JSON.stringify({ settings })); } catch { /* Playback can continue without stored preferences. */ }
-      inventory = chooseCovers(data.items, settings);
-      rows = [...inventory]; failed.clear(); index = 0;
+      rows = chooseCovers(data.items, settings);
+      strikes.clear(); index = 0;
       window.DangerRoomAndroid?.keepAwake(playing);
       display();
     } catch (error) {
       if (!current() || disposed) return;
-      loading = false; caption.textContent = `${error.message} Retrying automatically…`; revealControls(); retry();
+      loading = false; spinner.hidden = false;
+      caption.textContent = `${error.message} Retrying the slideshow in 10 minutes…`; revealControls(); retry();
     } finally {
       refreshing = false;
     }
