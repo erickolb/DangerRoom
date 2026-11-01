@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-026', date: '2026-11-01', title: 'Recover slideshow after server restarts',
+  changes: ['Retry unavailable cover images and inventory automatically every 15 seconds. Preserve the last visible cover and playback intent during outages, distinguish image failures from an empty collection, and recover without reopening the slideshow. Server update only; existing Hardlight APKs remain compatible.'],
+}, {
   version: 'β-025', date: '2026-11-01', title: 'Hardlight 1.0.0: retire camera search',
   changes: ['Remove experimental cover scanning, OCR, barcode capture, artwork matching, scan settings, retained-scan endpoints, and export utilities from Hardlight and DangerRoom. Upgrade removes retained diagnostic scans. Release Hardlight 1.0.0 with five menu sections, preserving text search, exact cover selection, inventory, wants, ratings, Reading Log, and slideshow.'],
 }, {

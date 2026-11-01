@@ -62,6 +62,14 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
+### β-026: slideshow recovery after container restarts
+
+Rebuild and recreate the server using the commands below. Existing Hardlight APKs remain compatible; exit and reopen the slideshow once after updating to load the new JavaScript.
+
+Previously, every failed cover request removed that cover from the current playlist permanently. A container restart could exhaust the playlist and show “No eligible owned covers” even with an intact collection. The slideshow now retains the last visible image, distinguishes unavailable images from an empty collection, and reloads inventory and retries artwork every 15 seconds after exhaustion or inventory errors. It also retries when the device reports it is back online. Playback resumes automatically if it was playing; exiting cancels recovery. An empty collection is checked again automatically too.
+
+To verify recovery, start the slideshow, restart the service with `sudo docker compose restart dangerroom`, and confirm playback continues or resumes after availability returns. For an outage lasting long enough to exhaust the playlist, expect “Cover images are temporarily unavailable” followed by automatic recovery. Collection records and shared black bags remain in the existing `/data` volume; retain the original Compose project and never remove its data volume during updates.
+
 ### β-009: black-bag details controls and contrast
 
 Update the server to show the black-bag toggle immediately after duplicate copy on comic details in both Android and the browser. The icon now stays black with a white glow for contrast. Browser collection tiles still omit that toggle. These changes use the existing Android β-008 APK; no APK reinstall is required.

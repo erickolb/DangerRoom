@@ -46,7 +46,8 @@ export function chooseCovers(items, settings, random = Math.random) {
 export async function mountSlideshow(app, api, current) {
   const { key, stored, settings } = preferences();
   let rows = [], index = 0, playing = true, loading = true, disposed = false;
-  let timer = null, controlsTimer = null, generation = 0;
+  let timer = null, controlsTimer = null, retryTimer = null, generation = 0;
+  let inventory = [], refreshing = false;
   const failed = new Set();
   // Cover the app immediately, including while inventory or artwork is loading.
   app.innerHTML = `<div id="gallery-stage" class="gallery-fullscreen gallery-immersive gallery-playing gallery-controls-visible" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite">Opening owned covers…</p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover" disabled>‹</button><button id="play-covers" disabled>Pause</button><button id="next-cover" aria-label="Next cover" disabled>›</button><button id="exit-gallery">Exit</button></div></div></div>`;
@@ -71,15 +72,21 @@ export async function mountSlideshow(app, api, current) {
     clearTimeout(timer);
     if (playing && !loading && current() && !disposed && !document.hidden) timer = setTimeout(() => advance(1), settings.seconds * 1000);
   }
+  function retry() {
+    clearTimeout(retryTimer);
+    if (current() && !disposed) retryTimer = setTimeout(refresh, 15000);
+  }
   async function display() {
     clearTimeout(timer);
     const ticket = ++generation;
     if (!current() || disposed) return;
     previous.disabled = next.disabled = play.disabled = !rows.length;
     if (!rows.length) {
-      loading = false; transition.clear();
-      caption.textContent = 'No eligible owned covers. Add comics or remove a black bag using the black-bag icon in My Collection.';
-      pause(); return;
+      loading = false;
+      caption.textContent = inventory.length
+        ? 'Cover images are temporarily unavailable. Retrying automatically…'
+        : 'No eligible owned covers. Add comics or remove a black bag using the black-bag icon in My Collection. Checking again automatically…';
+      revealControls(); retry(); return;
     }
     const row = rows[index]; loading = true; caption.textContent = 'Loading cover…'; revealControls();
     try {
@@ -113,11 +120,12 @@ export async function mountSlideshow(app, api, current) {
   const fullscreenChange = () => { if (!window.DangerRoomAndroid && !document.fullscreenElement) pause(); };
   const cleanup = () => {
     if (current() || disposed) return;
-    disposed = true; pause(); generation++; transition.cancel(); leaveFullscreen();
+    disposed = true; pause(); clearTimeout(retryTimer); generation++; transition.cancel(); leaveFullscreen();
     window.removeEventListener('hashchange', cleanup);
     document.removeEventListener('visibilitychange', visibility);
     document.removeEventListener('dangerroompause', pause);
     document.removeEventListener('fullscreenchange', fullscreenChange);
+    window.removeEventListener('online', recover);
   };
   // Register cleanup before the first request so exiting while loading also restores the menu.
   window.addEventListener('hashchange', cleanup);
@@ -127,21 +135,32 @@ export async function mountSlideshow(app, api, current) {
   window.DangerRoomAndroid?.fullscreen(true);
   if (!window.DangerRoomAndroid) stage.requestFullscreen?.().catch(() => {});
   stage.focus();
-  try {
-    const data = await api('/slideshow');
-    if (!current() || disposed) return;
-    const legacy = new Set(Array.isArray(stored.excluded) ? stored.excluded : []);
-    for (const row of data.items) if (legacy.has(`${row.issue.id}:${row.edition.key}`)) {
-      await api(`/issues/${row.issue.id}/black-bag`, { method: 'PATCH', body: JSON.stringify({ edition_key: row.edition.key, black_bagged: true }) });
-      row.edition.black_bagged = true;
+  window.DangerRoomAndroid?.keepAwake(true);
+  function recover() { if (!rows.length) { clearTimeout(retryTimer); refresh(); } }
+  window.addEventListener('online', recover);
+  async function refresh() {
+    if (refreshing || !current() || disposed) return;
+    refreshing = true;
+    try {
+      const data = await api('/slideshow');
       if (!current() || disposed) return;
+      const legacy = new Set(Array.isArray(stored.excluded) ? stored.excluded : []);
+      for (const row of data.items) if (legacy.has(`${row.issue.id}:${row.edition.key}`)) {
+        await api(`/issues/${row.issue.id}/black-bag`, { method: 'PATCH', body: JSON.stringify({ edition_key: row.edition.key, black_bagged: true }) });
+        row.edition.black_bagged = true;
+        if (!current() || disposed) return;
+      }
+      try { localStorage.setItem(key, JSON.stringify({ settings })); } catch { /* Playback can continue without stored preferences. */ }
+      inventory = chooseCovers(data.items, settings);
+      rows = [...inventory]; failed.clear(); index = 0;
+      window.DangerRoomAndroid?.keepAwake(playing);
+      display();
+    } catch (error) {
+      if (!current() || disposed) return;
+      loading = false; caption.textContent = `${error.message} Retrying automatically…`; revealControls(); retry();
+    } finally {
+      refreshing = false;
     }
-    try { localStorage.setItem(key, JSON.stringify({ settings })); } catch { /* Playback can continue without stored preferences. */ }
-    rows = chooseCovers(data.items, settings);
-    window.DangerRoomAndroid?.keepAwake(playing && rows.length > 0);
-    display();
-  } catch (error) {
-    if (!current() || disposed) return;
-    loading = false; caption.textContent = error.message; pause();
   }
+  await refresh();
 }
