@@ -195,3 +195,7 @@ Update the container using the backup and rebuild procedure above, then verify /
 Schema 7 automatically drops the retired scan_captures table, deleting its retained diagnostic images and hashes, and clears cover-hash search cache entries. Collection covers, copies, wants, ratings, Reading Log, device credentials, and slideshow black bags are preserved. Make the normal stopped-container backup before updating; exported diagnostic snapshots and older backups are separate files and are not removed by this upgrade. No new environment variables or upload limits are needed.
 
 Install the signed [Hardlight 1.0.0 APK](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.0) over Hardlight 0.1.4 to keep connection and slideshow settings. Application ID remains net.chateaulore.hardlight and versionCode advances to 13. The Android update clears obsolete scan settings and its old app-owned camera file.
+
+## Metron Search filters on tablets
+
+Update the server container using the backup and rebuild procedure above to fix the Metron Search filter popup extending beyond the screen. The panel now stays inside the viewport and scrolls vertically so Apply and Clear remain reachable, including on Fire tablets. Long series names wrap inside their column. Reopen Metron Search after updating to load the new stylesheet. Existing Hardlight installations receive this server-side fix without an APK update.
