@@ -21,6 +21,11 @@ import android.view.WindowManager
 import android.webkit.*
 import android.widget.*
 import androidx.activity.ComponentActivity
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.FileProvider
 import org.json.JSONObject
@@ -42,6 +47,13 @@ class MainActivity : ComponentActivity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val capture get() = File(filesDir, "captures/comic.jpg")
     private var screen = "splash"
+    private var correctedCover: Bitmap? = null
+    private val coverScanner = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if (result.resultCode != RESULT_OK) { openWeb("/camera"); return@registerForActivityResult }
+        val uri = GmsDocumentScanningResult.fromActivityResultIntent(result.data)?.pages?.singleOrNull()?.imageUri
+        if (uri == null) { scannerError("No corrected cover was returned. Please try again."); return@registerForActivityResult }
+        prepareCorrectedCover(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -61,7 +73,7 @@ class MainActivity : ComponentActivity() {
         val bars = androidx.core.view.WindowInsetsControllerCompat(window, splash)
         bars.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
         splash.postDelayed({
-            if (!isDestroyed) {
+            if (!isDestroyed && screen == "splash") {
                 window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.rgb(25, 12, 18)))
                 window.statusBarColor = Color.rgb(25, 12, 18)
                 window.navigationBarColor = Color.rgb(25, 12, 18)
@@ -73,6 +85,7 @@ class MainActivity : ComponentActivity() {
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun destroyWeb() { web?.let { it.removeJavascriptInterface("DangerRoomAndroid"); it.stopLoading(); it.destroy() }; web = null; window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
     private fun base(title: String) {
+        correctedCover?.recycle(); correctedCover = null
         destroyWeb()
         column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(30), dp(24), dp(30)); setBackgroundColor(Color.rgb(25, 12, 18)) }
         val scroll = ScrollView(this).apply { addView(column); fitsSystemWindows = true }
@@ -115,6 +128,7 @@ class MainActivity : ComponentActivity() {
     }
     @Suppress("SetJavaScriptEnabled")
     private fun openWeb(hash: String = "/home") {
+        correctedCover?.recycle(); correctedCover = null
         val c = connection ?: return settings()
         screen = "web"; destroyWeb()
         val view = WebView(this); web = view
@@ -204,50 +218,81 @@ class MainActivity : ComponentActivity() {
     private fun camera() {
         captureGeneration++
         photoSignature = null
+        if (!legacyScan) { startCoverScanner(); return }
         capture.parentFile?.mkdirs(); screen = "camera"
         val uri = FileProvider.getUriForFile(this, "$packageName.photos", capture)
         try {
             startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION).apply { clipData = android.content.ClipData.newRawUri("Comic photo", uri) }, 10)
         } catch (_: android.content.ActivityNotFoundException) { Toast.makeText(this, "Enable a camera app to take a photo.", Toast.LENGTH_LONG).show(); screen = "web" }
     }
+    private fun scannerError(message: String) {
+        if (isDestroyed) return
+        openWeb("/camera")
+        AlertDialog.Builder(this).setTitle("Cover scanner unavailable").setMessage(message)
+            .setPositiveButton("Try again") { _, _ -> camera() }.setNegativeButton("Cancel", null).show()
+    }
+    private fun startCoverScanner() {
+        screen = "scanner-loading"; base("Prepare cover scan")
+        text("Place all four corner posts on the cover’s corners. Use the scanner’s magnified view for precise placement, then finish to review the straightened artwork.")
+        status.text = "Opening cover scanner… First use may download scanner components through Google Play services."
+        val generation = captureGeneration
+        val scanner = GmsDocumentScanning.getClient(GmsDocumentScannerOptions.Builder()
+            .setGalleryImportAllowed(false).setPageLimit(1)
+            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE).build())
+        scanner.getStartScanIntent(this).addOnSuccessListener {
+            if (!isDestroyed && screen == "scanner-loading" && generation == captureGeneration) {
+                screen = "scanner"
+                runCatching { coverScanner.launch(IntentSenderRequest.Builder(it).build()) }
+                    .onFailure { scannerError("Could not open the cover scanner. Check Google Play services and try again.") }
+            }
+        }.addOnFailureListener {
+            if (!isDestroyed && screen == "scanner-loading" && generation == captureGeneration)
+                scannerError("Check Google Play services and connectivity for the scanner’s first download, then try again. You can also use Search Metron from the menu.")
+        }
+    }
+    private fun prepareCorrectedCover(uri: Uri) {
+        screen = "recognition"; base("Preparing corrected cover…")
+        text("Perspective is corrected on your phone. Only the cover fingerprint is sent for matching.")
+        val generation = captureGeneration
+        worker.execute {
+            try {
+                val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri)) { decoder, info, _ ->
+                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                    val scale = minOf(1.0, 4096.0 / maxOf(info.size.width, info.size.height))
+                    decoder.setTargetSize(maxOf(1, (info.size.width * scale).toInt()), maxOf(1, (info.size.height * scale).toInt()))
+                }
+                runOnUiThread { if (!isDestroyed && screen == "recognition" && generation == captureGeneration) review(bitmap) else bitmap.recycle() }
+            } catch (_: Exception) {
+                runOnUiThread { if (!isDestroyed && screen == "recognition" && generation == captureGeneration) scannerError("The corrected cover could not be opened. Please retake it.") }
+            }
+        }
+    }
     @Deprecated("Platform camera result")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode != 10) return
         if (resultCode != RESULT_OK || !capture.exists() || capture.length() == 0L) { capture.delete(); openWeb("/camera"); return }
-        if (legacyScan) { recognizeLegacy(); return }
-        screen = "recognition"; base("Preparing cover…")
-        text("The photo stays on your phone. Only its cover fingerprint is sent for matching.")
-        val generation = captureGeneration
-        worker.execute {
-            try {
-                val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(capture)) { decoder, info, _ ->
-                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                    val scale = minOf(1.0, 4096.0 / maxOf(info.size.width, info.size.height))
-                    decoder.setTargetSize(maxOf(1, (info.size.width * scale).toInt()), maxOf(1, (info.size.height * scale).toInt()))
-                }
-                capture.delete()
-                runOnUiThread { if (!isDestroyed && screen == "recognition" && generation == captureGeneration) review(bitmap) else bitmap.recycle() }
-            } catch (_: Exception) { capture.delete(); runOnUiThread { if (!isDestroyed && screen == "recognition") { openWeb("/camera"); Toast.makeText(this, "Photo could not be opened. Retake it.", Toast.LENGTH_LONG).show() } } }
-        }
+        recognizeLegacy()
     }
     private fun review(bitmap: Bitmap) {
-        screen = "review"; base("Frame the cover")
-        text("Drag the two corners to crop out everything around the cover. Photograph straight on to avoid perspective and glare.")
-        val crop = CoverCropView(this, bitmap)
-        column.addView(crop, LinearLayout.LayoutParams(-1, dp(400)))
+        screen = "review"; base("Review straightened cover")
+        correctedCover = bitmap
+        text("Check that all four edges follow the cover and that the artwork is upright. Retake to adjust the corner posts again.")
+        val preview = ImageView(this).apply { setImageBitmap(bitmap); scaleType = ImageView.ScaleType.FIT_CENTER; contentDescription = "Perspective-corrected comic cover" }
+        column.addView(preview, LinearLayout.LayoutParams(-1, dp(400)))
         text("This experimental lookup uses only Metron’s exact cover fingerprint. Camera differences and variant covers may produce no match. No text or barcode is read.")
         val find = button("Find matching covers") {}
         val generation = captureGeneration
         find.setOnClickListener {
             find.isEnabled = false
-            val selected = crop.selection()
+            val selected = bitmap.copy(Bitmap.Config.ARGB_8888, false)
             status.text = "Calculating cover fingerprint…"
             worker.execute {
                 try {
                     val hash = CoverHash.fromBitmap(selected)
                     runOnUiThread { if (!isDestroyed && screen == "review" && generation == captureGeneration) openWeb("/camera?cover_hash=$hash&captured=1") }
-                } catch (_: Exception) { runOnUiThread { if (!isDestroyed && screen == "review") { status.text = "Could not fingerprint this cover. Retake the photo."; find.isEnabled = true } } }
+                } catch (_: Exception) { runOnUiThread { if (!isDestroyed && screen == "review" && generation == captureGeneration) { status.text = "Could not fingerprint this cover. Retake the photo."; find.isEnabled = true } } }
                 finally { selected.recycle() }
             }
         }
@@ -305,5 +350,5 @@ class MainActivity : ComponentActivity() {
     }
     override fun onPause() { super.onPause(); web?.evaluateJavascript("document.dispatchEvent(new Event('dangerroompause'))", null); window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); web?.onPause() }
     override fun onResume() { super.onResume(); web?.onResume() }
-    override fun onDestroy() { destroyWeb(); worker.shutdownNow(); matcher.shutdownNow(); super.onDestroy() }
+    override fun onDestroy() { correctedCover?.recycle(); correctedCover = null; destroyWeb(); worker.shutdownNow(); matcher.shutdownNow(); super.onDestroy() }
 }

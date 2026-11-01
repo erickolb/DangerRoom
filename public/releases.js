@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-023', date: '2026-11-01', title: 'Straighten cover photographs',
+  changes: ['Hardlight 0.1.3 uses Lumiere’s four-corner document scanner with magnified corner placement and perspective correction. Review the straightened artwork before hashing. OCR remains off by default. Requires Google Play services; existing β-022 servers support the lookup.'],
+}, {
   version: 'β-022', date: '2026-10-31', title: 'Artwork fingerprint scans',
   changes: ['Hardlight 0.1.2 crops cover photos and queries Metron by pHash only by default. Preserve OCR and barcodes behind an unchecked Scan settings checkbox. Exact matching may miss camera photos and variants. Server update required.'],
 }, {

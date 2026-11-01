@@ -1,5 +1,12 @@
 # Changelog
 
+## β-023 / Hardlight 0.1.3 · 2026-11-01
+
+- Replace the two-corner crop with Lumiere’s ML Kit document scanner: four-corner placement, magnified adjustment, perspective correction, and a corrected cover preview before hashing.
+- Use scanner base mode without document-cleanup filters. Keep OCR/barcodes dormant unless enabled in Scan settings.
+- Android versionCode 11; server β-022 remains compatible. Google Play services downloads scanner components on first use.
+
+
 ## β-022 / Hardlight 0.1.2 · 2026-10-31
 
 - Default Scan Cover to cropped, on-device pHash and Metron exact cover-hash lookup. No automatic text/barcode fallback.

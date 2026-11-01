@@ -173,3 +173,7 @@ Update through Obtainium or install the signed [Hardlight 0.1.1 APK](https://git
 ## β-022 / Hardlight 0.1.2
 
 Update this container before installing Hardlight 0.1.2. The default scan sends a cover fingerprint instead of text or UPC. No new environment variables or database migration are required. Follow the backup and rebuild procedure above, then confirm `/api/health` reports β-022. OCR/barcode lookup requires enabling Hardlight’s Scan settings checkbox.
+
+## β-023 / Hardlight 0.1.3
+
+The Android app now uses Lumiere’s four-corner scanner and perspective correction before hashing. Server β-022 already supports this lookup; update the container using the procedure above for the revised in-app guidance and β-023 changelog. No environment or database changes are needed. Install the signed Hardlight 0.1.3 APK over the existing app; Google Play services may download scanner components on first use.
