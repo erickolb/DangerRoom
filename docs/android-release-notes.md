@@ -1,13 +1,16 @@
-**Hardlight 1.0.1** improves Cover Slideshow recovery during container restarts and connection interruptions.
+**Hardlight 1.0.2** adds local caching for Cover Slideshow.
 
-- Failed covers stay in rotation until three strikes. If a previously failed cover loads successfully, all remaining covers' strikes reset to zero. Healthy covers with no strikes do not reset other covers' failures.
-- Failed loads wait 3 seconds before trying the next cover. Stalled image loading or decoding times out after 20 seconds. The last visible cover stays on screen during failures.
-- An empty playlist shows a spinner and waits 10 minutes before rebuilding from the full eligible collection with fresh strike counts. Failed initialization repeats at 10-minute intervals. Covers removed after three strikes return on reinitialization.
+- Cache downloaded artwork for six months (180 days), with a **300 MB limit enabled by default**.
+- Adjust the limit in slideshow settings, or disable it to cache as much as the device permits.
+- When full, retain existing cached covers and continue displaying uncached covers from the network without saving them. Lowering the limit removes the least recently used files.
+- **Flush cache** deletes downloaded slideshow artwork immediately.
+- At slideshow initialization, remove cached files outside the eligible playlist in the background, including black-bagged and no-longer-owned covers.
+- Cache failures or insufficient storage do not stop playback. Android may reclaim cache storage. Inventory still requires server access.
 
-**Update DangerRoom to β-027 before using the new slideshow behavior.** Playback code is served by the container; existing APKs also receive the fix after exiting and reopening the slideshow once after the server update. Updating only the APK does not update the server.
+**Update DangerRoom to β-028 and install Hardlight 1.0.2.** The container serves cache settings and 180-day image cache headers; the APK implements local disk storage. Use the existing backup/rebuild procedure. No schema migration is needed.
 
-Android 9 or newer; **versionCode 14**; display name **Danger Room**; application ID **net.chateaulore.hardlight**. Install over signed Hardlight 1.0.0 to retain device credentials and slideshow preferences. No database migration is required for this update.
+Android 9 or newer; **versionCode 15**; display name **Danger Room**; application ID **net.chateaulore.hardlight**. Install over your signed Hardlight app to retain credentials and slideshow preferences.
 
 Includes signed **DangerRoom.apk**, **SHA256SUMS.txt**, and **SIGNING-CERTIFICATE.txt**. Obtainium can track this normal release.
 
-[Server update instructions](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) · [Android installation](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Download website](https://erickolb.github.io/DangerRoom/)
+[Server update instructions](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) · [Android installation](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Download website](https://erickolb.github.io/DangerRoom/hardlight/)

@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-028', date: '2026-11-02', title: 'Hardlight 1.0.2: local slideshow cover cache',
+  changes: ['Cache slideshow covers locally for six months (180 days). Default to a 300 MB limit, with an unlimited option and Flush cache button. When full, continue displaying uncached images from the network without evicting existing covers. Remove artwork outside the playlist at slideshow initialization. Requires the server update and Hardlight 1.0.2.'],
+}, {
   version: 'β-027', date: '2026-11-01', title: 'Hardlight 1.0.1: three-strike slideshow recovery',
   changes: ['Keep failed covers in rotation until three strikes. A previously failed cover loading successfully clears all remaining cover strikes. Wait 3 seconds after a failure and time out stalled image loads after 20 seconds. When the playlist is empty, show a spinner and reinitialize every 10 minutes. Update the server for playback changes; Hardlight 1.0.1 retains credentials and settings.'],
 }, {

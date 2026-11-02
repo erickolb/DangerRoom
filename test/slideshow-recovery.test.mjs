@@ -11,7 +11,7 @@ async function gallery(t, ids = [1, 2, 3], apiOverride) {
   t.after(() => { for (const [name, descriptor] of saved) {
     if (descriptor) Object.defineProperty(globalThis, name, descriptor); else delete globalThis[name];
   } });
-  const timers = new Map(), listeners = new Map(), attempts = [];
+  const timers = new Map(), listeners = new Map(), attempts = [], cacheConfigurations = [];
   let timerId = 0, clock = 0, active = true, requests = 0;
   const failures = new Set(ids);
   global('setTimeout', (fn, ms) => { timers.set(++timerId, { fn, at: clock + ms }); return timerId; });
@@ -26,7 +26,7 @@ async function gallery(t, ids = [1, 2, 3], apiOverride) {
   const app = { set innerHTML(value) {}, querySelector(selector) {
     if (!elements.has(selector)) elements.set(selector, element()); return elements.get(selector);
   } };
-  global('window', { addEventListener(name, fn) { listeners.set(name, fn); }, removeEventListener(name) { listeners.delete(name); } });
+  global('window', { DangerRoomAndroid: { fullscreen() {}, keepAwake() {}, configureCoverCache(...args) { cacheConfigurations.push(args); } }, addEventListener(name, fn) { listeners.set(name, fn); }, removeEventListener(name) { listeners.delete(name); } });
   global('document', { hidden: false, createElement() { return spinner; }, addEventListener() {}, removeEventListener() {} });
   global('location', { origin: 'https://test.example' });
   global('localStorage', { getItem() { return JSON.stringify({ settings: { shuffle: false, seconds: 3, fade: false } }); }, setItem() {} });
@@ -44,7 +44,7 @@ async function gallery(t, ids = [1, 2, 3], apiOverride) {
     clock = target;
   };
   await mountSlideshow(app, api, () => active); await settle();
-  return { attempts, failures, spinner, run, elements, timers, get requests() { return requests; },
+  return { attempts, failures, spinner, run, elements, timers, cacheConfigurations, get requests() { return requests; },
     exit() { active = false; listeners.get('hashchange')(); } };
 }
 
@@ -96,4 +96,10 @@ test('inventory errors and empty inventory wait ten minutes; exit cancels reinit
   assert.equal(h.spinner.hidden, false);
   h.exit(); await h.run(600000);
   assert.equal(h.requests, 2); assert.equal(h.timers.size, 0);
+});
+
+test('slideshow initializes native cache with entire eligible playlist and default 300 MB limit', async t => {
+  const h = await gallery(t, [1, 2]);
+  assert.deepEqual(h.cacheConfigurations, [[JSON.stringify(['1.png', '2.png']), true, 300]]);
+  h.exit();
 });

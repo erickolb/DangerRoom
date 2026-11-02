@@ -51,6 +51,17 @@ test('browser APIs and covers are trusted and session routes are unavailable', a
   assert.equal((await h.request('/api/entries', { method: 'POST', headers: { Origin: 'https://elsewhere.example' } })).status, 403);
 });
 
+test('cover responses advertise six months for browser and authenticated mobile routes', async t => {
+  const h = await app(t, { covers: { read: async () => Buffer.from('cover') } });
+  const device = h.devices.add('Cache tablet');
+  for (const path of ['/covers/test.png', '/mobile/covers/test.png']) {
+    const response = await h.request(path, { headers: credentials(device) });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'private, max-age=15552000, immutable');
+    assert.equal(await response.text(), 'cover');
+  }
+});
+
 test('slideshow uses unique owned editions, never wants or read-only covers',async t=>{
   const h=await app(t), edition={key:'standard',name:'Standard',source_image:null},issue={id:42,series:{id:4,name:'Heroes',year_began:2024},number:'1'};
   const file='a'.repeat(64)+'.png';

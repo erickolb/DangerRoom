@@ -99,11 +99,12 @@ class MainActivity : ComponentActivity() {
     private fun openWeb(hash: String = "/home") {
         val c = connection ?: return settings()
         screen = "web"; destroyWeb()
+        val coverCache = CoverCache(java.io.File(cacheDir, "slideshow/${CoverCache.scope(c)}"))
         val view = WebView(this); web = view
         view.setBackgroundColor(Color.rgb(25, 12, 18)); view.settings.javaScriptEnabled = true; view.settings.domStorageEnabled = true
         view.settings.allowFileAccess = false; view.settings.allowContentAccess = false; view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW; view.settings.cacheMode = WebSettings.LOAD_NO_CACHE
         CookieManager.getInstance().setAcceptThirdPartyCookies(view, false)
-        view.addJavascriptInterface(Bridge(c, view), "DangerRoomAndroid")
+        view.addJavascriptInterface(Bridge(c, view, coverCache), "DangerRoomAndroid")
         view.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(v: WebView, request: WebResourceRequest): Boolean {
                 val address = request.url
@@ -115,7 +116,12 @@ class MainActivity : ComponentActivity() {
                 val address = request.url
                 if (!sameOrigin(address.toString(), c.url)) return null
                 return try {
-                    val response = Api(c).request(address.encodedPath + (address.encodedQuery?.let { "?$it" } ?: ""))
+                    val path = address.encodedPath.orEmpty()
+                    val filename = path.removePrefix("/covers/")
+                    val cached = if (request.method == "GET" && path.startsWith("/covers/")) coverCache.read(filename) else null
+                    val response = if (cached != null) Response(200, cached, when (filename.substringAfterLast('.')) { "jpg" -> "image/jpeg"; "png" -> "image/png"; "gif" -> "image/gif"; else -> "image/webp" })
+                        else Api(c).request(address.encodedPath + (address.encodedQuery?.let { "?$it" } ?: ""))
+                    if (cached == null && response.status == 200 && response.type.startsWith("image/") && path.startsWith("/covers/")) coverCache.put(filename, response.bytes)
                     val headers = mapOf("Cache-Control" to "no-store", "Content-Security-Policy" to "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://static.metron.cloud https://metron.cloud; connect-src 'self'; base-uri 'none'; frame-src 'none'; object-src 'none'; form-action 'self'")
                     WebResourceResponse(response.type.substringBefore(';'), "utf-8", response.status, if (response.status in 200..299) "OK" else "Request failed", headers, response.bytes.inputStream())
                 } catch (_: Exception) { WebResourceResponse("text/plain", "utf-8", 503, "Unavailable", mapOf("Cache-Control" to "no-store"), "Could not reach DangerRoom. Check your connection; use Back to return to the menu.".byteInputStream()) }
@@ -128,7 +134,12 @@ class MainActivity : ComponentActivity() {
         setContentView(view); view.loadUrl("${c.url}/mobile/#$hash")
     }
     private fun sameOrigin(address: String, origin: String): Boolean = runCatching { val a = URI(address); val b = URI(origin); a.scheme == b.scheme && a.host == b.host && a.port == b.port && a.userInfo == null }.getOrDefault(false)
-    private inner class Bridge(private val c: Connection, private val owner: WebView) {
+    private inner class Bridge(private val c: Connection, private val owner: WebView, private val coverCache: CoverCache) {
+        @JavascriptInterface fun flushCoverCache(): Boolean = coverCache.clear()
+        @JavascriptInterface fun configureCoverCache(files: String, limited: Boolean, megabytes: Int) {
+            val array = org.json.JSONArray(files)
+            coverCache.configure((0 until array.length()).map { array.getString(it) }.toSet(), if (limited) megabytes.coerceIn(1, 1048576).toLong() * 1024 * 1024 else null)
+        }
         @JavascriptInterface fun request(path: String, method: String, body: String, id: String) {
             if (!id.matches(Regex("[a-f0-9-]{36}"))) return
             worker.execute {

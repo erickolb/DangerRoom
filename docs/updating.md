@@ -62,6 +62,14 @@ If present, `compose.https.yaml` is a server-specific override; keep it and incl
 
 ## Build and apply
 
+### β-028 / Hardlight 1.0.2: local cover caching
+
+Use the backup, rebuild, and recreate procedure in this guide, then install the signed [Hardlight 1.0.2 APK](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.2) over the existing app. Verify health reports β-028. Both updates are needed: the server supplies cache settings and six-month (180-day) cover headers, while Android supplies the app-private disk cache. Credentials and existing slideshow preferences are retained; no database migration is needed.
+
+In Cover Slideshow settings, **Limit local cover cache** defaults on at **300 MB**. Turn it off for storage limited only by device capacity. The limit applies to downloaded cover bytes. When full, existing cached images remain and other covers continue loading over the network without being saved. Reducing the limit removes the least recently used files until the cache fits. **Flush cache** removes downloaded slideshow covers; future playback downloads them again. Android may reclaim app cache storage when space is low.
+
+Starting the slideshow kicks off playlist cleanup on Android's background bridge thread, removing files outside the eligible playlist, including black-bagged and no-longer-owned covers. Initialization retries also reconcile the playlist. Cache data is isolated by server and device credentials; inventory still requires server access. Verify by replaying a cached cover during a server interruption, filling a small cache and confirming other images still display, black-bagging a cover then restarting playback, and flushing from settings.
+
 ### β-027 / Hardlight 1.0.1: three-strike slideshow recovery
 
 Follow the backup, rebuild, and recreate commands below, then exit and reopen Cover Slideshow once to load the updated server code. Existing Hardlight APKs also receive this fix; installing the signed [Hardlight 1.0.1 APK](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.1) over 1.0.0 retains device credentials and settings. Android versionCode is 14. Installing the APK alone does not apply the server fix.

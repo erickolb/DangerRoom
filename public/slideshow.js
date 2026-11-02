@@ -9,6 +9,8 @@ function preferences() {
     seconds: Math.max(3, Math.min(600, Number(stored.settings?.seconds) || 15)),
     shuffle: stored.settings?.shuffle ?? true,
     fade: stored.settings?.fade ?? true,
+    cacheLimited: stored.settings?.cacheLimited ?? true,
+    cacheMB: Math.max(1, Math.min(1048576, Math.floor(Number(stored.settings?.cacheMB) || 300))),
   };
   return { key, stored, settings };
 }
@@ -18,12 +20,18 @@ export function showSlideshowSettings(app) {
   const dialog = document.createElement('dialog');
   dialog.id = 'gallery-options';
   dialog.setAttribute('aria-labelledby', 'gallery-options-title');
-  dialog.innerHTML = `<h2 id="gallery-options-title">Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form>`;
+  dialog.innerHTML = `<h2 id="gallery-options-title">Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><label class="gallery-choice"><input type="checkbox" name="cacheLimited" ${settings.cacheLimited ? 'checked' : ''}>Limit local cover cache</label><label>Cover cache size (MB)<input name="cacheMB" type="number" min="1" max="1048576" step="1" required value="${settings.cacheMB}"></label><p>Hardlight caches slideshow covers on this device. When full, uncached covers still download and display without being saved. Turn off the limit to use as much storage as the device allows. Covers outside the playlist are removed when the slideshow starts.</p><button type="button" id="flush-gallery-cache">Flush cache</button><p id="gallery-cache-status" role="status"></p><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form>`;
+  const flush = dialog.querySelector('#flush-gallery-cache');
+  flush.disabled = !window.DangerRoomAndroid?.flushCoverCache;
+  flush.onclick = () => {
+    const cleared = window.DangerRoomAndroid.flushCoverCache();
+    dialog.querySelector('#gallery-cache-status').textContent = cleared ? 'Cover cache cleared. Covers will download again as needed.' : 'Could not clear all cached covers. Please try again.';
+  };
   dialog.querySelector('#cancel-gallery-options').onclick = () => dialog.close();
   dialog.querySelector('form').onsubmit = event => {
     event.preventDefault();
     const values = new FormData(event.target);
-    const updated = { seconds: Math.max(3, Math.min(600, Number(values.get('seconds')))), shuffle: values.has('shuffle'), fade: values.has('fade') };
+    const updated = { seconds: Math.max(3, Math.min(600, Number(values.get('seconds')))), shuffle: values.has('shuffle'), fade: values.has('fade'), cacheLimited: values.has('cacheLimited'), cacheMB: Math.max(1, Math.min(1048576, Math.floor(Number(values.get('cacheMB')) || 300))) };
     try {
       // Preserve old local exclusions until opening the slideshow migrates them.
       localStorage.setItem(key, JSON.stringify({ ...stored, settings: updated }));
@@ -162,6 +170,7 @@ export async function mountSlideshow(app, api, current) {
       }
       try { localStorage.setItem(key, JSON.stringify({ settings })); } catch { /* Playback can continue without stored preferences. */ }
       rows = chooseCovers(data.items, settings);
+      window.DangerRoomAndroid?.configureCoverCache?.(JSON.stringify(rows.map(row => row.edition.cover_file)), settings.cacheLimited, settings.cacheMB);
       strikes.clear(); index = 0;
       window.DangerRoomAndroid?.keepAwake(playing);
       display();

@@ -164,7 +164,7 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname.startsWith('/covers/')) {
         const filename = url.pathname.slice(8), bytes = await covers.read(filename);
         const type = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[filename.split('.').at(-1)];
-        res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'private, max-age=31536000, immutable' }); return res.end(bytes);
+        res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'private, max-age=15552000, immutable' }); return res.end(bytes);
       }
       const file = staticFiles.get(url.pathname);
       if (req.method === 'GET' && file) {
