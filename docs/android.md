@@ -1,6 +1,6 @@
 # Danger Room (Hardlight) for Android · 1.0.1
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-027 or later. Use the [download website](https://erickolb.github.io/DangerRoom/) or download the signed **DangerRoom.apk** from [Hardlight's 1.0.1 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.1), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-027 or later. Use the [download website](https://erickolb.github.io/DangerRoom/hardlight/) or download the signed **DangerRoom.apk** from [Hardlight's 1.0.1 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.1), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
 
 ## Hardlight identity
 
@@ -17,7 +17,7 @@ The launcher icon matches the loading screen’s red palette, thin dark circle o
 1. Download the APK, open it, and allow your browser to install apps if Android asks. Install updates over the existing app.
 2. Ask the DangerRoom administrator to issue a credential for this device. Each installation should have its own credential.
 3. Open **Danger Room** (Hardlight). Its startup screen shows only the centered outlined mask with a matching dark-red shadow on a red background, then leads to connection settings on first use.
-4. Enter the instance hostname (for example `dangerroom.chateaulore.net`), device ID, and secret. A custom HTTPS port is supported. Paths, HTTP, and credentials embedded in the address are rejected.
+4. Enter the instance hostname (for example `comics.example.net`), device ID, and secret. A custom HTTPS port is supported. Paths, HTTP, and credentials embedded in the address are rejected.
 5. Tap **Save and test connection**. The app verifies that the credential is enabled before saving it in Android Keystore-encrypted storage. Backups and device transfers exclude credentials. Reinstalling requires provisioning again.
 
 The menu contains Want List, My Collection, Search Metron, Cover Slideshow, and Reading Log. **Menu → Instance and device settings** changes servers or credentials. No Metron credentials are entered on the phone. Existing browser controls are shared in an authenticated Android WebView, with native startup and configuration. The instance must be reachable to browse or save; this release does not provide offline inventory.

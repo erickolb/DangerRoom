@@ -2,7 +2,7 @@
 
 Comic inventory and reading journal. Current build: **β-027**.
 
-[Website and Android download](https://erickolb.github.io/DangerRoom/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
+[DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
 The [Android companion](docs/android.md), nicknamed **Hardlight**, adds a mask startup screen, configurable HTTPS instance, device credentials, five-section menu, Metron search with exact variant selection, and an owned-cover slideshow. [Download Hardlight 1.0.1 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.1). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
@@ -91,7 +91,7 @@ For older records, stop the app and preview `pnpm run backfill:series-types --dr
 
 ## Checks and release history
 
-The minimal public download website lives in `website/` and deploys to GitHub Pages through `.github/workflows/pages.yml`. Keep its displayed Android version and APK/release links aligned with `docs/android.md` and each published Android build. It is separate from the self-hosted collection application in `public/`.
+The public DangerRoom feature and self-hosting site, Hardlight installation subpage (`/hardlight/`), and shared privacy policy (`/privacy/`) live in `website/` and deploys to GitHub Pages through `.github/workflows/pages.yml`. Keep its displayed Android version and APK/release links aligned with `docs/android.md` and each published Android build. It is separate from the self-hosted collection application in `public/`.
 
 ```sh
 pnpm run check
