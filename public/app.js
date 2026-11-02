@@ -6,7 +6,6 @@ import { seriesRatingChart } from './series-ratings.js';
 import { releases } from './releases.js';
 import { actionButton, context, copyState, bindToggles } from './actions.js';
 import { isAndroid, mobileHome, mobilePage } from './mobile.js';
-import { signIn } from './login.js';
 const $ = s => document.querySelector(s), app = $('#app'), notice = $('#notice'), dialog = $('#dialog');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icon = (name, light = false) => `<img class="icon${light ? ' light-icon' : ''}" src="/${name}.png" alt="">`;
@@ -378,7 +377,6 @@ function changelog() {
 document.addEventListener('click',event=>{
   const dropdown=$('#results-filter');if(dropdown?.open&&!dropdown.contains(event.target))dropdown.open=false;
 });
-await signIn();
 window.addEventListener('hashchange', route);
 if(isAndroid){document.body.classList.add('android-app');document.querySelector('.brand').href='#/home';const subtitle=document.querySelector('.brand .eyebrow');subtitle.textContent='Your Comics Sidekick';subtitle.className='mobile-brand-subtitle';subtitle.parentElement.append(subtitle);const home=document.createElement('a');home.className='button secondary';home.href='#/home';home.textContent='Menu';document.querySelector('.header-nav').prepend(home);if(!location.hash)location.hash='#/home';}
 try { connected = (await api('/health')).metron_configured; } catch { /* Search and collection report actionable failures. */ }

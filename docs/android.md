@@ -24,7 +24,7 @@ The menu contains Want List, My Collection, Search Metron, Cover Slideshow, and 
 
 ## Device approval
 
-After updating and starting the server, follow [Device token management](devices.md) for the commands to issue, list, revoke, and replace device credentials, including astralplane's HTTPS Compose override and source-only installations. Enter the returned `deviceId` and `token` into Android's **Device ID** and **Device secret** fields. Mobile routes always require an enabled device. Browser access requires no key by default; optional browser sign-in is independent.
+After updating and starting the server, follow [Device token management](devices.md) for the commands to issue, list, revoke, and replace device credentials, including astralplane's HTTPS Compose override and source-only installations. Enter the returned `deviceId` and `token` into Android's **Device ID** and **Device secret** fields. Mobile routes always require an enabled device. Browser access requires no sign-in.
 
 ## Hardlight 1.0.1
 

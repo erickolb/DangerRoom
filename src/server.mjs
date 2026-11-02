@@ -9,7 +9,7 @@ import { Covers } from './covers.mjs';
 import { AppError, positiveId } from './errors.mjs';
 import { releases } from '../public/releases.js';
 import { validateRating } from './ratings.mjs';
-import { Devices, equalSecret } from './devices.mjs';
+import { Devices } from './devices.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
@@ -19,7 +19,6 @@ const staticFiles = new Map([
   ['/black-bag.svg', ['black-bag.svg', 'image/svg+xml']],
   ['/slideshow.js', ['slideshow.js', 'text/javascript; charset=utf-8']],
   ['/cover-transition.js', ['cover-transition.js', 'text/javascript; charset=utf-8']],
-  ['/login.js', ['login.js', 'text/javascript; charset=utf-8']],
   ['/search-filters.js', ['search-filters.js', 'text/javascript; charset=utf-8']],
   ['/comic-title.js', ['comic-title.js', 'text/javascript; charset=utf-8']], ['/format-tpb.png', ['format-tpb.png', 'image/png']], ['/format-hc.png', ['format-hc.png', 'image/png']], ['/format-omni.png', ['format-omni.png', 'image/png']],
   ['/ratings.js', ['ratings.js', 'text/javascript; charset=utf-8']],
@@ -51,10 +50,6 @@ export function createApp(options = {}) {
   const dataDir = resolve(options.dataDir || process.env.DATA_DIR || join(root, 'data'));
   const db = openDatabase(dataDir), repo = new Repository(db);
   const devices = new Devices(db);
-  const requireAuth = options.requireAuth ?? process.env.REQUIRE_AUTH === 'true';
-  const adminToken = options.adminToken ?? process.env.DANGERROOM_ADMIN_TOKEN ?? '';
-  if (requireAuth && adminToken.length < 32) { db.close(); throw Error('Set DANGERROOM_ADMIN_TOKEN to a random secret of at least 32 characters before enabling REQUIRE_AUTH.'); }
-  let failedLogins = 0, loginWindow = 0;
   const metron = options.metron || new Metron(repo, { token: process.env.METRON_API_TOKEN, username: process.env.METRON_USERNAME, password: process.env.METRON_PASSWORD, ...options.metronOptions });
   const covers = options.covers || new Covers(dataDir, options.imageFetch, { db, ...options.coverOptions });
   const hosts = new Set(['127.0.0.1', 'localhost', '[::1]', ...(process.env.ALLOWED_HOSTS || '').split(',').map(h => h.trim()).filter(Boolean)]);
@@ -71,25 +66,10 @@ export function createApp(options = {}) {
       if (mobile) url.pathname = url.pathname.slice(7);
       if (req.headers['sec-fetch-site'] === 'cross-site' && !['GET', 'HEAD'].includes(req.method)) throw new AppError(403, 'Cross-site changes are not allowed.');
       if (!['GET', 'HEAD'].includes(req.method) && req.headers.origin && new URL(req.headers.origin).host !== host.host) throw new AppError(403, 'Cross-site changes are not allowed.');
-      if (req.method === 'GET' && url.pathname === '/api/health' && !mobile) return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, authentication_required: requireAuth, mobile_api: 1 });
-      if (!mobile && req.method === 'POST' && url.pathname === '/api/session') {
-        if (Date.now() - loginWindow > 60000) { failedLogins = 0; loginWindow = Date.now(); }
-        if (failedLogins >= 10) throw new AppError(429, 'Too many sign-in attempts. Try again in a minute.', 60);
-        const data = await body(req);
-        if (!adminToken || !equalSecret(data.token, adminToken)) { failedLogins++; throw new AppError(401, 'Invalid browser access key.'); }
-        const token = devices.createSession();
-        res.setHeader('Set-Cookie', `dangerroom_session=${token}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=86400`);
-        return send(200, { signed_in: true });
-      }
-      if (!mobile && req.method === 'DELETE' && url.pathname === '/api/session') {
-        devices.logout(req);
-        res.setHeader('Set-Cookie', 'dangerroom_session=; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=0');
-        return send(200, { signed_in: false });
-      }
+      if (req.method === 'GET' && url.pathname === '/api/health' && !mobile) return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, mobile_api: 1 });
       // Mobile always needs an approved device, even on trusted-network installations.
       const device = devices.authenticate(req);
       if (mobile && !device) throw new AppError(401, 'Configure an approved device ID and secret.');
-      if (requireAuth && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/covers/')) && !device && !devices.session(req)) throw new AppError(401, 'Sign in with your browser access key.');
       if (req.method === 'GET' && url.pathname === '/api/device') return send(200, { authorized: device, version: releases[0].version });
       if (req.method === 'GET' && url.pathname === '/api/health') return send(200, { status: 'ok', version: releases[0].version, metron_configured: metron.configured, mobile_api: 1 });
       if (req.method === 'GET' && url.pathname === '/api/slideshow') {

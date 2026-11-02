@@ -1,6 +1,6 @@
 # Deploy DangerRoom on astralplane
 
-DangerRoom β-003 has a single shared collection with trusted browser access and approved Android device credentials. Browser sign-in is optional and disabled by default. Use an HTTPS reverse proxy. The default Compose port binds only to the server's loopback address. A reverse proxy running directly on astralplane can forward to http://127.0.0.1:4340. Preserve the original Host header; set ALLOWED_HOSTS to the public hostname (no scheme, path, or port). Browser and proxy requests must use the same hostname and port for writes to pass origin validation.
+DangerRoom β-003 has a single shared collection with trusted browser access and approved Android device credentials. Browser access requires no sign-in. Use an HTTPS reverse proxy. The default Compose port binds only to the server's loopback address. A reverse proxy running directly on astralplane can forward to http://127.0.0.1:4340. Preserve the original Host header; set ALLOWED_HOSTS to the public hostname (no scheme, path, or port). Browser and proxy requests must use the same hostname and port for writes to pass origin validation.
 
 ## Requirements and installation
 
@@ -16,7 +16,7 @@ chmod 600 .env
 vi .env
 ```
 
-Set METRON_API_TOKEN and ALLOWED_HOSTS (for example dangerroom.example.com). Leave REQUIRE_AUTH=false for the original browser behavior; no browser access key is required. Provision each Android installation with a server-issued device ID and secret using the commands in docs/android.md. For your existing S3 storage, set IMAGE_STORAGE=s3, S3_BUCKET=dangerroom-covers, AWS_REGION=us-east-1, and S3_PREFIX=covers. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for the IAM principal, plus AWS_SESSION_TOKEN only for temporary credentials. See [S3 configuration](s3.md) for permissions. Keep the bucket private. Host-machine AWS profiles are not automatically available inside Docker; use environment credentials or explicitly mount a read-only AWS profile with paths readable by container UID 1000.
+Set METRON_API_TOKEN and ALLOWED_HOSTS (for example dangerroom.example.com). Provision each Android installation with a server-issued device ID and secret using the commands in docs/android.md. For your existing S3 storage, set IMAGE_STORAGE=s3, S3_BUCKET=dangerroom-covers, AWS_REGION=us-east-1, and S3_PREFIX=covers. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for the IAM principal, plus AWS_SESSION_TOKEN only for temporary credentials. See [S3 configuration](s3.md) for permissions. Keep the bucket private. Host-machine AWS profiles are not automatically available inside Docker; use environment credentials or explicitly mount a read-only AWS profile with paths readable by container UID 1000.
 
 Compose overrides HOST=0.0.0.0, PORT=4340, and DATA_DIR=/data inside the container. DANGERROOM_PORT in .env optionally changes the host-side loopback port. The image runs as UID/GID 1000, uses a read-only root filesystem, and stores SQLite and optional local covers in the named dangerroom-data volume. It contains no .env, local data, test files, or Git metadata. Building requires internet access to Node's image and the package registry.
 

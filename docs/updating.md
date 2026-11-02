@@ -96,17 +96,9 @@ When each device next opens the slideshow, its earlier local exclusions are save
 
 ### β-003: restore trusted browser access; provision Android separately
 
-Android follows the same device allowlist model as Quartermaster and Heroes Feast: generate a device ID and secret on the server, then enter both in the Android client. Browser access keeps its original trust model and does not require a login by default. The Android β-002 APK remains compatible with server β-003.
+Android follows the same device allowlist model as Quartermaster and Heroes Feast: generate a device ID and secret on the server, then enter both in the Android client. Browser access keeps its original trust model and does not require a login. The Android β-002 APK remains compatible with server β-003.
 
-If you followed the original β-002 browser-key instructions, edit `.env`:
-
-```sh
-vi .env
-```
-
-Set `REQUIRE_AUTH=false` (or leave it unset). The old `DANGERROOM_ADMIN_TOKEN` can be removed; it is not an Android credential. Rebuild and recreate the container using the commands below to apply the corrected Compose default. A host Node.js installation is not required.
-
-Optional browser sign-in is available only if you deliberately set `REQUIRE_AUTH=true` and configure `DANGERROOM_ADMIN_TOKEN` to a random secret of at least 32 characters (`openssl rand -hex 32`). It is separate from Android device approval and is not needed for the default deployment.
+Rebuild and recreate the container using the commands below. A host Node.js installation is not required.
 
 ```sh
 (

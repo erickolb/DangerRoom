@@ -1,6 +1,6 @@
 # Device token management
 
-DangerRoom uses a server-issued device ID and secret to approve each Android installation, following the Quartermaster and Heroes Feast model. Browser access is independent and requires no sign-in by default.
+DangerRoom uses a server-issued device ID and secret to approve each Android installation, following the Quartermaster and Heroes Feast model. Browser access is independent and requires no sign-in.
 
 **Finish updating and starting the DangerRoom container before running these commands.** The running image must include `scripts/devices.mjs` (server β-002 or later). Pulling the source alone does not update that image. See [container updates](updating.md) first if needed.
 
@@ -25,7 +25,7 @@ In Android's **Instance and device settings**, enter:
 | Device ID | The returned `deviceId` |
 | Device secret | The returned `token` |
 
-Tap **Save and test connection**. Store and deliver the credential privately. This secret is not a Metron token or the optional browser access key.
+Tap **Save and test connection**. Store and deliver the credential privately. This secret is not a Metron token.
 
 ### List devices
 

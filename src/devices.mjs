@@ -8,8 +8,7 @@ export function equalSecret(a, b) {
 export class Devices {
   constructor(db) {
     this.db = db;
-    db.exec(`CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, label TEXT NOT NULL, token_hash TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);
-      CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at INTEGER NOT NULL);`);
+    db.exec(`CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, label TEXT NOT NULL, token_hash TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);`);
   }
   add(label) {
     if (typeof label !== 'string' || !label.trim() || label.length > 100) throw new AppError(400, 'Choose a device label of 1–100 characters.');
@@ -28,19 +27,5 @@ export class Devices {
       return true;
     }
     return false;
-  }
-  session(req) {
-    const token = /(?:^|;\s*)dangerroom_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
-    return Boolean(token && this.db.prepare('SELECT 1 FROM web_sessions WHERE token_hash=? AND expires_at>?').get(hashSecret(token), Date.now()));
-  }
-  createSession() {
-    this.db.prepare('DELETE FROM web_sessions WHERE expires_at<=?').run(Date.now());
-    const token = randomBytes(32).toString('hex');
-    this.db.prepare('INSERT INTO web_sessions VALUES (?,?)').run(hashSecret(token), Date.now() + 86400000);
-    return token;
-  }
-  logout(req) {
-    const token = /(?:^|;\s*)dangerroom_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
-    if (token) this.db.prepare('DELETE FROM web_sessions WHERE token_hash=?').run(hashSecret(token));
   }
 }

@@ -20,7 +20,7 @@ const credentials = device => ({ 'X-Device-Id': device.deviceId, Authorization: 
 test('default deployment trusts browser access while requiring server-issued Android credentials', async t => {
   const h = await app(t);
   const health = await (await h.request('/api/health')).json();
-  assert.equal(health.authentication_required, false);
+  assert.equal(health.mobile_api, 1);
   assert.equal((await h.request('/api/collection')).status, 200);
   assert.equal((await h.request('/mobile/api/collection')).status, 401);
   const device = h.devices.add('Quartermaster-style provisioned phone');
@@ -42,28 +42,15 @@ test('mobile requires a live allowlisted credential and revocation covers both r
   h.devices.revoke(device.deviceId);
   for (const path of ['/mobile/api/collection','/api/collection','/mobile/covers/missing.png']) assert.equal((await h.request(path, { headers: credentials(device) })).status, 401);
 });
-test('public API and covers require browser session or device when lockdown is enabled', async t => {
-  const adminToken = 'test-admin-secret-'.repeat(4), h = await app(t, { requireAuth: true, adminToken });
-  for (const path of ['/api/collection','/api/search?q=Batman','/api/reading-log?month=2026-10','/covers/missing.png']) assert.equal((await h.request(path)).status, 401);
-  assert.equal((await h.request('/api/health')).status, 200);
-  const login = await h.request('/api/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token:adminToken}) });
-  assert.equal(login.status, 200);
-  const cookie = login.headers.get('set-cookie');
-  assert.match(cookie,/HttpOnly/);assert.match(cookie,/Secure/);assert.match(cookie,/SameSite=Strict/);
-  assert.equal((await h.request('/api/collection',{headers:{Cookie:cookie.split(';')[0]}})).status,200);
-  assert.equal((await h.request('/mobile/api/collection',{headers:{Cookie:cookie.split(';')[0]}})).status,401);
-  await h.request('/api/session',{method:'DELETE',headers:{Cookie:cookie.split(';')[0]}});
-  assert.equal((await h.request('/api/collection',{headers:{Cookie:cookie.split(';')[0]}})).status,401);
-  const device=h.devices.add('Phone');
-  assert.equal((await h.request('/api/collection',{headers:credentials(device)})).status,200);
-  const bad = await h.request('/api/session', { method:'POST', headers:{'Content-Type':'application/json',Origin:'https://elsewhere.example'}, body:JSON.stringify({token:adminToken}) });
-  assert.equal(bad.status,403);
+test('browser APIs and covers are trusted and session routes are unavailable', async t => {
+  const h = await app(t, { covers: { read: async () => Buffer.from('cover') } });
+  for (const path of ['/api/collection', '/api/reading-log?month=2026-10', '/covers/test.png']) assert.equal((await h.request(path)).status, 200);
+  for (const method of ['POST', 'DELETE']) assert.equal((await h.request('/api/session', { method })).status, 404);
+  assert.equal((await h.request('/login.js')).status, 404);
+  assert.equal((await h.request('/mobile/api/collection', { headers: { Cookie: 'dangerroom_session=' + 'a'.repeat(64) } })).status, 401);
+  assert.equal((await h.request('/api/entries', { method: 'POST', headers: { Origin: 'https://elsewhere.example' } })).status, 403);
 });
-test('browser sign-in limits guessing and rejects missing keys at startup', async t => {
-  const h=await app(t,{requireAuth:true,adminToken:'x'.repeat(64)});
-  for(let i=0;i<10;i++)assert.equal((await h.request('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"token":"wrong"}'})).status,401);
-  assert.equal((await h.request('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"token":"wrong"}'})).status,429);
-});
+
 test('slideshow uses unique owned editions, never wants or read-only covers',async t=>{
   const h=await app(t), edition={key:'standard',name:'Standard',source_image:null},issue={id:42,series:{id:4,name:'Heroes',year_began:2024},number:'1'};
   const file='a'.repeat(64)+'.png';

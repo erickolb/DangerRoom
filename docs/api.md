@@ -1,20 +1,18 @@
 # DangerRoom API and data model
 
-All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted by default, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Optional `REQUIRE_AUTH=true` additionally protects the browser API and saved covers with a browser session or device credentials, and requires `DANGERROOM_ADMIN_TOKEN` of at least 32 characters. Host and same-origin checks remain active.
+All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Host and same-origin checks remain active.
 
 ## Android and authentication (β-002)
 
-`/mobile/` maps to the same application and API, but every route under that prefix always requires a device credential. A browser cookie never authorizes it. Invalid supplied device credentials fail closed on both route prefixes, even when trusted-network browser authentication is disabled. Device secrets are not sent to Metron or artwork hosts. Android makes same-instance requests natively with credentials on every request, refuses redirects, and sends image-host requests separately without credentials.
+`/mobile/` maps to the same application and API, but every route under that prefix always requires a device credential. Invalid supplied device credentials fail closed on both route prefixes, including trusted-network browser access. Device secrets are not sent to Metron or artwork hosts. Android makes same-instance requests natively with credentials on every request, refuses redirects, and sends image-host requests separately without credentials.
 
 | Method and path | Behavior |
 | --- | --- |
-| `POST /api/session` | `{token}` browser administrator key → 24-hour opaque HttpOnly, Secure, SameSite=Strict cookie; 10 failed attempts per minute per instance. Use HTTPS. |
-| `DELETE /api/session` | Revoke current browser session and clear cookie. |
 | `GET /api/device` | Authentication check. Mobile settings require `authorized:true`, meaning an enabled device. |
 | `GET /api/slideshow` | `{items}` of all unique owned `(issue ID, edition key)` pairs with saved cover files, excluding black bags. No provider calls or selection limit. |
 | `PATCH /api/issues/:id/black-bag` | `{edition_key,black_bagged:boolean}` toggles a saved cover's slideshow exclusion and returns the refreshed issue. Shared across copies/devices; does not change ownership, wants, reading, or rating. |
 
-Additive `devices(id,label,token_hash,enabled)` and `web_sessions(token_hash,expires_at)` tables do not change existing inventory records. Issue/want/log migrations remain unchanged. Device management is a server CLI operation; there is no public provisioning endpoint. See [Android setup](android.md).
+The additive `devices(id,label,token_hash,enabled)` table does not change existing inventory records. Issue/want/log migrations remain unchanged. Device management is a server CLI operation; there is no public provisioning endpoint. See [Android setup](android.md).
 
 | Method and path | Behavior |
 | --- | --- |
