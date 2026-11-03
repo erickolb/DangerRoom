@@ -4,7 +4,7 @@ Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerR
 
 ## Hardlight identity
 
-**Hardlight** is the nickname for the DangerRoom Android client. Its installed display name is **Danger Room** and its application ID is `net.chateaulore.hardlight`. The website and server remain DangerRoom.
+**Hardlight** is the nickname for the DangerRoom companion, available for Android and [iOS](ios.md). The Android installed display name is **Danger Room** and its application ID is `net.chateaulore.hardlight`. The website and server remain DangerRoom. Android and iOS features are mirrored unless a change is explicitly limited to one platform. GitHub release titles identify **for Android** or **for iOS**; Android uses the existing `vVERSION` tags and iOS uses `ios-vVERSION-buildNUMBER`.
 
 The first Hardlight build is a separate Android installation from the older `net.chateaulore.dangerroom` client. Both can coexist; the new app needs its own instance/device configuration. Nothing is removed from the old app or server. Use **Install with Obtainium** on the download website to add `erickolb/DangerRoom` as the release source. Track the `net.chateaulore.hardlight` app ID. Version 1.0.2 is a normal release and does not require prerelease updates. Install Obtainium first if the link does not open. Continue using the same signing key and app ID for subsequent updates.
 
