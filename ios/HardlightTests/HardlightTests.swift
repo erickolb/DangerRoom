@@ -21,6 +21,8 @@ final class HardlightTests: XCTestCase {
         XCTAssertEqual(count, 5, "Shared ES modules and mobile menu must load through the custom scheme")
         if count != 5 { print("Web diagnostics:", (try? await controller.web.evaluateJavaScript("JSON.stringify({errors:window.testErrors,bridge:typeof window.DangerRoomAndroid,uuid:typeof crypto.randomUUID,html:document.body?.innerHTML.slice(0,1500)})")) ?? "No JavaScript response") }
         guard count == 5 else { return }
+        let stored = try await controller.web.evaluateJavaScript("localStorage.setItem('hardlight-test','saved');localStorage.getItem('hardlight-test')") as? String
+        XCTAssertEqual(stored, "saved", "Slideshow preferences must be writable in the per-instance web data store")
         let result = try await controller.web.callAsyncJavaScript("return await Promise.race([new Promise(resolve=>{let id=crypto.randomUUID();window.dangerroomResponses[id]=resolve;window.DangerRoomAndroid.request('/api/health','GET','',id)}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Native API timeout')),10000))])", arguments: [:], in: nil, contentWorld: .page) as? [String: Any]
         XCTAssertEqual(result?["status"] as? Int, 200)
         let cleared = try await controller.web.callAsyncJavaScript("return await Promise.race([window.DangerRoomAndroid.flushCoverCache(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Cache bridge timeout')),10000))])", arguments: [:], in: nil, contentWorld: .page) as? Bool
@@ -58,10 +60,10 @@ final class FixtureProtocol: URLProtocol {
         let data: Data; let type: String
         if path.hasPrefix("/api/") { data = Data("{\"status\":\"ok\",\"mobile_api\":1}".utf8); type = "application/json" }
         else {
-            let file = path == "/" ? "/index.html" : path
+            let file = path.isEmpty || path == "/" ? "/index.html" : path
             let root = Bundle(for: HardlightTests.self).resourceURL!.appendingPathComponent("Fixtures")
             data = (try? Data(contentsOf: root.appendingPathComponent(String(file.dropFirst())))) ?? Data()
-            type = file.hasSuffix(".js") ? "text/javascript" : file.hasSuffix(".css") ? "text/css" : file.hasSuffix(".html") ? "text/html" : "image/png"
+            type = file.hasSuffix(".js") ? "text/javascript" : file.hasSuffix(".css") ? "text/css" : file.hasSuffix(".html") ? "text/html" : file.hasSuffix(".svg") ? "image/svg+xml" : "image/png"
         }
         client?.urlProtocol(self, didReceive: HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": type])!, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: data); client?.urlProtocolDidFinishLoading(self)
