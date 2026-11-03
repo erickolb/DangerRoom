@@ -1,5 +1,9 @@
 # Changelog
 
+## β-029 · 2026-11-03
+
+Add Hardlight for iOS with shared client screens, Keychain credentials, slideshow cache and SideStore distribution. Label past and future releases by platform.
+
 ## β-027 / Hardlight 1.0.1 · 2026-11-01
 
 - Count image failures per cover; retain each cover until its third strike. A successful load of a cover with strikes resets all remaining strikes. Successful covers with no strikes do not reset broken covers.
@@ -499,7 +503,3 @@
 - Owned and Read collection views, local search, issue details, and Deep Search on Metron.
 - Cached and paced provider requests with persistent rate-limit cooldowns.
 - Dark visual defaults, supplied icons and attributions, footer Credits, and an in-app changelog driven by `public/releases.js`.
-
-## β-029 · 2026-11-03
-
-Add Hardlight for iOS with shared client screens, Keychain credentials, slideshow cache and SideStore distribution. Label past and future releases by platform.
