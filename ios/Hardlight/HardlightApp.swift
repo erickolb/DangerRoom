@@ -161,7 +161,7 @@ final class WebController: UIViewController, WKURLSchemeHandler, WKScriptMessage
                     if mime.hasPrefix("image/") { cache.put(file, data) }
                 }
                 guard !Task.isCancelled else { return }
-                urlSchemeTask.didReceive(URLResponse(url: url, mimeType: mime, expectedContentLength: data.count, textEncodingName: mime.hasPrefix("text/") ? "utf-8" : nil))
+                urlSchemeTask.didReceive(HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": mime + (mime.hasPrefix("text/") ? "; charset=utf-8" : ""), "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store"])!)
                 urlSchemeTask.didReceive(data); urlSchemeTask.didFinish()
             } catch { if !Task.isCancelled { urlSchemeTask.didFailWithError(error) } }
         }

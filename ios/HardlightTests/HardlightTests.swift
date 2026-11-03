@@ -10,6 +10,8 @@ final class HardlightTests: XCTestCase {
         let window = UIWindow(frame: UIScreen.main.bounds); window.rootViewController = controller; window.makeKeyAndVisible()
         defer { window.isHidden = true; controller.pause() }
         controller.loadViewIfNeeded()
+        controller.web.configuration.userContentController.addUserScript(WKUserScript(source: "window.testErrors=[];addEventListener('error',e=>testErrors.push(e.message||e.target.src),true);addEventListener('unhandledrejection',e=>testErrors.push(String(e.reason)))", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        controller.web.reload()
         var count = 0
         for _ in 0..<100 {
             count = (try? await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item').length")) as? Int ?? 0
@@ -17,6 +19,7 @@ final class HardlightTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(200))
         }
         XCTAssertEqual(count, 5, "Shared ES modules and mobile menu must load through the custom scheme")
+        if count != 5 { print("Web diagnostics:", (try? await controller.web.evaluateJavaScript("JSON.stringify({errors:window.testErrors,bridge:typeof window.DangerRoomAndroid,uuid:typeof crypto.randomUUID,html:document.body?.innerHTML.slice(0,1500)})")) ?? "No JavaScript response") }
         guard count == 5 else { return }
         let result = try await controller.web.callAsyncJavaScript("return await Promise.race([new Promise(resolve=>{let id=crypto.randomUUID();window.dangerroomResponses[id]=resolve;window.DangerRoomAndroid.request('/api/health','GET','',id)}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Native API timeout')),10000))])", arguments: [:], in: nil, contentWorld: .page) as? [String: Any]
         XCTAssertEqual(result?["status"] as? Int, 200)
