@@ -23,8 +23,8 @@ export function showSlideshowSettings(app) {
   dialog.innerHTML = `<h2 id="gallery-options-title">Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><label class="gallery-choice"><input type="checkbox" name="cacheLimited" ${settings.cacheLimited ? 'checked' : ''}>Limit local cover cache</label><label>Cover cache size (MB)<input name="cacheMB" type="number" min="1" max="1048576" step="1" required value="${settings.cacheMB}"></label><p>Hardlight caches slideshow covers on this device. When full, uncached covers still download and display without being saved. Turn off the limit to use as much storage as the device allows. Covers outside the playlist are removed when the slideshow starts.</p><button type="button" id="flush-gallery-cache">Flush cache</button><p id="gallery-cache-status" role="status"></p><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form>`;
   const flush = dialog.querySelector('#flush-gallery-cache');
   flush.disabled = !window.DangerRoomAndroid?.flushCoverCache;
-  flush.onclick = () => {
-    const cleared = window.DangerRoomAndroid.flushCoverCache();
+  flush.onclick = async () => {
+    const cleared = await window.DangerRoomAndroid.flushCoverCache();
     dialog.querySelector('#gallery-cache-status').textContent = cleared ? 'Cover cache cleared. Covers will download again as needed.' : 'Could not clear all cached covers. Please try again.';
   };
   dialog.querySelector('#cancel-gallery-options').onclick = () => dialog.close();

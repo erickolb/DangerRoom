@@ -22,3 +22,12 @@ node_modules/
 /android/.kotlin/
 
 /.tools/
+
+/ios/build/
+/ios/dist/
+/ios/build-ipa.*/
+/ios/*.log
+**/xcuserdata/
+*.xcuserstate
+/ios/HardlightTests/Fixtures/
+__pycache__/

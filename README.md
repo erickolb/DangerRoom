@@ -1,10 +1,12 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-027**.
+Comic inventory and reading journal. Current build: **β-029**.
 
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android companion](docs/android.md), nicknamed **Hardlight**, adds a mask startup screen, configurable HTTPS instance, device credentials, five-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Full caches keep displaying uncached images over the network. [Download Hardlight 1.0.2 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.2). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, five-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Full caches keep displaying uncached images over the network. [Download Hardlight 1.0.2 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.2). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+
+[Download Hardlight 1.0.2 for iOS (build 1)](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.0.2-build1). Install with SideStore; GitHub distribution only, with no App Store release. Android and iOS share features; mirror changes unless explicitly scoped to one platform.
 
 ## Run locally
 
@@ -91,7 +93,7 @@ For older records, stop the app and preview `pnpm run backfill:series-types --dr
 
 ## Checks and release history
 
-The public DangerRoom feature and self-hosting site, Hardlight installation subpage (`/hardlight/`), and shared privacy policy (`/privacy/`) live in `website/` and deploys to GitHub Pages through `.github/workflows/pages.yml`. Keep its displayed Android version and APK/release links aligned with `docs/android.md` and each published Android build. It is separate from the self-hosted collection application in `public/`.
+The public DangerRoom feature and self-hosting site, Hardlight installation subpage (`/hardlight/`), and shared privacy policy (`/privacy/`) live in `website/` and deploys to GitHub Pages through `.github/workflows/pages.yml`. Keep both platform versions and downloads aligned with `docs/android.md`, `docs/ios.md`, and each published build. It is separate from the self-hosted collection application in `public/`.
 
 ```sh
 pnpm run check

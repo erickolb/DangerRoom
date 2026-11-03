@@ -71,4 +71,4 @@ jobs:
           if [[ "$RELEASE_TAG" == *-* ]]; then prerelease=(--prerelease); fi
           gh release create "$RELEASE_TAG" release-artifacts/DangerRoom.apk release-artifacts/SHA256SUMS.txt release-artifacts/SIGNING-CERTIFICATE.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Danger Room (Hardlight) $RELEASE_TAG" --notes-file docs/android-release-notes.md "${prerelease[@]}"
+            --title "Danger Room (Hardlight) $RELEASE_TAG for Android" --notes-file docs/android-release-notes.md "${prerelease[@]}"

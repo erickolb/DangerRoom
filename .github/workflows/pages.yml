@@ -2,8 +2,13 @@ name: Publish website
 on:
   push:
     branches: [main]
-    paths: ['website/**', '.github/workflows/pages.yml']
+    paths: ['website/**', 'scripts/*sidestore_source.py', '.github/workflows/pages.yml']
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Publish iOS release']
+    types: [completed]
+  release:
+    types: [published]
 permissions:
   contents: read
   pages: write
@@ -19,6 +24,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate SideStore source from published iOS IPAs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m unittest discover -s scripts -p test_sidestore_source.py
+          python scripts/sidestore_source.py
       - uses: actions/configure-pages@v5
         with:
           enablement: true

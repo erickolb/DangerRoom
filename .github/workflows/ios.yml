@@ -1,0 +1,16 @@
+name: Check iOS client
+on:
+  push:
+    branches: [main]
+    paths: ['ios/**', 'public/**', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', 'public/**', '.github/workflows/ios.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash ios/scripts/verify-on-mac.sh

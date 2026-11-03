@@ -199,3 +199,7 @@ Install the signed [Hardlight 1.0.0 APK](https://github.com/erickolb/DangerRoom/
 ## Metron Search filters on tablets
 
 Update the server container using the backup and rebuild procedure above to fix the Metron Search filter popup extending beyond the screen. The panel now stays inside the viewport and scrolls vertically so Apply and Clear remain reachable, including on Fire tablets. Long series names wrap inside their column. Reopen Metron Search after updating to load the new stylesheet. Existing Hardlight installations receive this server-side fix without an APK update.
+
+## β-029: Hardlight for iOS
+
+Update the container using the steps above before installing iOS 1.0.2. The shared slideshow Flush cache control now supports both native clients. Issue a separate device credential for each installation; existing Android credentials remain valid.

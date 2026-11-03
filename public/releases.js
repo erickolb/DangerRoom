@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: 'β-029', date: '2026-11-03', title: 'Hardlight for iOS',
+  changes: ['Add the iOS companion with device-only Keychain credentials, the shared five-section client, and local slideshow caching. Publish platform-labeled Android and iOS releases with separate sideloading downloads.'],
+}, {
   version: 'β-028', date: '2026-11-02', title: 'Hardlight 1.0.2: local slideshow cover cache',
   changes: ['Cache slideshow covers locally for six months (180 days). Default to a 300 MB limit, with an unlimited option and Flush cache button. When full, continue displaying uncached images from the network without evicting existing covers. Remove artwork outside the playlist at slideshow initialization. Requires the server update and Hardlight 1.0.2.'],
 }, {

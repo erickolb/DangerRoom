@@ -1,0 +1,32 @@
+name: Publish iOS release
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test, build and verify signature
+        run: bash ios/scripts/verify-on-mac.sh
+      - name: Publish IPA and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/.*MARKETING_VERSION = \([^;]*\);.*/\1/p' ios/Hardlight.xcodeproj/project.pbxproj | sort -u)
+          build=$(sed -n 's/.*CURRENT_PROJECT_VERSION = \([^;]*\);.*/\1/p' ios/Hardlight.xcodeproj/project.pbxproj | sort -u)
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$build" =~ ^[1-9][0-9]*$ ]]
+          (cd ios/dist && shasum -a 256 DangerRoom.ipa > DangerRoom.ipa.sha256)
+          gh release create "ios-v$version-build$build" ios/dist/DangerRoom.ipa ios/dist/DangerRoom.ipa.sha256 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Danger Room (Hardlight) v$version for iOS" --notes-file docs/ios-release-notes.md --latest=false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hardlight-iOS
+          path: ios/dist/DangerRoom.ipa*
