@@ -1,5 +1,11 @@
 # Changelog
 
+## Licensing and attribution · 2026-11-05
+
+- License original DangerRoom and Hardlight code under AGPL-3.0-only.
+- Add shared browser/Android/iOS source access and Metron CC BY-SA 4.0 notices.
+- Document metadata adaptations, ShareAlike, separate artwork rights, and deployment obligations.
+
 ## 1.0.0 · 2026-11-05
 
 - Graduate DangerRoom to stable 1.0.0 with existing browser, Android, and iOS compatibility.

@@ -1,5 +1,19 @@
 # Update a DangerRoom instance
 
+## Licensing and Metron attribution · 2026-11-05
+
+Rebuild the server container using the backup and update procedure below to
+receive the shared AGPL source link, Metron CC BY-SA 4.0 attribution, and change
+and artwork notices. Both existing Android and iOS Hardlight clients receive
+these notices from the server; no mobile reinstall or database migration is
+needed. The server version remains 1.0.0. After updating, check the browser and
+each client's footer and Credits section. On astralplane.chateaulore.net, use
+`sudo docker` and `sudo docker compose` for all container commands.
+
+See [licensing and source obligations](../THIRD_PARTY_NOTICES.md). If running a
+modified fork, point the shared footer source link at corresponding source for
+your running revision and preserve that source for distributed builds.
+
 ## DangerRoom 1.0.0
 
 Follow the backup and container rebuild procedure below, then verify `/api/health` reports `1.0.0`. Beta and alpha changelogs now have separate collapsed sections. No database migration or mobile reinstall is required; Hardlight 1.1.0 for Android and iOS remains current.

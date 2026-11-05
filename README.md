@@ -4,6 +4,10 @@
 
 Comic inventory and reading journal. Current build: **1.0.0**.
 
+Copyright © 2026 Eric Kolb. Original DangerRoom and Hardlight code is licensed under [GNU AGPLv3 only](LICENSE), without warranty. [Licensing and third-party notices](THIRD_PARTY_NOTICES.md) explain source availability and separate asset terms.
+
+Comic metadata from [Metron](https://metron.cloud), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). DangerRoom selects and reformats metadata; adaptations remain under CC BY-SA 4.0. Cover artwork is excluded and belongs to its publishers or creators.
+
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
 The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Full caches keep displaying uncached images over the network. [Download Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0). Want List, text search, UPC Mode, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.

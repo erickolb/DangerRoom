@@ -9,6 +9,7 @@ ENV NODE_ENV=production HOST=0.0.0.0 PORT=4340 DATA_DIR=/data
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY package.json ./
+COPY LICENSE THIRD_PARTY_NOTICES.md ./
 COPY src ./src
 COPY public ./public
 COPY scripts ./scripts
