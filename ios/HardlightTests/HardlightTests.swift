@@ -15,12 +15,21 @@ final class HardlightTests: XCTestCase {
         var count = 0
         for _ in 0..<100 {
             count = (try? await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item').length")) as? Int ?? 0
-            if count == 5 { break }
+            if count == 6 { break }
             try await Task.sleep(for: .milliseconds(200))
         }
-        XCTAssertEqual(count, 5, "Shared ES modules and mobile menu must load through the custom scheme")
-        if count != 5 { print("Web diagnostics:", (try? await controller.web.evaluateJavaScript("JSON.stringify({errors:window.testErrors,bridge:typeof window.DangerRoomAndroid,uuid:typeof crypto.randomUUID,html:document.body?.innerHTML.slice(0,1500)})")) ?? "No JavaScript response") }
-        guard count == 5 else { return }
+        XCTAssertEqual(count, 6, "Shared ES modules and mobile menu must load through the custom scheme")
+        if count != 6 { print("Web diagnostics:", (try? await controller.web.evaluateJavaScript("JSON.stringify({errors:window.testErrors,bridge:typeof window.DangerRoomAndroid,uuid:typeof crypto.randomUUID,html:document.body?.innerHTML.slice(0,1500)})")) ?? "No JavaScript response") }
+        guard count == 6 else { return }
+        let upcShortcut = try await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item')[3].textContent.includes('UPC Mode')") as? Bool
+        XCTAssertEqual(upcShortcut, true)
+        _ = try await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item')[3].click()")
+        for _ in 0..<40 {
+            if (try? await controller.web.evaluateJavaScript("!!document.querySelector('#upc-input')")) as? Bool == true { break }
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        let upcReady = try await controller.web.evaluateJavaScript("!!document.querySelector('#upc-input')") as? Bool
+        XCTAssertEqual(upcReady, true)
         let stored = try await controller.web.evaluateJavaScript("localStorage.setItem('hardlight-test','saved');localStorage.getItem('hardlight-test')") as? String
         XCTAssertEqual(stored, "saved", "Slideshow preferences must be writable in the per-instance web data store")
         let result = try await controller.web.callAsyncJavaScript("return await Promise.race([new Promise(resolve=>{let id=crypto.randomUUID();window.dangerroomResponses[id]=resolve;window.DangerRoomAndroid.request('/api/health','GET','',id)}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Native API timeout')),10000))])", arguments: [:], in: nil, contentWorld: .page) as? [String: Any]

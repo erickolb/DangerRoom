@@ -1,6 +1,8 @@
 # DangerRoom
 
-Comic inventory and reading journal. Current build: **β-029**.
+> UPC mode is in testing for β-030 / Hardlight 1.1.0; no new release is published. [Behavior and acceptance tests](docs/upc-mode.md).
+
+Comic inventory and reading journal. Current working build: **β-030 (testing)**.
 
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 

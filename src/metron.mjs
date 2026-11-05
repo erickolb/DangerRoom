@@ -44,12 +44,15 @@ export function searchFilters(params) {
   const page = positiveId(params.get('page') || 1, 'Page');
   if ((!q && !upc) || q.length > 160 || number.length > 30 || page > 10000) throw new AppError(400, 'Enter a series name or UPC, using a shorter search if needed.');
   if (year && !/^\d{4}$/.test(year)) throw new AppError(400, 'Series year must contain four digits.');
-  if (upc && !/^\d{8,18}$/.test(upc)) throw new AppError(400, 'Enter an 8–18 digit UPC.');
+  if (upc && !/^\d{1,18}$/.test(upc)) throw new AppError(400, 'Enter a UPC containing 1–18 digits.');
   const filters = new URLSearchParams();
-  if (q) filters.set('series_name', q);
-  if (number) filters.set('number', number);
-  if (year) filters.set('series_year_began', year);
-  if (upc) filters.set('upc', upc);
+  if (params.get('mode') === 'upc' && !upc) throw new AppError(400, 'Enter a UPC to search.');
+  if (params.get('mode') !== 'upc') {
+    if (q) filters.set('series_name', q);
+    if (number) filters.set('number', number);
+    if (year) filters.set('series_year_began', year);
+  }
+  if (upc) filters.set(upc.length > 12 ? 'upc' : 'upc_starts_with', upc);
   filters.set('page', String(page));
   return filters;
 }

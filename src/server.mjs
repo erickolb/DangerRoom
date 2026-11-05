@@ -13,6 +13,8 @@ import { Devices } from './devices.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/upc-scanner.js', ['upc-scanner.js', 'text/javascript; charset=utf-8']],
+  ['/barcode.svg', ['barcode.svg', 'image/svg+xml']],
   ['/mobile.js', ['mobile.js', 'text/javascript; charset=utf-8']],
   ['/slideshow.png', ['slideshow.png', 'image/png']],
   ['/black-bag.png', ['black-bag.png', 'image/png']],

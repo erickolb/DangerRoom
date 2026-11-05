@@ -1,5 +1,9 @@
 # Update a DangerRoom instance
 
+## Pending β-030: UPC lookup mode
+
+Not released yet. After acceptance testing and release approval, update the server container with the backup/rebuild procedure below for UPC-only search, STX-prefixed keyboard scanning, exact/partial Metron queries, and exact-cover highlighting. The shared Hardlight menu adds UPC Mode on both platforms; Hardlight 1.1.0 is staged but not published. Do not run release workflows or replace public download links during testing. See [UPC mode testing](upc-mode.md).
+
 Run from the original DangerRoom checkout; changing the Compose project/directory name can select a different named volume. These commands build from source; no registry login or prepublished image is required. Keep .env and the named data volume across updates.
 
 The commands assume the checkout is at `~/DangerRoom`, the default location when cloning from your home directory. If yours is elsewhere, set `DANGERROOM_DIR` to its actual absolute path first. Do not type a placeholder such as `/path/to/DangerRoom` literally. The backup and update blocks below run in a subshell with `set -e`, so a failed directory change or command stops that block without closing your SSH session.

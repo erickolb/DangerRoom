@@ -1,3 +1,4 @@
+import { createUPCScanner, validUPC, matchingEdition } from './upc-scanner.js';
 import { selectedSeriesNames,seriesNameOptions,selectedSeriesTypes, filterSearchResults, seriesTypeOptions } from './search-filters.js';
 import { comicTitle, comicTitleText } from './comic-title.js';
 import { ratingChoices, bindRatingPreview } from './ratings.js';
@@ -104,23 +105,43 @@ async function readingLogPage(params,ticket){
   });
 }
 
+const barcodeIcon = '<img class="icon" src="/barcode.svg" alt="">';
+const upcTips = `<details class="scanner-tips"><summary>Barcode scanner setup tips</summary><ul><li>Pair a keyboard-compatible scanner using Bluetooth HID, or connect by USB.</li><li>Configure a Start of Text (STX / 0x02) prefix and Enter / carriage-return suffix. HID scanners may deliver STX as Ctrl+B; both forms are recognized.</li><li>Enable UPC/EAN addenda or supplements to capture the five extra comic digits. Some scanners require the supplement in this mode; switch addenda off for main-only scans if necessary.</li><li>Preserve leading zeros, the UPC system digit, and the check digit. Do not add other prefixes or hide digits.</li><li>On iOS, a scanner may hide the on-screen keyboard. If supported, enable a scanner shortcut to show it, such as a double trigger press. Consult your scanner manual.</li><li>Keep this app or browser page active. Scan, choose an action, confirm the cover, then scan the next comic. Starting a scan closes open dialogs; it does not undo a save already in progress.</li></ul><p class="hint">More than 12 digits searches exactly; 12 or fewer searches the UPC prefix. A missing catalog entry can still return no results.</p></details>`;
+function bindSearchForm(params) {
+  const form=$('#search-form');
+  $('#upc-mode').onclick=()=>{
+    const next=new URLSearchParams();
+    if(params.get('mode')!=='upc')next.set('mode','upc');
+    history.replaceState(null,'',`#/?${next}`);
+    ++generation; search(next,generation);
+  };
+  form.onsubmit=event=>{
+    event.preventDefault();
+    const values=new URLSearchParams();
+    for(const [key,value] of new FormData(form))if(value.trim())values.append(key,value.trim());
+    if(params.get('mode')==='upc') {
+      const value=values.get('upc') || '';
+      if(!validUPC(value)){message('Enter a barcode containing 1–18 digits.',true);return;}
+      values.set('mode','upc');
+    }
+    if(!values.has('q')&&!values.has('upc')){message('Enter a series name or UPC to search.',true);return;}
+    pendingSeriesNameCheck=values.toString();
+    const hash=`#/?${values}`;
+    if(location.hash===hash)route();else location.hash=hash;
+  };
+}
 function searchForm(params) {
-  return `<form id="search-form" class="search-form">${[...selectedSeriesNames(params)].map(name=>`<input type="hidden" name="series_name_filter" value="${esc(name)}">`).join('')}${selectedSeriesTypes(params).size?`<input type="hidden" name="series_types" value="${[...selectedSeriesTypes(params)].join(',')}">`:''}<div class="search-main"><label>Series name<input name="q" value="${esc(params.get('q') || '')}" placeholder="Search series, from Batman to Saga…" maxlength="160" autocomplete="off" type="search"></label><button type="submit">Search Metron <span aria-hidden="true">→</span></button></div><details class="search-options" ${params.get('number') || params.get('year') || params.get('upc') ? 'open' : ''}><summary>Issue, year & barcode</summary><div class="fields"><label>Issue number<input name="number" value="${esc(params.get('number') || '')}" placeholder="e.g. 1 or ½" maxlength="30"></label><label>Series start year<input name="year" value="${esc(params.get('year') || '')}" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 2024"></label><label>UPC<input name="upc" value="${esc(params.get('upc') || '')}" inputmode="numeric" pattern="[0-9]{8,18}" placeholder="Full comic barcode"></label></div></details><div class="search-filter-row"><p class="search-help">Search by series name, or use a UPC on its own.</p>${params.get('hide_owned')==='1'?'<input type="hidden" name="hide_owned" value="1">':''}</div></form>`;
+  const upc=params.get('mode')==='upc';
+  const toggle=`<button type="button" id="upc-mode" class="quiet upc-mode-toggle" aria-label="UPC mode" title="Toggle UPC mode" aria-pressed="${upc}">${barcodeIcon}</button>`;
+  if(upc)return `<form id="search-form" class="search-form upc-search"><div class="search-main">${toggle}<label>UPC barcode<input id="upc-input" name="upc" value="${esc(params.get('upc')||'')}" placeholder="Scan or type a barcode" inputmode="numeric" pattern="[0-9]{1,18}" maxlength="18" autocomplete="off" type="text"></label><button type="submit">Look up UPC →</button></div><p class="search-help">UPC mode · Scan anytime while this page is active. Enter submits the barcode.</p></form>${upcTips}`;
+  return `<form id="search-form" class="search-form">${[...selectedSeriesNames(params)].map(name=>`<input type="hidden" name="series_name_filter" value="${esc(name)}">`).join('')}${selectedSeriesTypes(params).size?`<input type="hidden" name="series_types" value="${[...selectedSeriesTypes(params)].join(',')}">`:''}<div class="search-main">${toggle}<label>Series name<input name="q" value="${esc(params.get('q') || '')}" placeholder="Search series, from Batman to Saga…" maxlength="160" autocomplete="off" type="search"></label><button type="submit">Search Metron <span aria-hidden="true">→</span></button></div><details class="search-options" ${params.get('number') || params.get('year') || params.get('upc') ? 'open' : ''}><summary>Issue, year & barcode</summary><div class="fields"><label>Issue number<input name="number" value="${esc(params.get('number') || '')}" placeholder="e.g. 1 or ½" maxlength="30"></label><label>Series start year<input name="year" value="${esc(params.get('year') || '')}" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 2024"></label><label>UPC<input name="upc" value="${esc(params.get('upc') || '')}" inputmode="numeric" pattern="[0-9]{8,18}" placeholder="Full comic barcode"></label></div></details><div class="search-filter-row"><p class="search-help">Search by series name, or use a UPC on its own.</p>${params.get('hide_owned')==='1'?'<input type="hidden" name="hide_owned" value="1">':''}</div></form>`;
 }
 async function search(params, ticket) {
-  app.innerHTML = `<div class="hero"><span class="hero-mark" aria-hidden="true">✦</span><p class="eyebrow">Open up a whole new universe.</p><h2>Pull your next issue</h2><p class="intro">Search Metron, choose a cover, and make it yours.<br>Keep the stories you own and the ones you’ve read.</p>${searchForm(params)}</div>${!connected ? '<div class="connection">Connect Metron to start searching: add your API token to <code>METRON_API_TOKEN</code> in the local <code>.env</code> file and restart DangerRoom. <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer">Open Metron ↗</a></div>' : ''}<div id="search-results"></div>`;
-  $('#search-form').onsubmit = e => {
-    e.preventDefault();
-    const values = new URLSearchParams();
-    for (const [key, value] of new FormData(e.target)) if (value.trim()) values.append(key, value.trim());
-    if (!values.has('q') && !values.has('upc')) { message('Enter a series name or UPC to search.', true); return; }
-    pendingSeriesNameCheck=values.toString();
-    const hash = `#/?${values}`;
-    if (location.hash === hash) route(); else location.hash = hash;
-  };
+  app.innerHTML = `<div class="hero ${params.get('mode')==='upc'?'upc-hero':''}"><span class="hero-mark" aria-hidden="true">✦</span><p class="eyebrow">Open up a whole new universe.</p><h2>${params.get('mode')==='upc'?'UPC Lookup':'Pull your next issue'}</h2><p class="intro">Search Metron, choose a cover, and make it yours.<br>Keep the stories you own and the ones you’ve read.</p>${searchForm(params)}</div>${!connected ? '<div class="connection">Connect Metron to start searching: add your API token to <code>METRON_API_TOKEN</code> in the local <code>.env</code> file and restart DangerRoom. <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer">Open Metron ↗</a></div>' : ''}<div id="search-results"></div>`;
+  bindSearchForm(params);
   if (!params.get('q') && !params.get('upc')) return;
   $('#search-results').innerHTML = '<p class="loading metron-progress" role="status"><img src="/metron.svg" alt="" class="metron-spinner">Searching Metron…</p>';
-  const button = $('#search-form button'); button.disabled = true;
+  const button = $('#search-form button[type=submit]'); button.disabled = true;
   try {
     const data = await api(`/search?${params}`);
     if (ticket !== generation) return;
@@ -162,7 +183,8 @@ async function search(params, ticket) {
     $('#clear-series-types').onclick=()=>applyTypes([]);
     document.querySelectorAll('[data-choose]').forEach(group => group.querySelectorAll('button').forEach(b => b.onclick = async()=>{
       const id=Number(group.dataset.choose);
-      if(b.dataset.action!=='read')return choose(id);
+      if(params.get('mode')==='upc')return choose(id,null,null,{upc:params.get('upc'),action:b.dataset.action});
+      if(b.dataset.action!=='read')return choose(id,null,null,{upc:params.get('upc')});
       b.disabled=true;
       try{
         const issue=await api(`/metron/issues/${id}`);if(ticket!==generation)return;
@@ -230,7 +252,8 @@ function mountTileRating(container,ctx,state){
   ctx.listeners.add(render);render();
 }
 
-async function choose(id,savedIssue=null,selectedKey=null){
+async function choose(id,savedIssue=null,selectedKey=null,{upc=null,action=null}={}){
+  const pageTicket=generation;
   const token=++dialogGeneration;
   dialog.innerHTML='<h2 id="dialog-title">Choose a cover</h2><p class="loading" role="status">Opening comic details…</p><button id="close-dialog" class="quiet">Close</button>';
   $('#close-dialog').onclick=closeDialog;dialog.showModal();
@@ -238,9 +261,10 @@ async function choose(id,savedIssue=null,selectedKey=null){
     const issue=savedIssue || await api(`/metron/issues/${id}`);
     if(token!==dialogGeneration || !dialog.open)return;
     const ctx=context(issue,api,text=>{const box=dialog.querySelector('.toggle-error');if(box)box.textContent=text;else message(text,true);});
-    const initial=selectedKey || (issue.editions.length===1?issue.editions[0].key:null);
+    const exactKey=matchingEdition(issue.editions,upc);
+    const initial=selectedKey || exactKey || (issue.editions.length===1?issue.editions[0].key:null);
     const state=copyState(ctx,initial);
-    dialog.innerHTML=`<div class="dialog-heading"><div><p class="eyebrow">Your comic</p><h2 id="dialog-title">${comicTitle(issue,{year:true})}</h2></div><button type="button" class="quiet" id="close-dialog" aria-label="Close">×</button></div><p class="hint">Choose a cover, then toggle its icons. Changes save immediately.</p><div class="variant-grid">${issue.editions.map(e=>`<label class="variant-choice"><input type="radio" name="edition" value="${esc(e.key)}" ${e.key===initial?'checked':''}>${cover(localCover(e)||e.source_image,e.name)}<span>${esc(e.name)}${e.upc?`<br><small>UPC ${esc(e.upc)}</small>`:''}</span></label>`).join('')}</div><div class="comic-actions" id="picker-actions"></div><p class="form-error toggle-error" role="alert"></p><div id="picker-rating"></div><div class="dialog-actions"><button class="quiet" id="close-picker">Done</button></div>`;
+    dialog.innerHTML=`<div class="dialog-heading"><div><p class="eyebrow">Your comic</p><h2 id="dialog-title">${comicTitle(issue,{year:true})}</h2></div><button type="button" class="quiet" id="close-dialog" aria-label="Close">×</button></div><p class="hint">${action ? `Confirm the cover, then use ${esc({owned:'Add to collection',wanted:'Add to Want List',read:'Mark as read'}[action]||'its action')} below.` : 'Choose a cover, then toggle its icons.'} Changes save immediately.${exactKey ? ' The exact UPC cover is preselected and highlighted.' : ''}</p><div class="variant-grid">${issue.editions.map(e=>`<label class="variant-choice ${upc && e.upc?.trim()===upc ? 'upc-exact-cover' : ''}"><input type="radio" name="edition" value="${esc(e.key)}" ${e.key===initial?'checked':''}>${cover(localCover(e)||e.source_image,e.name)}<span>${esc(e.name)}${e.upc?`<br><small>UPC ${esc(e.upc)}</small>`:''}</span></label>`).join('')}</div><div class="comic-actions" id="picker-actions"></div><p class="form-error toggle-error" role="alert"></p><div id="picker-rating"></div><div class="dialog-actions"><button class="quiet" id="close-picker">Done</button></div>`;
     $('#close-dialog').onclick=closeDialog;$('#close-picker').onclick=closeDialog;
     bindToggles($('#picker-actions'),ctx,state,{extra:true});mountRating($('#picker-rating'),ctx,state);
     dialog.querySelectorAll('[name=edition]').forEach(input=>input.onchange=()=>{
@@ -248,7 +272,7 @@ async function choose(id,savedIssue=null,selectedKey=null){
       state.editionKey=input.value;state.copyId=ctx.issue.copies?.find(c=>c.edition_key===input.value)?.id || null;ctx.notify();
     });
     ctx.listeners.add(()=>dialog.querySelectorAll('[name=edition]').forEach(input=>input.disabled=ctx.busy));
-    dialog.addEventListener('close',()=>route(),{once:true});
+    dialog.addEventListener('close',()=>{if(pageTicket===generation && !scanner.active)route();},{once:true});
   }catch(error){if(token===dialogGeneration && dialog.open){dialog.innerHTML=`<h2 id="dialog-title">Couldn’t open comic</h2><p class="form-error">${esc(error.message)}</p><button class="quiet" id="close-dialog">Close</button>`;$('#close-dialog').onclick=closeDialog;}}
 }
 async function collection(params,ticket){
@@ -374,6 +398,26 @@ function changelog() {
   app.innerHTML=`<div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.filter(r=>!r.version.startsWith('α')).map(renderRelease).join('')}${alpha.length?`<details class="alpha-history"><summary>Alpha releases (α)</summary>${alpha.map(renderRelease).join('')}</details>`:''}`;
 }
 
+const scanner=createUPCScanner({
+  onStart(){
+    ++generation;
+    cancelReadDialog(); closeDialog(); if(lightbox.open)lightbox.close();
+    for(const modal of document.querySelectorAll('dialog[open]'))modal.close();
+    const params=new URLSearchParams({mode:'upc'});
+    history.replaceState(null,'','#/?mode=upc');
+    search(params,generation);
+    message('Scanning barcode…');
+  },
+  onScan(upc){
+    const params=new URLSearchParams({mode:'upc',upc});
+    history.replaceState(null,'',`#/?${params}`); route();
+  },
+  onError(text){message(text,true);}
+});
+for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{
+  if(scanner.handle(event)){event.preventDefault();event.stopImmediatePropagation();}
+},true);
+window.addEventListener('blur',()=>scanner.reset());
 document.addEventListener('click',event=>{
   const dropdown=$('#results-filter');if(dropdown?.open&&!dropdown.contains(event.target))dropdown.open=false;
 });

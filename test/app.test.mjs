@@ -158,7 +158,7 @@ test('variant identity does not depend on ordering; price currency is not invent
   const a = editionsFor({ ...raw, variants: [raw.variants[0], second] });
   const b = editionsFor({ ...raw, variants: [second, raw.variants[0]] });
   assert.equal(a[1].key, b[2].key); assert.equal(a[1].price_currency, '');
-  assert.equal(searchFilters(new URLSearchParams('upc=123456789012')).get('upc'), '123456789012');
+  assert.equal(searchFilters(new URLSearchParams('upc=123456789012')).get('upc_starts_with'), '123456789012');
 });
 test('cover MIME is validated from bytes; content-identical artwork shares storage', async t => {
   const dir = await mkdtemp(join(tmpdir(), 'dangerroom-covers-')); t.after(() => rm(dir, { recursive: true, force: true }));
