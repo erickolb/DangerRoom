@@ -1,5 +1,7 @@
 *
 !Dockerfile
+!LICENSE
+!THIRD_PARTY_NOTICES.md
 !package.json
 !pnpm-lock.yaml
 !src/

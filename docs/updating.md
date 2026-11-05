@@ -2,6 +2,11 @@
 
 ## Licensing and Metron attribution · 2026-11-05
 
+If the build fails at `COPY LICENSE THIRD_PARTY_NOTICES.md ./` with a file-not-found
+error, pull the latest `main` and rerun the update block below. The Docker build
+context now includes both notice files. A failure during the build stops the
+`set -e` block before container recreation, leaving the existing container running.
+
 Rebuild the server container using the backup and update procedure below to
 receive the shared AGPL source link, Metron CC BY-SA 4.0 attribution, and change
 and artwork notices. Both existing Android and iOS Hardlight clients receive
