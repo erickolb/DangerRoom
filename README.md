@@ -1,14 +1,14 @@
 # DangerRoom
 
-> UPC mode is in testing for β-030 / Hardlight 1.1.0; no new release is published. [Behavior and acceptance tests](docs/upc-mode.md).
+> Hardlight 1.1.0 is available for Android and iOS. UPC lookup requires server β-030+. [UPC mode and scanner setup](docs/upc-mode.md).
 
-Comic inventory and reading journal. Current working build: **β-030 (testing)**.
+Comic inventory and reading journal. Current build: **β-030**.
 
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, five-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Full caches keep displaying uncached images over the network. [Download Hardlight 1.0.2 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.2). Want List, text search, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Full caches keep displaying uncached images over the network. [Download Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0). Want List, text search, UPC Mode, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
-[Download Hardlight 1.0.2 for iOS (build 1)](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.0.2-build1). Install with SideStore; GitHub distribution only, with no App Store release. Android and iOS share features; mirror changes unless explicitly scoped to one platform.
+[Download Hardlight 1.1.0 for iOS (build 2)](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.1.0-build2). Install with SideStore; GitHub distribution only, with no App Store release. Android and iOS share features; mirror changes unless explicitly scoped to one platform.
 
 ## Run locally
 

@@ -1,14 +1,14 @@
-# Danger Room (Hardlight) for Android · 1.0.2
+# Danger Room (Hardlight) for Android · 1.1.0
 
-Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-028 or later. Use the [download website](https://erickolb.github.io/DangerRoom/hardlight/) or download the signed **DangerRoom.apk** from [Hardlight's 1.0.2 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.0.2), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
+Android 9 or newer, on phones and tablets. The app connects to any HTTPS DangerRoom instance running β-030 or later. Use the [download website](https://erickolb.github.io/DangerRoom/hardlight/) or download the signed **DangerRoom.apk** from [Hardlight's 1.1.0 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0), alongside `SHA256SUMS.txt`. The repository and downloads are public; installing the app does not authorize a device.
 
 ## Hardlight identity
 
 **Hardlight** is the nickname for the DangerRoom companion, available for Android and [iOS](ios.md). The Android installed display name is **Danger Room** and its application ID is `net.chateaulore.hardlight`. The website and server remain DangerRoom. Android and iOS features are mirrored unless a change is explicitly limited to one platform. GitHub release titles identify **for Android** or **for iOS**; Android uses the existing `vVERSION` tags and iOS uses `ios-vVERSION-buildNUMBER`.
 
-The first Hardlight build is a separate Android installation from the older `net.chateaulore.dangerroom` client. Both can coexist; the new app needs its own instance/device configuration. Nothing is removed from the old app or server. Use **Install with Obtainium** on the download website to add `erickolb/DangerRoom` as the release source. Track the `net.chateaulore.hardlight` app ID. Version 1.0.2 is a normal release and does not require prerelease updates. Install Obtainium first if the link does not open. Continue using the same signing key and app ID for subsequent updates.
+The first Hardlight build is a separate Android installation from the older `net.chateaulore.dangerroom` client. Both can coexist; the new app needs its own instance/device configuration. Nothing is removed from the old app or server. Use **Install with Obtainium** on the download website to add `erickolb/DangerRoom` as the release source. Track the `net.chateaulore.hardlight` app ID. Version 1.1.0 is a normal release and does not require prerelease updates. Install Obtainium first if the link does not open. Continue using the same signing key and app ID for subsequent updates.
 
-The currently published APK uses the Hardlight app ID and the repository owner’s GitHub Actions signing key. Install 1.0.2 over an existing signed Hardlight installation to retain its local configuration; Android versionCode is 15. The server continues to use its own version (currently β-028).
+The currently published APK uses the Hardlight app ID and the repository owner’s GitHub Actions signing key. Install 1.1.0 over an existing signed Hardlight installation to retain its local configuration; Android versionCode is 16. The server continues to use its own version (currently β-030).
 
 The launcher icon matches the loading screen’s red palette, thin dark circle outline, and lower-right dark-red shadow. Adaptive foreground artwork uses a transparent 1080×1080 canvas with a centered 480px badge, a 40px diagonal shadow offset, and a 3.75px outline. Legacy launcher resources cover mdpi through xxxhdpi.
 
@@ -20,17 +20,17 @@ The launcher icon matches the loading screen’s red palette, thin dark circle o
 4. Enter the instance hostname (for example `comics.example.net`), device ID, and secret. A custom HTTPS port is supported. Paths, HTTP, and credentials embedded in the address are rejected.
 5. Tap **Save and test connection**. The app verifies that the credential is enabled before saving it in Android Keystore-encrypted storage. Backups and device transfers exclude credentials. Reinstalling requires provisioning again.
 
-The menu contains Want List, My Collection, Search Metron, Cover Slideshow, and Reading Log. **Menu → Instance and device settings** changes servers or credentials. No Metron credentials are entered on the phone. Existing browser controls are shared in an authenticated Android WebView, with native startup and configuration. The instance must be reachable to browse or save; this release does not provide offline inventory.
+The menu contains Want List, My Collection, Search Metron, UPC Mode, Cover Slideshow, and Reading Log. **Menu → Instance and device settings** changes servers or credentials. No Metron credentials are entered on the phone. Existing browser controls are shared in an authenticated Android WebView, with native startup and configuration. The instance must be reachable to browse or save; this release does not provide offline inventory.
 
 ## Device approval
 
 After updating and starting the server, follow [Device token management](devices.md) for the commands to issue, list, revoke, and replace device credentials, including astralplane's HTTPS Compose override and source-only installations. Enter the returned `deviceId` and `token` into Android's **Device ID** and **Device secret** fields. Mobile routes always require an enabled device. Browser access requires no sign-in.
 
-## Hardlight 1.0.2
+## Hardlight 1.1.0
 
-Hardlight 1.0.2 provides text-based Metron search with exact cover selection, My Collection, Want List, ratings, Reading Log, and Cover Slideshow. Camera cover search, OCR, barcode capture, perspective correction, scan settings, and scan diagnostics have been removed. No camera or recognition SDK is bundled.
+Hardlight 1.1.0 adds UPC Mode for external keyboard/HID scanners and provides text-based Metron search with exact cover selection, My Collection, Want List, ratings, Reading Log, and Cover Slideshow. Camera cover search, OCR, image-based barcode capture, perspective correction, and old camera diagnostics remain removed. External keyboard/HID barcode input is supported in UPC Mode. No camera or recognition SDK is bundled.
 
-Update DangerRoom to **β-028 or later** first so the server-provided menu has the same five sections. Upgrading the server removes previously retained diagnostic scan images and hashes; collection artwork and inventory records are preserved. The Android update clears obsolete scan preferences and its old app-owned camera file while retaining connection credentials and slideshow settings.
+Update DangerRoom to **β-030 or later** first so the server-provided menu has the same five sections. Upgrading the server removes previously retained diagnostic scan images and hashes; collection artwork and inventory records are preserved. The Android update clears obsolete scan preferences and its old app-owned camera file while retaining connection credentials and slideshow settings.
 
 ## Cover Slideshow
 
@@ -52,6 +52,10 @@ cd android
 ```
 
 
-For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v1.0.2`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
+For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v1.1.0`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
 
-Published version: **1.0.2**, Android version code **15**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v1.0.2`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+Published version: **1.1.0**, Android version code **16**. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. This release uses tag `v1.1.0`. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+
+## UPC Mode
+
+Open **UPC Mode** immediately after Search Metron, or use its barcode toggle. External HID scanners can send STX (0x02 / Ctrl+B), digits, and Enter. Scan regardless of field focus; a new scan closes dialogs without undoing completed saves. More than 12 digits searches exactly; 12 or fewer searches the UPC prefix. Confirm the highlighted/preselected exact cover before saving. See [scanner setup and behavior](upc-mode.md).

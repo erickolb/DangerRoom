@@ -1,6 +1,6 @@
 # UPC lookup mode (β-030 / Hardlight 1.1.0)
 
-Hardlight 1.1.0 release preparation is authorized. Android and iOS use separate platform-labeled releases; the server remains in the beta line.
+Hardlight 1.1.0 is published for Android and iOS as separate platform-labeled releases. Update the server to β-030 or later.
 
 On Search Metron, the barcode button to the left of the search field switches to UPC-only entry in the current document. Toggle it off for title search. Hardlight's shared Android/iOS menu places **UPC Mode** immediately after **Search Metron** and opens the same search page with UPC mode active.
 
@@ -24,7 +24,7 @@ Reference diagnostic results and printable controls: https://github.com/erickolb
 - Confirm collection, Want List and read against the selected variant, then scan another comic, including during delayed provider/detail responses.
 - Normal title search, collection, Want List, reading log and device settings still work. Scanner tips start collapsed. Mobile controls fit narrow screens and reduced motion disables animation.
 
-Use Barovia for iOS builds/tests. Android versionName and iOS marketing version are staged at 1.1.0. Existing published installation guides/downloads remain at 1.0.2 until release approval. Server container update instructions remain in [updating.md](updating.md).
+Use Barovia for iOS builds/tests. Android and iOS version 1.1.0 downloads are linked in the installation guides. Server container update instructions remain in [updating.md](updating.md).
 
 Metron filter reference: https://github.com/Metron-Project/metron/blob/master/api/README.md
 
@@ -36,4 +36,4 @@ Metron filter reference: https://github.com/Metron-Project/metron/blob/master/ap
 
 Initial automated checks: 88 Node tests and Android debug assembly/unit/lint checks passed. Browser workflow passed at desktop and narrow-screen sizes. Physical acceptance testing of this DangerRoom integration remains required; diagnostic-tool hardware results alone do not establish that all real-app flows work.
 
-Barovia iOS simulator: all 3 XCTest tests passed, including the six-item shared menu and UPC shortcut. The initial normal test build stalled in Xcode's unchanged asset-catalog compilation. The successful isolated debug test used `EXCLUDED_SOURCE_FILE_NAMES=Assets.xcassets ASSETCATALOG_COMPILER_APPICON_NAME=` to bypass that tool stall; no such exclusion was added to repository build settings. This verifies the shared menu/WebView/native API path, not a full icon-bearing release build. No device IPA, release tag, or published release was produced for this feature.
+Barovia iOS simulator: all 3 XCTest tests passed, including the six-item shared menu and UPC shortcut. The initial normal test build stalled in Xcode's unchanged asset-catalog compilation. The successful isolated debug test used `EXCLUDED_SOURCE_FILE_NAMES=Assets.xcassets ASSETCATALOG_COMPILER_APPICON_NAME=` to bypass that tool stall; no such exclusion was added to repository build settings. This verifies the shared menu/WebView/native API path, not a full icon-bearing release build. Subsequent release build: the full icon-bearing device IPA built successfully on Barovia, passed ad-hoc signing verification, and was published as ios-v1.1.0-build2. Android v1.1.0 passed CI unit/lint/signature checks and is published with its checksum and certificate metadata.

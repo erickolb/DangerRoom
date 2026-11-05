@@ -1,8 +1,8 @@
 # Update a DangerRoom instance
 
-## Pending β-030: UPC lookup mode
+## β-030 / Hardlight 1.1.0: UPC lookup mode
 
-Not released yet. After acceptance testing and release approval, update the server container with the backup/rebuild procedure below for UPC-only search, STX-prefixed keyboard scanning, exact/partial Metron queries, and exact-cover highlighting. The shared Hardlight menu adds UPC Mode on both platforms; Hardlight 1.1.0 is staged but not published. Do not run release workflows or replace public download links during testing. See [UPC mode testing](upc-mode.md).
+Update the server container with the backup/rebuild procedure below for UPC-only search, STX-prefixed keyboard scanning, exact/partial Metron queries, and exact-cover highlighting. Verify health reports β-030. Install [Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0) or [Hardlight 1.1.0 for iOS, build 2](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.1.0-build2). Both menus add UPC Mode immediately after Search Metron. Credentials and collection data are retained; no schema migration is required. See [UPC mode and scanner setup](upc-mode.md).
 
 Run from the original DangerRoom checkout; changing the Compose project/directory name can select a different named volume. These commands build from source; no registry login or prepublished image is required. Keep .env and the named data volume across updates.
 
