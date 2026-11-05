@@ -1,5 +1,9 @@
 # Update a DangerRoom instance
 
+## DangerRoom 1.0.0
+
+Follow the backup and container rebuild procedure below, then verify `/api/health` reports `1.0.0`. Beta and alpha changelogs now have separate collapsed sections. No database migration or mobile reinstall is required; Hardlight 1.1.0 for Android and iOS remains current.
+
 ## β-030 / Hardlight 1.1.0: UPC lookup mode
 
 Update the server container with the backup/rebuild procedure below for UPC-only search, STX-prefixed keyboard scanning, exact/partial Metron queries, and exact-cover highlighting. Verify health reports β-030. Install [Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0) or [Hardlight 1.1.0 for iOS, build 2](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.1.0-build2). Both menus add UPC Mode immediately after Search Metron. Credentials and collection data are retained; no schema migration is required. See [UPC mode and scanner setup](upc-mode.md).

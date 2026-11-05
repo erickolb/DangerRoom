@@ -394,8 +394,9 @@ async function metronDiagnostics(ticket) {
 
 function changelog() {
   const renderRelease=r=>`<article class="release"><p class="eyebrow"><span class="build-version">${esc(r.version)}</span> · <time datetime="${r.date}">${esc(date(r.date))}</time></p><ul>${r.changes.map(c=>`<li>${esc(c)}</li>`).join('')}</ul></article>`;
+  const beta=releases.filter(r=>r.version.startsWith('β'));
   const alpha=releases.filter(r=>r.version.startsWith('α'));
-  app.innerHTML=`<div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.filter(r=>!r.version.startsWith('α')).map(renderRelease).join('')}${alpha.length?`<details class="alpha-history"><summary>Alpha releases (α)</summary>${alpha.map(renderRelease).join('')}</details>`:''}`;
+  app.innerHTML=`<div class="section-heading"><h2>Changelog</h2><span class="count">${esc(releases[0].version)}</span></div>${releases.filter(r=>!r.version.startsWith('α')&&!r.version.startsWith('β')).map(renderRelease).join('')}${beta.length?`<details class="release-history"><summary>Beta releases (β)</summary>${beta.map(renderRelease).join('')}</details>`:''}${alpha.length?`<details class="release-history"><summary>Alpha releases (α)</summary>${alpha.map(renderRelease).join('')}</details>`:''}`;
 }
 
 const scanner=createUPCScanner({

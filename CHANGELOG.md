@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.0 · 2026-11-05
+
+- Graduate DangerRoom to stable 1.0.0 with existing browser, Android, and iOS compatibility.
+- Collapse beta history separately from alpha history in the app changelog.
+
+<details>
+<summary>Beta releases (β)</summary>
+
+## β-030 · 2026-11-05
+
+- Add shared UPC lookup mode, scanner capture, exact-cover matching, and Hardlight 1.1.0 menu support.
+
+## β-028 · 2026-11-02
+
+- Add local slideshow cover caching with Hardlight 1.0.2.
+
 ## β-029 · 2026-11-03
 
 Add Hardlight for iOS with shared client screens, Keychain credentials, slideshow cache and SideStore distribution. Label past and future releases by platform.
@@ -175,6 +191,11 @@ Add Hardlight for iOS with shared client screens, Keychain credentials, slidesho
 - Collapse alpha changelog entries under a closed Alpha releases header.
 - Promote the app to beta and add Docker/Compose deployment with non-root execution and persistent data.
 - Document deployment, data transfer, backups, updates, and rollback; add container CI verification.
+
+</details>
+
+<details>
+<summary>Alpha releases (α)</summary>
 
 ## α-071 · 2026-10-27
 
@@ -503,3 +524,5 @@ Add Hardlight for iOS with shared client screens, Keychain credentials, slidesho
 - Owned and Read collection views, local search, issue details, and Deep Search on Metron.
 - Cached and paced provider requests with persistent rate-limit cooldowns.
 - Dark visual defaults, supplied icons and attributions, footer Credits, and an in-app changelog driven by `public/releases.js`.
+
+</details>

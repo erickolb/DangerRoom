@@ -2,7 +2,7 @@
 
 > Hardlight 1.1.0 is available for Android and iOS. UPC lookup requires server β-030+. [UPC mode and scanner setup](docs/upc-mode.md).
 
-Comic inventory and reading journal. Current build: **β-030**.
+Comic inventory and reading journal. Current build: **1.0.0**.
 
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
@@ -104,7 +104,7 @@ pnpm test
 
 Tests use isolated temporary databases and simulated Metron responses, never your collection or API credentials. Live Metron verification requires the local token.
 
-[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. Stay in α until the user announces a new phase. Keep the package prerelease suffix aligned. See [Changelog](CHANGELOG.md).
+[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.0. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
 
 ## Credits
 

@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.0', date: '2026-11-05', title: 'DangerRoom 1.0.0',
+  changes: ['Graduate DangerRoom to stable version 1.0.0. Keep beta and alpha release history in separate collapsed sections.', 'Retain existing browser, Android, and iOS features and compatibility.'],
+}, {
   version: 'β-030', date: '2026-11-05', title: 'UPC lookup mode',
   changes: ['Add same-page UPC-only Metron search, STX/Ctrl+B scanner capture, exact matching above 12 digits and prefix matching at 12 or fewer.', 'Close open dialogs on a new scan, preselect a unique exact UPC cover, and highlight exact covers with a golden glow.', 'Add UPC Mode immediately after Search Metron in both Hardlight menus. Hardlight 1.1.0 adds UPC lookup to both mobile clients.'],
 }, {
