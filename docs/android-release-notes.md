@@ -1,16 +1,11 @@
-**Hardlight 1.0.2** adds local caching for Cover Slideshow.
+**Hardlight 1.1.0** adds scanner-driven UPC lookup mode. Requires DangerRoom **β-030 or later**.
 
-- Cache downloaded artwork for six months (180 days), with a **300 MB limit enabled by default**.
-- Adjust the limit in slideshow settings, or disable it to cache as much as the device permits.
-- When full, retain existing cached covers and continue displaying uncached covers from the network without saving them. Lowering the limit removes the least recently used files.
-- **Flush cache** deletes downloaded slideshow artwork immediately.
-- At slideshow initialization, remove cached files outside the eligible playlist in the background, including black-bagged and no-longer-owned covers.
-- Cache failures or insufficient storage do not stop playback. Android may reclaim cache storage. Inventory still requires server access.
+- UPC Mode appears immediately after Search Metron in the menu; the search page also has a same-page barcode toggle.
+- Keyboard/HID scanners can send STX (0x02, often Ctrl+B), barcode digits, then Enter. A new scan closes open dialogs and cancels unsaved prompts without reversing completed saves.
+- More than 12 digits searches exactly; 12 or fewer uses Metron UPC prefix matching. Leading zeros are preserved.
+- A unique exact UPC cover is preselected; exact matches receive a golden glow (static with reduced motion). Choose and confirm collection, Want List, or read actions.
+- Collapsed, model-independent scanner setup tips cover supplements, prefix/suffix, and iOS keyboard access. This is external-scanner input, not camera recognition.
 
-**Update DangerRoom to β-028 and install Hardlight 1.0.2.** The container serves cache settings and 180-day image cache headers; the APK implements local disk storage. Use the existing backup/rebuild procedure. No schema migration is needed.
+Update the server container using [the update guide](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md). The server remains in the beta line. Existing credentials, collection, and slideshow settings are retained.
 
-Android 9 or newer; **versionCode 15**; display name **Danger Room**; application ID **net.chateaulore.hardlight**. Install over your signed Hardlight app to retain credentials and slideshow preferences.
-
-Includes signed **DangerRoom.apk**, **SHA256SUMS.txt**, and **SIGNING-CERTIFICATE.txt**. Obtainium can track this normal release.
-
-[Server update instructions](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) · [Android installation](https://github.com/erickolb/DangerRoom/blob/main/docs/android.md) · [Download website](https://erickolb.github.io/DangerRoom/hardlight/)
+Android 9+. Application ID `net.chateaulore.hardlight`; versionCode **16**. Install the signed DangerRoom.apk over the previous release. Includes SHA256SUMS.txt and SIGNING-CERTIFICATE.txt; Obtainium can track this normal Android release.

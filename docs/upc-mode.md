@@ -1,6 +1,6 @@
-# UPC lookup mode (β-030 testing; Hardlight 1.1.0 pending)
+# UPC lookup mode (β-030 / Hardlight 1.1.0)
 
-This change is not released. Do not publish Android/iOS release tags, uploads, download-page changes or release workflows until testing is complete and release is authorized.
+Hardlight 1.1.0 release preparation is authorized. Android and iOS use separate platform-labeled releases; the server remains in the beta line.
 
 On Search Metron, the barcode button to the left of the search field switches to UPC-only entry in the current document. Toggle it off for title search. Hardlight's shared Android/iOS menu places **UPC Mode** immediately after **Search Metron** and opens the same search page with UPC mode active.
 

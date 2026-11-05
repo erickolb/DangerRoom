@@ -1,7 +1,7 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
-  version: 'β-030', date: '2026-11-05', title: 'UPC lookup mode (testing)',
-  changes: ['Add same-page UPC-only Metron search, STX/Ctrl+B scanner capture, exact matching above 12 digits and prefix matching at 12 or fewer.', 'Close open dialogs on a new scan, preselect a unique exact UPC cover, and highlight exact covers with a golden glow.', 'Add UPC Mode immediately after Search Metron in both Hardlight menus. Hardlight 1.1.0 is staged for testing; downloads remain at the last published version.'],
+  version: 'β-030', date: '2026-11-05', title: 'UPC lookup mode',
+  changes: ['Add same-page UPC-only Metron search, STX/Ctrl+B scanner capture, exact matching above 12 digits and prefix matching at 12 or fewer.', 'Close open dialogs on a new scan, preselect a unique exact UPC cover, and highlight exact covers with a golden glow.', 'Add UPC Mode immediately after Search Metron in both Hardlight menus. Hardlight 1.1.0 adds UPC lookup to both mobile clients.'],
 }, {
   version: 'β-029', date: '2026-11-03', title: 'Hardlight for iOS',
   changes: ['Add the iOS companion with device-only Keychain credentials, the shared five-section client, and local slideshow caching. Publish platform-labeled Android and iOS releases with separate sideloading downloads.'],

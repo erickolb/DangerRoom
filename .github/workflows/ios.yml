@@ -1,10 +1,7 @@
 name: Check iOS client
+# iOS maintainer builds run on Barovia; hosted verification is manual only.
 on:
-  push:
-    branches: [main]
-    paths: ['ios/**', 'public/**', '.github/workflows/ios.yml']
-  pull_request:
-    paths: ['ios/**', 'public/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
