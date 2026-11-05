@@ -4,6 +4,8 @@
 
 Comic inventory and reading journal. Current build: **1.0.0**.
 
+This project was created with AI-assisted programming.
+
 Copyright © 2026 Eric Kolb. Original DangerRoom and Hardlight code is licensed under [GNU AGPLv3 only](LICENSE), without warranty. [Licensing and third-party notices](THIRD_PARTY_NOTICES.md) explain source availability and separate asset terms.
 
 Comic metadata from [Metron](https://metron.cloud), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). DangerRoom selects and reformats metadata; adaptations remain under CC BY-SA 4.0. Cover artwork is excluded and belongs to its publishers or creators.
