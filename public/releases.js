@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.2', date: '2026-11-06', title: 'One-tap reload',
+  changes: ['Add Reload to the left of Instance and device settings in the Hardlight main menu to load updated server code in one tap.', 'Server-only update for existing Android and iOS clients; no client update or reinstall.'],
+}, {
   version: '1.0.1', date: '2026-11-06', title: 'Slideshow visibility',
   changes: ['Keep controls hidden across cover rotations. Tap to reveal; configure inactivity timeout (default 10 seconds, minimum 3).', 'Configure independent title-only display from off through the full rotation period. Server update applies to existing Android and iOS clients; no mobile reinstall.'],
 }, {

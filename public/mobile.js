@@ -1,7 +1,8 @@
 import { mountSlideshow, showSlideshowSettings } from './slideshow.js';
 export const isAndroid = Boolean(window.DangerRoomAndroid);
 export function mobileHome(app) {
-  app.innerHTML = `<div class="mobile-menu">${[['/wants','shopping-list','Want List'],['/collection','boxes','My Collection'],['/','metron','Search Metron'],['/?mode=upc','barcode','UPC Mode'],['/slideshow','slideshow','Cover Slideshow'],['/reading-log','reading-log','Reading Log']].map(([path, icon, label])=>`<a class="mobile-menu-item" href="#${path}"><img src="/${icon}.${['metron','barcode'].includes(icon)?'svg':'png'}" alt="">${label}<span aria-hidden="true">›</span></a>`).join('')}</div><div class="mobile-settings-actions"><button id="mobile-settings" class="secondary">Instance and device settings</button><button id="slideshow-settings" class="secondary">Slideshow settings</button></div>`;
+  app.innerHTML = `<div class="mobile-menu">${[['/wants','shopping-list','Want List'],['/collection','boxes','My Collection'],['/','metron','Search Metron'],['/?mode=upc','barcode','UPC Mode'],['/slideshow','slideshow','Cover Slideshow'],['/reading-log','reading-log','Reading Log']].map(([path, icon, label])=>`<a class="mobile-menu-item" href="#${path}"><img src="/${icon}.${['metron','barcode'].includes(icon)?'svg':'png'}" alt="">${label}<span aria-hidden="true">›</span></a>`).join('')}</div><div class="mobile-settings-actions"><button id="mobile-reload" class="secondary">Reload</button><button id="mobile-settings" class="secondary">Instance and device settings</button><button id="slideshow-settings" class="secondary">Slideshow settings</button></div>`;
+  document.querySelector('#mobile-reload').onclick = () => window.location.reload();
   document.querySelector('#mobile-settings').onclick = () => window.DangerRoomAndroid.settings();
   document.querySelector('#slideshow-settings').onclick = () => showSlideshowSettings(app);
 }

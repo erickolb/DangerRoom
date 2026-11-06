@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 · 2026-11-06
+
+- Add Reload to the left of Instance and device settings in the Hardlight main menu.
+- Reload the server app in one tap on existing Android and iOS clients; no client version change or reinstall.
+
+
 ## 1.0.1 · 2026-11-06
 
 - Keep slideshow controls hidden across rotations; tap to reveal. Inactivity timeout defaults to 10 seconds, configurable with a 3-second minimum.

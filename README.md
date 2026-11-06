@@ -12,7 +12,7 @@ Comic metadata from [Metron](https://metron.cloud), licensed under [CC BY-SA 4.0
 
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
 
-The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Slideshow settings offer a controls inactivity timeout (default 10 seconds, minimum 3) and independent title display duration (0 disables, full rotation duration keeps titles visible). Full caches keep displaying uncached images over the network. [Download Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0). Want List, text search, UPC Mode, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
+The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Slideshow settings offer a controls inactivity timeout (default 10 seconds, minimum 3) and independent title display duration (0 disables, full rotation duration keeps titles visible). The main menu’s Reload button refreshes server code without exiting Hardlight. Full caches keep displaying uncached images over the network. [Download Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0). Want List, text search, UPC Mode, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
 [Download Hardlight 1.1.0 for iOS (build 2)](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.1.0-build2). Install with SideStore; GitHub distribution only, with no App Store release. Android and iOS share features; mirror changes unless explicitly scoped to one platform.
 
@@ -110,7 +110,7 @@ pnpm test
 
 Tests use isolated temporary databases and simulated Metron responses, never your collection or API credentials. Live Metron verification requires the local token.
 
-[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.1. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
+[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.2. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
 
 ## Credits
 
