@@ -1,5 +1,11 @@
 # Update a DangerRoom instance
 
+## 1.0.3: Graphic Novel badge · 2026-11-06
+
+Use the backup and container rebuild procedure below; verify `/api/health` reports 1.0.3. On astralplane.chateaulore.net, use `sudo docker` and `sudo docker compose`. Reload the browser or tap **Reload** in the Hardlight main menu. No database migration or client update is needed; Android and iOS Hardlight remain at 1.1.0.
+
+Verify Graphic Novel series show a white GN badge with transparent lettering and **Graphic Novel** alt text between the title and issue number. A trailing GN suffix is replaced in display only; stored metadata is retained.
+
 ## 1.0.2: One-tap reload · 2026-11-06
 
 Use the backup and container rebuild procedure below; verify /api/health reports 1.0.2. No client update or database migration is needed; Hardlight remains at 1.1.0 on Android and iOS.

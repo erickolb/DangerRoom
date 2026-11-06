@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.3', date: '2026-11-06', title: 'Graphic Novel badge',
+  changes: ['Show a GN badge with Graphic Novel alt text for Graphic Novel series, replacing the trailing GN display suffix.', 'Server-only update for browsers and existing Android and iOS Hardlight clients.'],
+}, {
   version: '1.0.2', date: '2026-11-06', title: 'One-tap reload',
   changes: ['Add Reload to the left of Instance and device settings in the Hardlight main menu to load updated server code in one tap.', 'Server-only update for existing Android and iOS clients; no client update or reinstall.'],
 }, {

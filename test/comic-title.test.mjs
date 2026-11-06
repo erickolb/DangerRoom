@@ -13,3 +13,13 @@ test('title text is escaped and reading-log titles can retain the series year',(
   const issue={series:{name:'<script> & "Series"',year_began:2025,series_type:{name:'Trade Paperback'}},number:'<1>'};
   const title=comicTitle(issue,{year:true});assert.match(title,/&lt;script&gt; &amp; &quot;Series&quot; \(2025\)/);assert.match(title,/#&lt;1&gt;/);assert.doesNotMatch(title,/<script>/);
 });
+
+test('Graphic Novel badges replace trailing GN only on Graphic Novel series',()=>{
+  const issue={series:{name:'White Sand GN',series_type:{name:'Graphic Novel'}},number:'1'};
+  assert.deepEqual(formatBadge('GN'),{asset:'gn',label:'Graphic Novel'});
+  assert.match(comicTitle(issue),/White Sand <img[^>]+format-gn.png" alt="Graphic Novel"> <span[^>]+>#1/);
+  assert.equal(comicTitleText(issue),'White Sand Graphic Novel #1');
+  issue.series.name='White Sand';assert.equal(comicTitleText(issue),'White Sand Graphic Novel #1');
+  issue.series.series_type={name:'Limited Series'};issue.series.name='White Sand GN';
+  assert.equal(comicTitleText(issue),'White Sand GN #1');
+});

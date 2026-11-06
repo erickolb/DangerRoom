@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3 · 2026-11-06
+
+- Show a matching GN badge with Graphic Novel alt text for Graphic Novel series, replacing the trailing GN display suffix.
+- Server-only update for browsers and existing Android/iOS clients; retain issue numbers and stored metadata.
+
 ## 1.0.2 · 2026-11-06
 
 - Add Reload to the left of Instance and device settings in the Hardlight main menu.

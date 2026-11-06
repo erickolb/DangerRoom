@@ -95,7 +95,7 @@ Use **Filters** beside the Metron results heading to select one or more series t
 
 ## Comic format
 
-New imports retain Metron's `series.series_type` as an `id`/`name` object, or null if absent. Lightweight wants also retain it. Comic details display **Format**, such as Trade Paperback or Limited Series. TPB and HC formats display as white PNG lozenges with transparent block lettering between the title and number throughout the app. Their image alt text spells out Trade Paperback and Hardcover. Stored names, numbers, and series volume retain their existing meanings. Search reuses types in inventory, wants, and retained detail cache first; unknown series use one shared series-detail lookup cached for 24 hours. Badge PNGs are prebuilt; `scripts/generate-format-badges.ps1` regenerates them from code on Windows.
+New imports retain Metron's `series.series_type` as an `id`/`name` object, or null if absent. Lightweight wants also retain it. Comic details display **Format**, such as Trade Paperback or Limited Series. TPB, HC, OMNI, and GN formats display as white PNG lozenges with transparent block lettering between the title and number throughout the app. Their image alt text spells out Trade Paperback, Hardcover, Omnibus, and Graphic Novel. GN badges replace a trailing GN display suffix on Graphic Novel series. Stored names, numbers, and series volume retain their existing meanings. Search reuses types in inventory, wants, and retained detail cache first; unknown series use one shared series-detail lookup cached for 24 hours. Badge PNGs are prebuilt; `scripts/generate-format-badges.ps1` regenerates them from code on Windows.
 
 For older records, stop the app and preview `pnpm run backfill:series-types --dry-run`, then run `pnpm run backfill:series-types`. This operator utility uses retained issue-detail cache entries (even expired entries still present in SQLite), never calls Metron, and creates a consistent SQLite backup under `DATA_DIR/backups/` before updating missing types. It also reuses types already stored on other issues in the same series. If any series cannot be resolved, no records are updated; preserve or obtain the missing detail data before rerunning. Only series_type fields in issue/Want List JSON are changed. Existing types are preserved, and rerunning after success makes no changes. Restart the app afterward.
 
@@ -110,7 +110,7 @@ pnpm test
 
 Tests use isolated temporary databases and simulated Metron responses, never your collection or API credentials. Live Metron verification requires the local token.
 
-[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.2. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
+[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.3. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
 
 ## Credits
 
