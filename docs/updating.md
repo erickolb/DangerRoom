@@ -1,8 +1,8 @@
 # Update a DangerRoom instance
 
-## 1.1.1: Slideshow visibility · 2026-11-06
+## 1.0.1: Slideshow visibility · 2026-11-06
 
-Use the backup and container rebuild procedure below; verify /api/health reports 1.1.1. Reload the browser or reopen Slideshow on Android and iOS. No client update or database migration is needed. Slideshow settings include Controls inactivity seconds (default 10, minimum 3) and Title display seconds (0 disables; at most Seconds per cover; equal durations keep titles visible). Verify hidden controls stay hidden across rotations and taps reset the inactivity timer. On astralplane.chateaulore.net use sudo docker and sudo docker compose.
+Use the backup and container rebuild procedure below; verify /api/health reports 1.0.1. Reload the browser or reopen Slideshow on Android and iOS. No client update or database migration is needed. Slideshow settings include Controls inactivity seconds (default 10, minimum 3) and Title display seconds (0 disables; at most Seconds per cover; equal durations keep titles visible). Verify hidden controls stay hidden across rotations and taps reset the inactivity timer. On astralplane.chateaulore.net use sudo docker and sudo docker compose.
 
 
 ## Licensing and Metron attribution · 2026-11-05

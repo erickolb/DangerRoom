@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.1 · 2026-11-06
+## 1.0.1 · 2026-11-06
 
 - Keep slideshow controls hidden across rotations; tap to reveal. Inactivity timeout defaults to 10 seconds, configurable with a 3-second minimum.
 - Add independent title-only rotation display: 0 disables, less than the rotation period fades out, equal durations keep titles visible.

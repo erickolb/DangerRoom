@@ -1,6 +1,6 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
-  version: '1.1.1', date: '2026-11-06', title: 'Slideshow visibility',
+  version: '1.0.1', date: '2026-11-06', title: 'Slideshow visibility',
   changes: ['Keep controls hidden across cover rotations. Tap to reveal; configure inactivity timeout (default 10 seconds, minimum 3).', 'Configure independent title-only display from off through the full rotation period. Server update applies to existing Android and iOS clients; no mobile reinstall.'],
 }, {
   version: '1.0.0', date: '2026-11-05', title: 'DangerRoom 1.0.0',
