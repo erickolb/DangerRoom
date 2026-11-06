@@ -59,3 +59,7 @@ sudo docker compose up -d
 Your current 22 covers have already migrated; importing that database requires no repeat migration. Migration retains any local originals. Back up S3 objects separately from SQLite. Never use sudo docker compose down -v unless you intend to delete the collection volume.
 
 See [updates, backups, and rollback](updating.md) for every subsequent release.
+
+## Download website deployments
+
+The Publish website workflow deploys GitHub Pages only from main. A published release starts a separate workflow_dispatch run on main; the release-tag run itself does not enter the protected github-pages environment. Keep that environment restricted to the main branch. Successful iOS release builds also trigger a deployment so the SideStore source includes the latest published IPA. This workflow-only maintenance requires no server container update or Hardlight version change.
