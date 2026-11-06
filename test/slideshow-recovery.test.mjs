@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mountSlideshow } from '../public/slideshow.js';
 
-async function gallery(t, ids = [1, 2, 3], apiOverride) {
+async function gallery(t, ids = [1, 2, 3], apiOverride, settings = {}, healthy = false) {
   const saved = new Map();
   function global(name, value) {
     saved.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
@@ -13,10 +13,10 @@ async function gallery(t, ids = [1, 2, 3], apiOverride) {
   } });
   const timers = new Map(), listeners = new Map(), attempts = [], cacheConfigurations = [];
   let timerId = 0, clock = 0, active = true, requests = 0;
-  const failures = new Set(ids);
+  const failures = new Set(healthy ? [] : ids);
   global('setTimeout', (fn, ms) => { timers.set(++timerId, { fn, at: clock + ms }); return timerId; });
   global('clearTimeout', id => timers.delete(id));
-  const element = () => ({ style: {}, hidden: false, classList: { add() {}, remove() {} }, focus() {}, append() {}, setAttribute() {},
+  const element = () => ({ style: {}, hidden: false, classList: { values: new Set(), add(v) { this.values.add(v); }, remove(v) { this.values.delete(v); }, contains(v) { return this.values.has(v); } }, focus() {}, append() {}, setAttribute() {},
     removeAttribute() {}, hasAttribute() { return false; },
     set src(value) {
       const id = Number(value.match(/(\d+)\.png/)[1]); attempts.push(id);
@@ -29,7 +29,7 @@ async function gallery(t, ids = [1, 2, 3], apiOverride) {
   global('window', { DangerRoomAndroid: { fullscreen() {}, keepAwake() {}, configureCoverCache(...args) { cacheConfigurations.push(args); } }, addEventListener(name, fn) { listeners.set(name, fn); }, removeEventListener(name) { listeners.delete(name); } });
   global('document', { hidden: false, createElement() { return spinner; }, addEventListener() {}, removeEventListener() {} });
   global('location', { origin: 'https://test.example' });
-  global('localStorage', { getItem() { return JSON.stringify({ settings: { shuffle: false, seconds: 3, fade: false } }); }, setItem() {} });
+  global('localStorage', { getItem() { return JSON.stringify({ settings: { shuffle: false, seconds: 3, fade: false, ...settings } }); }, setItem() {} });
   const items = ids.map(id => ({ issue: { id, series: { name: 'Heroes' }, number: String(id) }, edition: { key: 'standard', name: 'Standard', cover_file: `${id}.png` } }));
   const api = async () => { requests++; return apiOverride ? apiOverride(requests, items) : { items }; };
   const settle = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
@@ -101,5 +101,48 @@ test('inventory errors and empty inventory wait ten minutes; exit cancels reinit
 test('slideshow initializes native cache with entire eligible playlist and default 300 MB limit', async t => {
   const h = await gallery(t, [1, 2]);
   assert.deepEqual(h.cacheConfigurations, [[JSON.stringify(['1.png', '2.png']), true, 300]]);
+  h.exit();
+});
+
+ test('rotations preserve hidden controls and interaction resets the default timeout', async t => {
+  const h = await gallery(t, [1,2], undefined, {}, true);
+  const stage = h.elements.get('#gallery-stage');
+  assert.equal(stage.classList.contains('gallery-title-visible'), false);
+  await h.run(10000);
+  assert.equal(stage.classList.contains('gallery-controls-visible'), false);
+  await h.run(3000);
+  assert.equal(stage.classList.contains('gallery-controls-visible'), false);
+  stage.onclick(); await h.run(9000); stage.onclick();
+  await h.run(9999); assert.equal(stage.classList.contains('gallery-controls-visible'), true);
+  await h.run(1); assert.equal(stage.classList.contains('gallery-controls-visible'), false);
+  h.exit(); assert.equal(h.timers.size, 0);
+});
+ test('custom timeout clamps to three seconds and title fades independently', async t => {
+  const h = await gallery(t, [1,2], undefined, { controlsSeconds: 1, titleSeconds: 2, seconds: 5 }, true);
+  const stage = h.elements.get('#gallery-stage');
+  assert.equal(stage.classList.contains('gallery-title-visible'), true);
+  await h.run(2000); assert.equal(stage.classList.contains('gallery-title-visible'), false);
+  await h.run(999); assert.equal(stage.classList.contains('gallery-controls-visible'), true);
+  await h.run(1); assert.equal(stage.classList.contains('gallery-controls-visible'), false);
+  await h.run(2000); assert.equal(stage.classList.contains('gallery-title-visible'), true);
+  h.exit();
+});
+ test('title stays visible throughout full rotations', async t => {
+  const h = await gallery(t, [1,2], undefined, { titleSeconds: 3 }, true);
+  const stage = h.elements.get('#gallery-stage');
+  await h.run(12000); assert.equal(stage.classList.contains('gallery-title-visible'), true);
+  assert.match(h.elements.get('#gallery-rotation-title').textContent, /Heroes #1 · Standard/);
+  h.exit(); assert.equal(h.timers.size, 0);
+});
+
+test('configured controls timeout applies while paused and after toolbar interaction', async t => {
+  const h = await gallery(t, [1,2], undefined, { controlsSeconds: 7 }, true);
+  const stage = h.elements.get('#gallery-stage');
+  await h.run(6999); assert.equal(stage.classList.contains('gallery-controls-visible'), true);
+  await h.run(1); assert.equal(stage.classList.contains('gallery-controls-visible'), false);
+  h.elements.get('#play-covers').onclick(); stage.onclick();
+  await h.run(6000); stage.onclick();
+  await h.run(6999); assert.equal(stage.classList.contains('gallery-controls-visible'), true);
+  await h.run(1); assert.equal(stage.classList.contains('gallery-controls-visible'), false);
   h.exit();
 });

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 · 2026-11-06
+
+- Keep slideshow controls hidden across rotations; tap to reveal. Inactivity timeout defaults to 10 seconds, configurable with a 3-second minimum.
+- Add independent title-only rotation display: 0 disables, less than the rotation period fades out, equal durations keep titles visible.
+- Server-only update for browser and existing Android/iOS clients; no client release or reinstall.
+
+
 ## Licensing and attribution · 2026-11-05
 
 - License original DangerRoom and Hardlight code under AGPL-3.0-only.

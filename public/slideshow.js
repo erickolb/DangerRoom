@@ -7,6 +7,8 @@ function preferences() {
   try { stored = JSON.parse(localStorage.getItem(key)) || {}; } catch { /* Use defaults. */ }
   const settings = {
     seconds: Math.max(3, Math.min(600, Number(stored.settings?.seconds) || 15)),
+    controlsSeconds: Math.max(3, Number(stored.settings?.controlsSeconds) || 10),
+    titleSeconds: Math.max(0, Math.min(Number(stored.settings?.seconds) || 15, Number(stored.settings?.titleSeconds) || 0)),
     shuffle: stored.settings?.shuffle ?? true,
     fade: stored.settings?.fade ?? true,
     cacheLimited: stored.settings?.cacheLimited ?? true,
@@ -20,7 +22,13 @@ export function showSlideshowSettings(app) {
   const dialog = document.createElement('dialog');
   dialog.id = 'gallery-options';
   dialog.setAttribute('aria-labelledby', 'gallery-options-title');
-  dialog.innerHTML = `<h2 id="gallery-options-title">Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><label class="gallery-choice"><input type="checkbox" name="cacheLimited" ${settings.cacheLimited ? 'checked' : ''}>Limit local cover cache</label><label>Cover cache size (MB)<input name="cacheMB" type="number" min="1" max="1048576" step="1" required value="${settings.cacheMB}"></label><p>Hardlight caches slideshow covers on this device. When full, uncached covers still download and display without being saved. Turn off the limit to use as much storage as the device allows. Covers outside the playlist are removed when the slideshow starts.</p><button type="button" id="flush-gallery-cache">Flush cache</button><p id="gallery-cache-status" role="status"></p><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form>`;
+  dialog.innerHTML = `<h2 id="gallery-options-title">Slideshow settings</h2><form method="dialog"><label>Seconds per cover<input name="seconds" type="number" min="3" max="600" required value="${settings.seconds}"></label><label>Controls inactivity seconds<input name="controlsSeconds" type="number" min="3" required value="${settings.controlsSeconds}"></label><label>Title display seconds (0 = off)<input name="titleSeconds" type="number" min="0" max="${settings.seconds}" required value="${settings.titleSeconds}"></label><p>Show the issue title, number, and variant on each rotation. Use the full rotation duration to keep it visible.</p><label class="gallery-choice"><input type="checkbox" name="shuffle" ${settings.shuffle ? 'checked' : ''}>Random display order</label><label class="gallery-choice"><input type="checkbox" name="fade" ${settings.fade ? 'checked' : ''}>Cross-fade between covers</label><label class="gallery-choice"><input type="checkbox" name="cacheLimited" ${settings.cacheLimited ? 'checked' : ''}>Limit local cover cache</label><label>Cover cache size (MB)<input name="cacheMB" type="number" min="1" max="1048576" step="1" required value="${settings.cacheMB}"></label><p>Hardlight caches slideshow covers on this device. When full, uncached covers still download and display without being saved. Turn off the limit to use as much storage as the device allows. Covers outside the playlist are removed when the slideshow starts.</p><button type="button" id="flush-gallery-cache">Flush cache</button><p id="gallery-cache-status" role="status"></p><button value="save">Save</button><button type="button" id="cancel-gallery-options">Cancel</button></form>`;
+  const rotationInput = dialog.querySelector('[name=seconds]');
+  const titleInput = dialog.querySelector('[name=titleSeconds]');
+  rotationInput.oninput = () => {
+    titleInput.max = rotationInput.value;
+    if (Number(titleInput.value) > Number(rotationInput.value)) titleInput.value = rotationInput.value;
+  };
   const flush = dialog.querySelector('#flush-gallery-cache');
   flush.disabled = !window.DangerRoomAndroid?.flushCoverCache;
   flush.onclick = async () => {
@@ -32,6 +40,8 @@ export function showSlideshowSettings(app) {
     event.preventDefault();
     const values = new FormData(event.target);
     const updated = { seconds: Math.max(3, Math.min(600, Number(values.get('seconds')))), shuffle: values.has('shuffle'), fade: values.has('fade'), cacheLimited: values.has('cacheLimited'), cacheMB: Math.max(1, Math.min(1048576, Math.floor(Number(values.get('cacheMB')) || 300))) };
+    updated.controlsSeconds = Math.max(3, Number(values.get('controlsSeconds')) || 10);
+    updated.titleSeconds = Math.max(0, Math.min(updated.seconds, Number(values.get('titleSeconds')) || 0));
     try {
       // Preserve old local exclusions until opening the slideshow migrates them.
       localStorage.setItem(key, JSON.stringify({ ...stored, settings: updated }));
@@ -54,12 +64,13 @@ export function chooseCovers(items, settings, random = Math.random) {
 export async function mountSlideshow(app, api, current) {
   const { key, stored, settings } = preferences();
   let rows = [], index = 0, playing = true, loading = true, disposed = false;
-  let timer = null, controlsTimer = null, retryTimer = null, generation = 0;
+  let timer = null, controlsTimer = null, titleTimer = null, retryTimer = null, generation = 0;
   let refreshing = false;
   const strikes = new Map();
   // Cover the app immediately, including while inventory or artwork is loading.
-  app.innerHTML = `<div id="gallery-stage" class="gallery-fullscreen gallery-immersive gallery-playing gallery-controls-visible" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite">Opening owned covers…</p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover" disabled>‹</button><button id="play-covers" disabled>Pause</button><button id="next-cover" aria-label="Next cover" disabled>›</button><button id="exit-gallery">Exit</button></div></div></div>`;
+  app.innerHTML = `<div id="gallery-stage" class="gallery-fullscreen gallery-immersive gallery-playing gallery-controls-visible" tabindex="0" aria-label="Cover slideshow; tap to show playback controls"><div class="gallery-images"><img id="gallery-old" alt=""><img id="gallery-cover" alt=""></div><div id="gallery-rotation-title" class="gallery-rotation-title"></div><div class="gallery-overlay"><p id="gallery-caption" aria-live="polite">Opening owned covers…</p><div class="gallery-toolbar"><button id="previous-cover" aria-label="Previous cover" disabled>‹</button><button id="play-covers" disabled>Pause</button><button id="next-cover" aria-label="Next cover" disabled>›</button><button id="exit-gallery">Exit</button></div></div></div>`;
   const stage = app.querySelector('#gallery-stage'), caption = app.querySelector('#gallery-caption');
+  const rotationTitle = app.querySelector('#gallery-rotation-title');
   const spinner = document.createElement('span');
   spinner.className = 'gallery-spinner'; spinner.hidden = true;
   spinner.setAttribute('role', 'status'); spinner.setAttribute('aria-label', 'Waiting to retry slideshow');
@@ -73,11 +84,11 @@ export async function mountSlideshow(app, api, current) {
   }
   function revealControls() {
     clearTimeout(controlsTimer); stage.classList.add('gallery-controls-visible');
-    if (playing && !loading) controlsTimer = setTimeout(() => stage.classList.remove('gallery-controls-visible'), 3000);
+    if (!disposed) controlsTimer = setTimeout(() => stage.classList.remove('gallery-controls-visible'), settings.controlsSeconds * 1000);
   }
   function pause() {
-    playing = false; clearTimeout(timer); clearTimeout(controlsTimer);
-    stage.classList.remove('gallery-playing'); stage.classList.add('gallery-controls-visible');
+    playing = false; clearTimeout(timer);
+    stage.classList.remove('gallery-playing'); revealControls();
     play.textContent = 'Play'; window.DangerRoomAndroid?.keepAwake(false);
   }
   function schedule() {
@@ -100,7 +111,7 @@ export async function mountSlideshow(app, api, current) {
       revealControls(); retry(); return;
     }
     spinner.hidden = true;
-    const row = rows[index]; loading = true; caption.textContent = 'Loading cover…'; revealControls();
+    const row = rows[index]; loading = true;
     try {
       const alt = `${comicTitleText(row.issue, { year: true })} · ${row.edition.name}`;
       const shown = await transition.show(`/covers/${row.edition.cover_file}`, alt, settings.fade, () => ticket === generation && current() && !disposed);
@@ -108,7 +119,14 @@ export async function mountSlideshow(app, api, current) {
       if (strikes.get(`${row.issue.id}:${row.edition.key}`)) strikes.clear();
       loading = false;
       caption.textContent = `${alt} · ${index + 1} / ${rows.length}`;
-      revealControls(); schedule();
+      clearTimeout(titleTimer);
+      rotationTitle.textContent = alt;
+      stage.classList.remove('gallery-title-visible');
+      if (settings.titleSeconds > 0) {
+        stage.classList.add('gallery-title-visible');
+        if (settings.titleSeconds < settings.seconds) titleTimer = setTimeout(() => stage.classList.remove('gallery-title-visible'), settings.titleSeconds * 1000);
+      }
+      schedule();
     } catch {
       if (ticket !== generation || !current() || disposed) return;
       const key = `${row.issue.id}:${row.edition.key}`;
@@ -135,13 +153,14 @@ export async function mountSlideshow(app, api, current) {
   };
   function exit() { pause(); leaveFullscreen(); location.hash = window.DangerRoomAndroid ? '#/home' : '#/'; }
   app.querySelector('#exit-gallery').onclick = exit;
-  stage.onclick = event => { if (!event.target.closest('button')) revealControls(); };
+  stage.onclick = () => revealControls();
+  stage.onfocusin = () => revealControls();
   stage.onkeydown = event => { if (event.key === 'Escape') exit(); else revealControls(); };
   const visibility = () => { if (document.hidden) pause(); };
   const fullscreenChange = () => { if (!window.DangerRoomAndroid && !document.fullscreenElement) pause(); };
   const cleanup = () => {
     if (current() || disposed) return;
-    disposed = true; pause(); clearTimeout(retryTimer); generation++; transition.cancel(); leaveFullscreen();
+    disposed = true; pause(); clearTimeout(controlsTimer); clearTimeout(titleTimer); clearTimeout(retryTimer); generation++; transition.cancel(); leaveFullscreen();
     window.removeEventListener('hashchange', cleanup);
     document.removeEventListener('visibilitychange', visibility);
     document.removeEventListener('dangerroompause', pause);
@@ -154,7 +173,7 @@ export async function mountSlideshow(app, api, current) {
   document.addEventListener('fullscreenchange', fullscreenChange);
   window.DangerRoomAndroid?.fullscreen(true);
   if (!window.DangerRoomAndroid) stage.requestFullscreen?.().catch(() => {});
-  stage.focus();
+  stage.focus(); revealControls();
   window.DangerRoomAndroid?.keepAwake(true);
   async function refresh() {
     if (refreshing || !current() || disposed) return;
