@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4 · 2026-11-07
+
+- Center rating stars within collection tiles, removing the fixed horizontal inset that shifted stars toward the right on narrow tiles.
+- Server-only update for browsers and existing Android/iOS Hardlight clients.
+
 ## 1.0.3 · 2026-11-06
 
 - Show a matching GN badge with Graphic Novel alt text for Graphic Novel series, replacing the trailing GN display suffix.

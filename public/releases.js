@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.4', date: '2026-11-07', title: 'Centered tile ratings',
+  changes: ['Center rating stars within collection tiles, including narrow iPhone and Android layouts.', 'Server-only update; existing Hardlight clients receive the fix after reloading.'],
+}, {
   version: '1.0.3', date: '2026-11-06', title: 'Graphic Novel badge',
   changes: ['Show a GN badge with Graphic Novel alt text for Graphic Novel series, replacing the trailing GN display suffix.', 'Server-only update for browsers and existing Android and iOS Hardlight clients.'],
 }, {

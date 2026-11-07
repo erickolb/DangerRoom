@@ -1,5 +1,9 @@
 # Update a DangerRoom instance
 
+## 1.0.4: Centered tile ratings · 2026-11-07
+
+Follow the backup and container rebuild procedure below, then verify `/api/health` reports `1.0.4`. On astralplane.chateaulore.net, use `sudo docker` and `sudo docker compose`. Reload the browser or tap **Reload** in Hardlight to center the rating stars within collection tiles. No database migration or client update is required; Android and iOS Hardlight remain at 1.1.0.
+
 ## 1.0.3: Graphic Novel badge · 2026-11-06
 
 Use the backup and container rebuild procedure below; verify `/api/health` reports 1.0.3. On astralplane.chateaulore.net, use `sudo docker` and `sudo docker compose`. Reload the browser or tap **Reload** in the Hardlight main menu. No database migration or client update is needed; Android and iOS Hardlight remain at 1.1.0.
