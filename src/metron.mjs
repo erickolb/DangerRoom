@@ -80,12 +80,13 @@ export class Metron {
       interval_ms: this.interval, in_flight: this.inflight.size,
       cached_entries: this.repo.db.prepare('SELECT COUNT(*) AS n FROM cache WHERE expires_at>?').get(Date.now()).n };
   }
-  async get(path, ttl) {
-    const cached = this.repo.cacheGet(path);
+  async get(path, ttl, fresh = false) {
+    const requestKey = fresh ? `fresh:${path}` : path;
+    const cached = !fresh && this.repo.cacheGet(path);
     if (cached) { this.observed.cache_hits++; this.persistDiagnostics(); return cached; }
-    if (this.inflight.has(path)) return this.inflight.get(path);
+    if (this.inflight.has(requestKey)) return this.inflight.get(requestKey);
     const task = this.queue.then(async () => {
-      const existing = this.repo.cacheGet(path);
+      const existing = !fresh && this.repo.cacheGet(path);
       if (existing) return existing;
       if (!this.configured) throw new AppError(503, 'Metron is not connected yet. Add METRON_API_TOKEN to .env and restart DangerRoom. Your saved collection remains available.');
       const now = Date.now();
@@ -141,8 +142,8 @@ export class Metron {
       return payload;
     });
     this.queue = task.catch(() => {});
-    this.inflight.set(path, task);
-    try { return await task; } finally { this.inflight.delete(path); }
+    this.inflight.set(requestKey, task);
+    try { return await task; } finally { this.inflight.delete(requestKey); }
   }
   async search(params) {
     const filters = searchFilters(params);
@@ -174,8 +175,8 @@ export class Metron {
     }
     throw new AppError(502,'Metron returned too many series-type pages.');
   }
-  async issue(id) {
-    const raw = await this.get(`issue/${positiveId(id)}/`, 24 * 60 * 60 * 1000);
+  async issue(id, fresh = false) {
+    const raw = await this.get(`issue/${positiveId(id)}/`, 24 * 60 * 60 * 1000, fresh);
     if (raw.id !== Number(id) || !raw.series?.name) throw new AppError(502, 'Metron returned incomplete comic data.');
     return { ...essentialIssue(raw), editions: editionsFor(raw) };
   }

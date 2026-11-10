@@ -1,5 +1,9 @@
 # Update a DangerRoom instance
 
+## 1.0.6: Refresh comic data · 2026-11-10
+
+Follow the backup and container rebuild procedure below, using `sudo docker` and `sudo docker compose` on astralplane.chateaulore.net. Verify `/api/health` reports `1.0.6`, then reload the browser or Hardlight. Comic details now includes **Refresh Data from Metron** beside full-series search. It replaces metadata and downloads artwork again while preserving collection data. No database migration or client reinstall is required; Android and iOS Hardlight remain at 1.1.0.
+
 ## 1.0.5: Collection sorting · 2026-11-10
 
 Follow the backup and container rebuild procedure below, then verify `/api/health` reports `1.0.5`. On astralplane.chateaulore.net use `sudo docker` and `sudo docker compose`. Reload the browser or tap **Reload** in Hardlight. Verify My Collection defaults to Alphabetical (Series), then choose Recently Added to see newest copy additions first. Check web, Android, and iOS. No migration or client reinstall is required; both Hardlight clients remain at 1.1.0.

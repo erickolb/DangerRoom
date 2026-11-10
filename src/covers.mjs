@@ -25,8 +25,10 @@ export class Covers {
     try { return await task; } finally { this.inflight.delete(source); }
   }
   async download(source) {
+    if (!source) return null;
+    if (!imageURL(source)) throw new AppError(400, 'This cover URL is not from Metron.');
     let response;
-    try { response = await this.fetch(source, { signal: AbortSignal.timeout(30000), redirect: 'error' }); }
+    try { response = await this.fetch(source, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' }, signal: AbortSignal.timeout(30000), redirect: 'error' }); }
     catch { throw new AppError(502, 'The cover could not be downloaded. Nothing was added; please try again.'); }
     if (!response.ok || Number(response.headers.get('content-length')) > 25 * 1024 * 1024) throw new AppError(502, 'The original cover is unavailable or exceeds the 25 MB limit. Nothing was added.');
     const chunks = []; let size = 0;

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6 · 2026-11-10
+
+- Add Refresh Data from Metron with a reload icon beside full-series search on comic details. Fetch fresh metadata and replacement artwork while preserving personal collection data.
+- Shared server update for web, Android, and iOS; Hardlight stays at 1.1.0.
+
 ## 1.0.5 · 2026-11-10
 
 - Add Sort By to My Collection on web, Android, and iOS: Alphabetical (Series) by default, or Recently Added, newest first.

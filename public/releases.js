@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.6', date: '2026-11-10', title: 'Refresh comic data',
+  changes: ['Add Refresh Data from Metron beside full-series search on comic details, with fresh metadata and replacement cover downloads.', 'Preserve copies, ratings, reading history, and slideshow exclusions. Server-only update for web, Android, and iOS; Hardlight stays at 1.1.0.'],
+}, {
   version: '1.0.5', date: '2026-11-10', title: 'Collection sorting',
   changes: ['Add Sort By to My Collection: Alphabetical (Series) by default, or Recently Added with newest additions first.', 'Shared server update for web, Android, and iOS; Hardlight remains at 1.1.0.'],
 }, {

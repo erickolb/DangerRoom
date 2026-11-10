@@ -658,3 +658,41 @@ test('diagnostics reads locally and counts provider requests and cache hits', as
   h.repo.db.prepare('UPDATE copies SET added_at=? WHERE issue_id=?').run('2026-03-01T00:00:00.000Z',903);
   assert.deepEqual(await ids('/api/collection?sort=recent'),[903,902,901]);
 });
+
+test('refresh bypasses cached metadata, replaces artwork and preserves collection records',async t=>{
+  let payload=structuredClone(raw),image=original,fail=false,fetches=0,images=0;
+  const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async()=>{fetches++;return Response.json(payload);}},imageFetch:async()=>{images++;return fail?new Response('',{status:502}):new Response(image);}});
+  await h.request('/api/entries','POST',add('standard',true,true));
+  await h.request('/api/entries','POST',add('standard',true,true));
+  await h.request('/api/issues/42/rating','PATCH',{rating:4,edition_key:'standard'});
+  await h.request('/api/issues/42/reading-log','POST',{log_date:'2026-11-01',edition_key:'standard'});
+  await h.request('/api/issues/42/black-bag','PATCH',{black_bagged:true,edition_key:'standard'});
+  const before=h.repo.issue(42),logs=h.repo.issueLog(42),oldFile=before.editions[0].cover_file;
+  payload.title='Corrected title';image=Buffer.concat([original,Buffer.from('new artwork')]);
+  const result=await h.request('/api/issues/42/refresh','POST');
+  assert.equal(result.status,200);assert.equal(result.data.title,'Corrected title');
+  assert.notEqual(result.data.editions[0].cover_file,oldFile);
+  assert.deepEqual(await h.covers.read(result.data.editions[0].cover_file),image);
+  assert.deepEqual(result.data.copies,JSON.parse(JSON.stringify(before.copies)));assert.deepEqual(result.data.read,JSON.parse(JSON.stringify(before.read)));
+  assert.equal(result.data.user_rating,4);assert.equal(result.data.editions[0].black_bagged,true);
+  assert.deepEqual(h.repo.issueLog(42),logs);assert.equal(fetches,2);assert.equal(images,2);
+  const current=h.repo.issue(42);fail=true;payload.title='Must not save';
+  assert.equal((await h.request('/api/issues/42/refresh','POST')).status,502);
+  assert.deepEqual(h.repo.issue(42),current);
+  assert.equal((await h.request('/api/issues/999/refresh','POST')).status,404);
+});
+test('refresh keeps variant identity when artwork URL changes and refuses missing variants',async t=>{
+  let payload=structuredClone(raw);
+  const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async()=>Response.json(payload)}});
+  const key=editionsFor(raw)[1].key;
+  await h.request('/api/entries','POST',add(key,true,true));
+  const before=h.repo.issue(42);
+  payload.variants[0].image='https://static.metron.cloud/media/replacement.png';
+  assert.equal((await h.request('/api/issues/42/refresh','POST')).status,200);
+  const updated=h.repo.issue(42);assert.equal(updated.editions[0].key,key);
+  assert.equal(updated.editions[0].source_image,payload.variants[0].image);
+  assert.deepEqual(updated.copies,before.copies);
+  payload.variants=[];
+  assert.equal((await h.request('/api/issues/42/refresh','POST')).status,409);
+  assert.deepEqual(h.repo.issue(42),updated);
+});

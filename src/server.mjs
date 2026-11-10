@@ -132,6 +132,26 @@ export function createApp(options = {}) {
         if (!issue) throw new AppError(404, 'Comic not found in your collection.');
         return send(200, issue);
       }
+      match = url.pathname.match(/^\/api\/issues\/(\d+)\/refresh$/);
+      if(req.method==='POST' && match){
+        const id=positiveId(match[1]),saved=repo.issue(id);
+        if(!saved)throw new AppError(404,'Comic not found in your collection.');
+        const fresh=await metron.issue(id,true),updates=[];
+        for(const old of saved.editions){
+          let edition=fresh.editions.find(e=>e.key===old.key);
+          if(!edition){
+            // Variant fingerprints can change when Metron corrects the cover URL.
+            for(const field of ['upc','sku','name']){
+              const matches=fresh.editions.filter(e=>e.key!=='standard' && old[field] && e[field]===old[field]);
+              if(matches.length===1){edition=matches[0];break;}
+            }
+          }
+          if(!edition)throw new AppError(409,'A saved cover could not be matched unambiguously on Metron. Your saved comic was not changed.');
+          updates.push({...edition,key:old.key,cover_file:await covers.download(edition.source_image)});
+        }
+        const {editions,...metadata}=fresh;
+        return send(200,repo.refreshIssue(metadata,updates));
+      }
       if (req.method === 'POST' && url.pathname === '/api/entries') {
         const data = await body(req); flags(data);
         const id = positiveId(data.issue_id);

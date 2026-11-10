@@ -110,7 +110,7 @@ pnpm test
 
 Tests use isolated temporary databases and simulated Metron responses, never your collection or API credentials. Live Metron verification requires the local token.
 
-[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.5. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
+[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.6. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
 
 ## Credits
 
@@ -137,3 +137,5 @@ Tests use isolated temporary databases and simulated Metron responses, never you
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 The Filters dropdown also offers **Series Name** checkboxes for exact title matching. Names are gathered from the current results page, with active selections retained across pages. Selecting a name includes all runs with that exact name; multiple names are combined, then narrowed by type and hide-owned filters. Clear resets both dropdown selections.
+
+On comic details, **Refresh Data from Metron** fetches fresh metadata and downloads replacement artwork for saved covers on all platforms. Copies, ratings, reading logs, and slideshow exclusions are retained. If a saved variant cannot be matched or a download fails, the saved comic remains unchanged.

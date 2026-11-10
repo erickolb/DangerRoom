@@ -80,3 +80,5 @@ Search results now expose `series.series_type` for title badges. If the issue li
 ## Removed camera APIs (β-025)
 
 Camera lookup and retained-scan APIs, including /api/camera-search and /api/scan-captures, have been removed and return 404 for authenticated requests, including under /mobile/. Schema 7 removes the scan_captures table and cover-hash lookup cache entries. Normal text search, issue metadata, inventory, wants, ratings, Reading Log, slideshow, and device authorization remain supported.
+
+`POST /api/issues/:id/refresh` bypasses cached Metron issue metadata and downloads saved-cover artwork again, then atomically replaces local metadata and cover references. Preserves copy IDs/dates, read status, ratings, logs, and black bags. Unmatched variants or failed downloads leave saved comic data unchanged. Available through authenticated mobile routes too.

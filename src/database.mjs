@@ -98,6 +98,18 @@ export class Repository {
       return { issue: this.issue(issue.id), copy_id: copyId };
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
+  refreshIssue(issue, editions) {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      this.db.prepare('UPDATE issues SET metadata=?,saved_at=? WHERE id=?').run(JSON.stringify(issue),new Date().toISOString(),issue.id);
+      for(const edition of editions){
+        const {cover_file,...metadata}=edition;
+        this.db.prepare('UPDATE editions SET metadata=?,cover_file=? WHERE issue_id=? AND key=?').run(JSON.stringify(metadata),cover_file,issue.id,edition.key);
+      }
+      this.db.exec('COMMIT');
+      return this.issue(issue.id);
+    } catch(error){this.db.exec('ROLLBACK');throw error;}
+  }
   ownedCover(id) {
     return this.db.prepare(`SELECT e.cover_file, e.key AS edition_key FROM copies c
       JOIN editions e ON e.issue_id=c.issue_id AND e.key=c.edition_key

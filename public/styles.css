@@ -108,3 +108,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .gallery-immersive .gallery-overlay,.gallery-rotation-title{z-index:2}
 
 .collection-sort{max-width:280px;margin:0 0 24px;gap:8px}
+
+.comic-refresh-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:22px}.comic-refresh-actions .full-series-search{margin-top:0}
