@@ -641,3 +641,20 @@ test('diagnostics reads locally and counts provider requests and cache hits', as
   const cached=(await h.request('/api/metron/diagnostics')).data;
   assert.equal(cached.requests,1);assert.equal(cached.cache_hits,1);
 });
+
+ test('collection recent sorting uses copy addition dates, preserves search, and falls back to alphabetical',async t=>{
+  const h=await harness(t);
+  for(const [id,name] of [[901,'Alpha'],[902,'Zulu'],[903,'Middle']]){
+    h.repo.save({id,series:{id,name,year_began:2026},number:'1',display_name:name},{key:'standard',name:'Standard'},null,{owned:true,read:true});
+  }
+  h.repo.db.prepare('UPDATE copies SET added_at=? WHERE issue_id=?').run('2026-01-01T00:00:00.000Z',901);
+  h.repo.db.prepare('UPDATE copies SET added_at=? WHERE issue_id=?').run('2026-03-01T00:00:00.000Z',902);
+  h.repo.db.prepare('UPDATE copies SET added_at=? WHERE issue_id=?').run('2026-02-01T00:00:00.000Z',903);
+  const ids=async path=>(await h.request(path)).data.items.map(r=>r.issue.id);
+  assert.deepEqual(await ids('/api/collection'),[901,903,902]);
+  assert.deepEqual(await ids('/api/collection?sort=recent'),[902,903,901]);
+  assert.deepEqual(await ids('/api/collection?sort=recent&q=Zulu'),[902]);
+  assert.deepEqual(await ids('/api/collection?sort=unknown'),[901,903,902]);
+  h.repo.db.prepare('UPDATE copies SET added_at=? WHERE issue_id=?').run('2026-03-01T00:00:00.000Z',903);
+  assert.deepEqual(await ids('/api/collection?sort=recent'),[903,902,901]);
+});

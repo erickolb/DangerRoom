@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5 · 2026-11-10
+
+- Add Sort By to My Collection on web, Android, and iOS: Alphabetical (Series) by default, or Recently Added, newest first.
+- Server-only update; Hardlight stays at 1.1.0.
+
 ## 1.0.4 · 2026-11-07
 
 - Center rating stars within collection tiles, removing the fixed horizontal inset that shifted stars toward the right on narrow tiles.

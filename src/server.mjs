@@ -120,7 +120,7 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/collection') {
         const view = url.searchParams.get('view') || 'owned';
         if (!['owned', 'read'].includes(view)) throw new AppError(400, 'Choose owned comics or read comics.');
-        return send(200, { view, items: repo.collection(view, (url.searchParams.get('q') || '').slice(0, 160)) });
+        return send(200, { view, items: repo.collection(view, (url.searchParams.get('q') || '').slice(0, 160), url.searchParams.get('sort')) });
       }
       match = url.pathname.match(/^\/api\/issues\/(\d+)\/series-ratings$/);
       if (req.method === 'GET' && match) return send(200, repo.seriesRatings(positiveId(match[1])));

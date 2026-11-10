@@ -106,3 +106,5 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 
 .gallery-immersive .gallery-images{isolation:isolate}
 .gallery-immersive .gallery-overlay,.gallery-rotation-title{z-index:2}
+
+.collection-sort{max-width:280px;margin:0 0 24px;gap:8px}

@@ -247,7 +247,7 @@ export class Repository {
       return {...row,edition:row.issue.editions.find(e=>e.key===preferred?.edition_key)||row.edition};
     });
   }
-  collection(view, query = '') {
+  collection(view, query = '', sort = 'alphabetical') {
     const rows = view === 'read'
       ? this.db.prepare('SELECT issue_id,edition_key,read_at AS date FROM reads ORDER BY read_at DESC,issue_id DESC').all()
       : this.db.prepare('SELECT id,issue_id,edition_key,added_at AS date FROM copies ORDER BY added_at DESC,id').all();
@@ -257,6 +257,6 @@ export class Repository {
       return { id: row.id || `read-${row.issue_id}`, date: row.date, issue,
         edition: issue.editions.find(e => e.key === row.edition_key) };
     }).filter(row => !needle || [row.issue.display_name, row.issue.series.name, row.issue.publisher?.name,
-      row.issue.number, row.edition.name, row.edition.upc, row.issue.isbn].filter(Boolean).join(' ').toLocaleLowerCase().includes(needle)).sort(collectionOrder);
+      row.issue.number, row.edition.name, row.edition.upc, row.issue.isbn].filter(Boolean).join(' ').toLocaleLowerCase().includes(needle)).sort(sort === 'recent' ? (a,b) => b.date.localeCompare(a.date) || collectionOrder(a,b) : collectionOrder);
   }
 }

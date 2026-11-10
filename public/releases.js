@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.5', date: '2026-11-10', title: 'Collection sorting',
+  changes: ['Add Sort By to My Collection: Alphabetical (Series) by default, or Recently Added with newest additions first.', 'Shared server update for web, Android, and iOS; Hardlight remains at 1.1.0.'],
+}, {
   version: '1.0.4', date: '2026-11-07', title: 'Centered tile ratings',
   changes: ['Center rating stars within collection tiles, including narrow iPhone and Android layouts.', 'Server-only update; existing Hardlight clients receive the fix after reloading.'],
 }, {
