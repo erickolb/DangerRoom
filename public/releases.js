@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.0.7', date: '2026-11-10', title: 'Flush Metron query cache',
+  changes: ['Add Flush query cache to Metron diagnostics, clearing cached provider responses while preserving saved comics, covers, diagnostics, and provider pauses.', 'Server-only update; Android and iOS Hardlight remain at 1.1.0.'],
+}, {
   version: '1.0.6', date: '2026-11-10', title: 'Refresh comic data',
   changes: ['Add Refresh Data from Metron beside full-series search on comic details, with fresh metadata and replacement cover downloads.', 'Preserve copies, ratings, reading history, and slideshow exclusions. Server-only update for web, Android, and iOS; Hardlight stays at 1.1.0.'],
 }, {

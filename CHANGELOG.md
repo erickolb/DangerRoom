@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7 · 2026-11-10
+
+- Add **Flush query cache** to Metron diagnostics while preserving saved comics, covers, diagnostic counters, and rate-limit pauses.
+- Server-only update; Android and iOS Hardlight remain at 1.1.0.
+
 ## 1.0.6 · 2026-11-10
 
 - Add Refresh Data from Metron with a reload icon beside full-series search on comic details. Fetch fresh metadata and replacement artwork while preserving personal collection data.

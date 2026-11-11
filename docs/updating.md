@@ -1,5 +1,9 @@
 # Update a DangerRoom instance
 
+## 1.0.7: Flush Metron query cache · 2026-11-10
+
+Follow the backup and container rebuild procedure below, using `sudo docker` and `sudo docker compose` on astralplane.chateaulore.net. Verify `/api/health` reports `1.0.7`, then reload the browser or Hardlight. Open **Metron diagnostics** and choose **Flush query cache**; the cached response count updates and a completion message appears. Future lookups consume Metron quota again. Saved comics, covers, counters, and provider pauses are retained. No migration or client reinstall is required; Android and iOS Hardlight remain at 1.1.0.
+
 ## 1.0.6: Refresh comic data · 2026-11-10
 
 Follow the backup and container rebuild procedure below, using `sudo docker` and `sudo docker compose` on astralplane.chateaulore.net. Verify `/api/health` reports `1.0.6`, then reload the browser or Hardlight. Comic details now includes **Refresh Data from Metron** beside full-series search. It replaces metadata and downloads artwork again while preserving collection data. No database migration or client reinstall is required; Android and iOS Hardlight remain at 1.1.0.

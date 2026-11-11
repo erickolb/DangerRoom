@@ -110,7 +110,7 @@ pnpm test
 
 Tests use isolated temporary databases and simulated Metron responses, never your collection or API credentials. Live Metron verification requires the local token.
 
-[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.6. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
+[`public/releases.js`](public/releases.js) drives the footer build label and in-app Changelog. Each user-requested app change advances one build; related implementation and verification fixes stay in that build. Research alone does not advance the build. DangerRoom is stable at 1.0.7. Keep the package version aligned with the current server release. Alpha and beta histories are collapsed separately. See [Changelog](CHANGELOG.md).
 
 ## Credits
 

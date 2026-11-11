@@ -66,7 +66,7 @@ export class Metron {
     this.observed = saved ? JSON.parse(saved.payload) : { since: Date.now(), requests: 0, cache_hits: 0, windows: {}, recent: [] };
     delete this.observed.scan_requests; delete this.observed.last_scan;
     this.observed.recent = this.observed.recent.map(entry => ({...entry, source:'DangerRoom'}));
-    this.inflight = new Map(); this.queue = Promise.resolve();
+    this.cacheGeneration = 0; this.inflight = new Map(); this.queue = Promise.resolve();
     this.persistDiagnostics();
   }
   get configured() { return Boolean(this.authorization); }
@@ -80,7 +80,13 @@ export class Metron {
       interval_ms: this.interval, in_flight: this.inflight.size,
       cached_entries: this.repo.db.prepare('SELECT COUNT(*) AS n FROM cache WHERE expires_at>?').get(Date.now()).n };
   }
+  flushQueryCache() {
+    this.cacheGeneration++;
+    const cleared = this.repo.db.prepare('DELETE FROM cache').run().changes;
+    return { cleared, ...this.diagnostics() };
+  }
   async get(path, ttl, fresh = false) {
+    const cacheGeneration = this.cacheGeneration;
     const requestKey = fresh ? `fresh:${path}` : path;
     const cached = !fresh && this.repo.cacheGet(path);
     if (cached) { this.observed.cache_hits++; this.persistDiagnostics(); return cached; }
@@ -138,7 +144,7 @@ export class Metron {
       if (!response.ok) throw new AppError(502, 'Metron is temporarily unavailable. Please try again later.');
       let payload;
       try { payload = await response.json(); } catch { throw new AppError(502, 'Metron returned an unexpected response.'); }
-      this.repo.cachePut(path, payload, ttl);
+      if (cacheGeneration === this.cacheGeneration) this.repo.cachePut(path, payload, ttl);
       return payload;
     });
     this.queue = task.catch(() => {});

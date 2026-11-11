@@ -81,6 +81,7 @@ export function createApp(options = {}) {
         }
         return send(200, { items: [...unique.values()] });
       }
+      if (req.method === 'POST' && url.pathname === '/api/metron/cache/flush') return send(200, metron.flushQueryCache());
       if (req.method === 'GET' && url.pathname === '/api/metron/diagnostics') return send(200, metron.diagnostics());
       if(req.method==='GET'&&url.pathname==='/api/series-types')return send(200,{items:await metron.seriesTypes()});
       if (req.method === 'GET' && url.pathname === '/api/search') {

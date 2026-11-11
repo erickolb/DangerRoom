@@ -696,3 +696,43 @@ test('refresh keeps variant identity when artwork URL changes and refuses missin
   assert.equal((await h.request('/api/issues/42/refresh','POST')).status,409);
   assert.deepEqual(h.repo.issue(42),updated);
 });
+
+
+test('query cache flush clears responses without provider calls or changing saved data and pauses', async t => {
+  const h=await harness(t);
+  const detail=(await h.request('/api/metron/issues/42')).data;
+  await h.request('/api/collection','POST',add(detail.editions[0].key));
+  const collection=h.repo.collection('owned','');
+  const before=h.metron.diagnostics(), counts=h.counts();
+  h.repo.statePut('blocked_until',Date.now()+60000);
+  const blocked=h.repo.stateGet('blocked_until');
+  const denied=await h.request('/api/metron/cache/flush','POST',undefined,{Origin:'https://other.example'});
+  assert.equal(denied.status,403);
+  assert.equal(h.metron.diagnostics().cached_entries,before.cached_entries);
+  const result=await h.request('/api/metron/cache/flush','POST');
+  assert.equal(result.status,200);
+  assert.ok(result.data.cleared>0);
+  assert.equal(result.data.cached_entries,0);
+  assert.equal(result.data.requests,before.requests);
+  assert.equal(result.data.cache_hits,before.cache_hits);
+  assert.equal(result.data.blocked_until,blocked);
+  assert.deepEqual(h.counts(),counts);
+  assert.deepEqual(h.repo.collection('owned',''),collection);
+  assert.equal((await h.request('/api/metron/cache/flush','POST')).data.cleared,0);
+  h.repo.statePut('blocked_until',0);
+  await h.metron.get('issue/42/',1000);
+  assert.equal(h.counts().lookups,counts.lookups+1);
+});
+
+test('query cache flush prevents an outstanding response from restoring cleared cache', async t => {
+  let release, started;
+  const begun=new Promise(resolve=>{started=resolve;});
+  const h=await harness(t,{metronOptions:{token:'test-only',interval:0,fetchImpl:async()=>{
+    started();await new Promise(resolve=>{release=resolve;});return Response.json(raw);
+  }}});
+  const pending=h.metron.get('issue/42/',10000);
+  await begun;
+  assert.equal((await h.request('/api/metron/cache/flush','POST')).status,200);
+  release();await pending;
+  assert.equal(h.metron.diagnostics().cached_entries,0);
+});
