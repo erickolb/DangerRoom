@@ -1,20 +1,50 @@
-# DangerRoom
+# Danger Room
+Danger Room is a self-hosted web application for comic book collection. It builds on the open API to use data from [Metron](https://metron.cloud) to seed entries in your instance of Danger Room, but the instance is under your control. This puts you in control of a platform to build features that suit you best.
 
-> Hardlight 1.1.0 is available for Android and iOS. UPC lookup requires server β-030+. [UPC mode and scanner setup](docs/upc-mode.md).
+Features currently supported:
++ Search the [Metron.cloud](https://metron.cloud) database.
+  + Keyword search
+  + [UPC search (12- and 17-digits)](docs/upc-mode.md)
++ Add comics to My Collection
++ Attach ratings (5-stars in half-star increments) to comics
++ Keep a Want List of comics to pull
++ Track the read/unread status of any comic
++ Maintain a dated reading journal
++ [Android](docs/android.md) and iOS(docs/ios.md) companion app "HardLight"
+  + [Search by UPC](docs/upc-mode.md) with a Bluetooth-connected device
+  + Cover image search (coming soon)
+  + Slideshow of covers in your collection
+ 
+[DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/)
 
-Comic inventory and reading journal. Current build: **1.0.0**.
+## Hardlight (Android / iOS Companion App)
+The Android and iOS companions, code named Hardlight, has a six-option menu plus configuration:
+1. Want List
+2. My Collection
+3. Search Metron
+4. UPC Mode
+5. Cover Slideshow
+6. Reading Log
 
-This project was created with AI-assisted programming.
+Client is configurable for your Danger Room instance and allow-listed device credentials, six-section menu. Cover slideshow features a local six-month artwork cache, a configurable 300 MB cache limit, and a flush cache button in addition to controls inactivity timeout (default 10 seconds, minimum 3) and independent title display duration (0 disables, full rotation duration keeps titles visible). The main menu’s reload button refreshes server code without exiting Hardlight. 
 
+The Hardlight client is deployed through [Obtainium](https://obtainium.imranr.dev/) for Android and [LiveContainer + SideStore](https://livecontainer.github.io/docs/installation/lc_sidestore) for iOS. The app is not available on commercial app stores. See [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) for further instructions.
+
+## Releases
+Current Server Build: version 1.0.2
+Hardlight (Android/iOS Client): version 1.1.0
+
+[View All Releases](https://github.com/erickolb/DangerRoom/releases)
+
+## Licensing & Copyright
 Copyright © 2026 Eric Kolb. Original DangerRoom and Hardlight code is licensed under [GNU AGPLv3 only](LICENSE), without warranty. [Licensing and third-party notices](THIRD_PARTY_NOTICES.md) explain source availability and separate asset terms.
 
 Comic metadata from [Metron](https://metron.cloud), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). DangerRoom selects and reformats metadata; adaptations remain under CC BY-SA 4.0. Cover artwork is excluded and belongs to its publishers or creators.
 
-[DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/) · [Releases](https://github.com/erickolb/DangerRoom/releases)
+## AI Assistance Disclosure
+This project was created with AI-assisted programming.
 
-The [Android](docs/android.md) and [iOS companions](docs/ios.md), nicknamed **Hardlight**, add a mask startup screen, configurable HTTPS instance, device credentials, six-section menu, Metron search with exact variant selection, and an owned-cover slideshow with a local six-month artwork cache, a default 300 MB limit, an unlimited option, and a Flush cache button. Slideshow settings offer a controls inactivity timeout (default 10 seconds, minimum 3) and independent title display duration (0 disables, full rotation duration keeps titles visible). The main menu’s Reload button refreshes server code without exiting Hardlight. Full caches keep displaying uncached images over the network. [Download Hardlight 1.1.0 for Android](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0). Want List, text search, UPC Mode, collection, ratings, and Reading Log share the web app's existing behavior and adapt to phones and tablets.
 
-[Download Hardlight 1.1.0 for iOS (build 2)](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.1.0-build2). Install with SideStore; GitHub distribution only, with no App Store release. Android and iOS share features; mirror changes unless explicitly scoped to one platform.
 
 ## Run locally
 
