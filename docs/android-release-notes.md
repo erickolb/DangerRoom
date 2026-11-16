@@ -1,4 +1,8 @@
+# Hardlight 1.1.0 for Android - Version Code 16
+
 **Hardlight 1.1.0** adds scanner-driven UPC lookup mode. Requires DangerRoom **β-030 or later**.
+
+## Changes
 
 - UPC Mode appears immediately after Search Metron in the menu; the search page also has a same-page barcode toggle.
 - Keyboard/HID scanners can send STX (0x02, often Ctrl+B), barcode digits, then Enter. A new scan closes open dialogs and cancels unsaved prompts without reversing completed saves.
@@ -6,6 +10,14 @@
 - A unique exact UPC cover is preselected; exact matches receive a golden glow (static with reduced motion). Choose and confirm collection, Want List, or read actions.
 - Collapsed, model-independent scanner setup tips cover supplements, prefix/suffix, and iOS keyboard access. This is external-scanner input, not camera recognition.
 
+## Server compatibility and updates
+
 Update the server container using [the update guide](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md). The server remains in the beta line. Existing credentials, collection, and slideshow settings are retained.
 
-Android 9+. Application ID `net.chateaulore.hardlight`; versionCode **16**. Install the signed DangerRoom.apk over the previous release. Includes SHA256SUMS.txt and SIGNING-CERTIFICATE.txt; Obtainium can track this normal Android release.
+## Requirements and installation
+
+- **Devices:** Android 9 or later.
+- **Application ID:** `net.chateaulore.hardlight`.
+- **Version code:** 16.
+- **Installation:** Install the signed `DangerRoom.apk` over the previous release. Obtainium can track this normal Android release.
+- **Release files:** `DangerRoom.apk`, `SHA256SUMS.txt`, and `SIGNING-CERTIFICATE.txt`.

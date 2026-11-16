@@ -2,9 +2,9 @@
 
 All endpoints are local to DangerRoom. JSON mutations require `Content-Type: application/json`. Server binds to `127.0.0.1:4340` by default. Browser access is trusted, including Docker hosting. Mobile routes always require an enabled device (`X-Device-Id` plus `Authorization: Bearer SECRET`). Host and same-origin checks remain active.
 
-## Android and authentication (β-002)
+## Hardlight clients and authentication
 
-`/mobile/` maps to the same application and API, but every route under that prefix always requires a device credential. Invalid supplied device credentials fail closed on both route prefixes, including trusted-network browser access. Device secrets are not sent to Metron or artwork hosts. Android makes same-instance requests natively with credentials on every request, refuses redirects, and sends image-host requests separately without credentials.
+`/mobile/` maps to the same application and API, but every route under that prefix always requires a device credential. Invalid supplied device credentials fail closed on both route prefixes, including trusted-network browser access. Device secrets are not sent to Metron or artwork hosts. Both Android and iOS Hardlight clients make same-instance requests natively with credentials on every request, refuse redirects, and send image-host requests separately without credentials.
 
 | Method and path | Behavior |
 | --- | --- |
@@ -12,7 +12,7 @@ All endpoints are local to DangerRoom. JSON mutations require `Content-Type: app
 | `GET /api/slideshow` | `{items}` of all unique owned `(issue ID, edition key)` pairs with saved cover files, excluding black bags. No provider calls or selection limit. |
 | `PATCH /api/issues/:id/black-bag` | `{edition_key,black_bagged:boolean}` toggles a saved cover's slideshow exclusion and returns the refreshed issue. Shared across copies/devices; does not change ownership, wants, reading, or rating. |
 
-The additive `devices(id,label,token_hash,enabled)` table does not change existing inventory records. Issue/want/log migrations remain unchanged. Device management is a server CLI operation; there is no public provisioning endpoint. See [Android setup](android.md).
+The `devices(id,label,token_hash,enabled)` table stores device authorization separately from inventory records. Device management is a server CLI operation; there is no public provisioning endpoint. See [device token management](mobile-device-token-management.md), [Android setup](hardlight-for-mobile.md#android), and [iOS setup](hardlight-for-mobile.md#ios).
 
 | Method and path | Behavior |
 | --- | --- |
@@ -29,6 +29,8 @@ The additive `devices(id,label,token_hash,enabled)` table does not change existi
 | `DELETE /api/wants/:id/:edition_key` | Remove one exact wanted cover; idempotent, no effect on ownership/read/rating. |
 | `DELETE /api/copies/:uuid` | Remove exactly one copy. Read status and other copies are preserved. The UI triggers this by untoggling the icon, without a separate delete button or confirmation. Local metadata/covers remain available for re-addition. |
 | `GET /covers/:sha256.extension` | Locally stored cover. Only validated filenames and raster formats are served. |
+
+See [Metron data mapping](metron-data-mapping.md) for imported fields, variant identity, and provenance rules.
 
 ## Tables
 
@@ -47,7 +49,7 @@ Status errors use `{error}`. HTTP 429 includes `Retry-After`. Provider credentia
 
 ## Cover storage locations (α-006)
 
-`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 7. `black_bags(issue_id,edition_key)` references saved editions and records per-cover slideshow exclusions; existing covers start unbagged. Issue editions expose `black_bagged`. See [S3 configuration and migration](s3.md).
+`cover_objects(filename PRIMARY KEY, bucket, object_key)` records verified S3 objects. An absent location row means the filename remains in local `DATA_DIR/covers`. Existing edition/Want List cover references and `/covers/` routes are stable across migration. Database schema version is 7. `black_bags(issue_id,edition_key)` references saved editions and records per-cover slideshow exclusions; existing covers start unbagged. Issue editions expose `black_bagged`. See [S3 configuration and migration](aws-s3-setup.md).
 
 `GET /api/issues/:id/owned-series` returns `{ items }` from saved collection data only. It groups owned issues by matching series title across runs (case-insensitive, trimmed, Unicode-normalized), sorts by start year, volume, and numeric issue, and returns one row per issue with `copy_count`. It prefers owned variant artwork. Read-only and wanted-only entries are excluded.
 
@@ -76,9 +78,5 @@ Search results now expose `series.series_type` for title badges. If the issue li
 
 `GET /api/series-types` supplies the series-type dropdown catalog from the provider's `series_type/` endpoint. Catalog pages are cached for 24 hours and honor existing pacing/cooldowns. Search URL `series_types=10,13` stores OR selections for client-side filtering of the current provider page, combined with `hide_owned=1`. An empty selection shows all types; `0` means an absent format. Provider totals and page links remain intact.
 
-
-## Removed camera APIs (β-025)
-
-Camera lookup and retained-scan APIs, including /api/camera-search and /api/scan-captures, have been removed and return 404 for authenticated requests, including under /mobile/. Schema 7 removes the scan_captures table and cover-hash lookup cache entries. Normal text search, issue metadata, inventory, wants, ratings, Reading Log, slideshow, and device authorization remain supported.
 
 `POST /api/issues/:id/refresh` bypasses cached Metron issue metadata and downloads saved-cover artwork again, then atomically replaces local metadata and cover references. Preserves copy IDs/dates, read status, ratings, logs, and black bags. Unmatched variants or failed downloads leave saved comic data unchanged. Available through authenticated mobile routes too.

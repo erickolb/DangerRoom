@@ -10,7 +10,7 @@ Features currently supported:
 + Keep a Want List of comics to pull
 + Track the read/unread status of any comic
 + Maintain a dated reading journal
-+ [Android](docs/android.md) and iOS(docs/ios.md) companion app "HardLight"
++ [Android](docs/hardlight-for-mobile.md#android) and [iOS](docs/hardlight-for-mobile.md#ios) companion app "HardLight"
   + [Search by UPC](docs/upc-mode.md) with a Bluetooth-connected device
   + Cover image search (coming soon)
   + Slideshow of covers in your collection
@@ -33,7 +33,7 @@ The Hardlight client is deployed through [Obtainium](https://obtainium.imranr.de
 # Instructions and Use Notes
 
 ## Run Locally
-An instance of the Danger Room application is a web application that is meant to be hosted on a private network or tailnet to serve a single comic collection. There is no user account or authentication, so being able to access the web application presumes the viewer is authorized to both view and make changes in it. Android and iOS clients require a server-issued device ID and secret; credentials can be revoked on the server. See [deployment](docs/deployment.md), [container updates and rollback](docs/updating.md), and [device token management](docs/devices.md) for more information.
+An instance of the Danger Room application is a web application that is meant to be hosted on a private network or tailnet to serve a single comic collection. There is no user account or authentication, so being able to access the web application presumes the viewer is authorized to both view and make changes in it. Android and iOS clients require a server-issued device ID and secret; credentials can be revoked on the server. See [migrating to a server](docs/migrating-to-a-server.md), [container updates and rollback](docs/updating.md), and [device token management](docs/mobile-device-token-management.md) for more information.
 
 Requires Node.js 24 or later. Install dependencies with `pnpm install --frozen-lockfile`; no frontend build is needed.
 
@@ -50,6 +50,33 @@ Open http://127.0.0.1:4340. Restart the process after changing `.env`. Without a
 
 Each DangerRoom instance holds a single shared collection. Browser access retains the original trust model, with no sign-in.
 
+## Run In a Container
+
+Install Docker Engine and the Docker Compose v2 plugin. The container includes Node.js and the application dependencies, so you do not need to install them on the host. From a fresh checkout on your Linux server:
+
+```sh
+git clone https://github.com/erickolb/DangerRoom.git
+cd DangerRoom
+cp .env.example .env
+chmod 600 .env
+vi .env
+```
+
+Set `METRON_API_TOKEN` using the [Setup](#setup) instructions below. For access through a hostname, include that hostname in `ALLOWED_HOSTS` (without a scheme, path, or port). Set `DANGERROOM_URL` to the address you will use to reach the app. Then build and start it:
+
+```sh
+sudo docker compose build --pull
+sudo docker compose up -d
+sudo docker compose ps
+curl --fail http://127.0.0.1:4340/api/health
+```
+
+The default configuration makes the app available at http://127.0.0.1:4340 on the Docker host. It binds to loopback only; access from another computer requires an SSH tunnel or a reverse proxy. Keep browser access on a private network or tailnet with appropriate access control: anyone who can reach the web app can change the shared collection. Hardlight requires an HTTPS address and its own device credentials.
+
+SQLite and locally stored covers persist in the named `dangerroom-data` volume, mounted at `/data`. This does not automatically import an existing local `data/` directory. Preserve the volume and `.env` across updates; do not use `sudo docker compose down -v` unless you intend to delete the collection volume.
+
+See [migrating to a server](docs/migrating-to-a-server.md) for HTTPS, device setup, and importing an existing collection, and [container updates, backups, and rollback](docs/updating.md) before updating a running instance. Optional cover storage in S3 is covered in [S3 configuration](docs/aws-s3-setup.md).
+
 ## Setup
 
 Once the application is up and running, you will need to create an account at [Metron](https://metron.cloud). Creating an API key is required to be able to use the open API.
@@ -58,6 +85,7 @@ Once the application is up and running, you will need to create an account at [M
 2. Click on the API Tokens button in the top right.
 3. Enter in the name of your API token (generally the hostname of the instance you're operating), and click Generate Token.
 4. Enter the API token provided into your `.env` file.
+5. Restart the app to load the updated `.env`: stop the local process and run `pnpm start` again, or run `sudo docker compose up -d --force-recreate` from the container checkout. A container restart alone does not reload environment values from `.env`.
 
 ## Using Danger Room
 
@@ -75,6 +103,8 @@ The **Reading Log** section will be updated in a future update.
 
 Clicking on a comic thumbnail or title in its listing from the My Collection screen calls up the comic detail page. This will display the cover image and metadata captured from [Metron](https://metron.cloud) when it was added. Buttons on the page allow you to either search the full series on Metron as well as refresh the local comic data from the remote source. The details page also shows your Reading Log entries for this comic and charts out the ratings you've supplied for all comics in the current series.
 
+For detailed behavior around copies, variants, ratings, reading history, and search filters, see [Advanced usage notes](docs/advanced-usage-notes.md). For development checks and release maintenance, see [Contributing](CONTRIBUTING.md).
+
 ## Storage and API Use
 
 - `data/dangerroom.sqlite`: issues, selected editions, individual copies, reading records, personal ratings, want-list records, lookup cache, and provider cooldown state.
@@ -83,9 +113,9 @@ Clicking on a comic thumbnail or title in its listing from the My Collection scr
 - Search caches last 6 hours; issue-detail caches last 24 hours. Concurrent identical lookups share one request. Persistent saved metadata and covers are used for collection browsing with no [Metron](https://metron.cloud) calls.
 - Provider requests are serialized and paced at 3.1 seconds. Exhausted rate-limit headers and `Retry-After` persist a cooldown rather than repeatedly calling [Metron](https://metron.cloud). There is no crawling or background synchronization.
 - [Metron](https://metron.cloud) credentials are server-only. DangerRoom uses only [Metron](https://metron.cloud) GET endpoints and does not modify your [Metron](https://metron.cloud) collection.
-- Optional private AWS S3 cover storage and a resumable local-to-S3 migration are documented in [S3 configuration](docs/s3.md). SQLite stays local. Back up the database, local covers, S3 objects, and configuration together; covers are deliberately retained after copy removal.
+- Optional private AWS S3 cover storage and a resumable local-to-S3 migration are documented in [S3 configuration](docs/aws-s3-setup.md). SQLite stays local. Back up the database, local covers, S3 objects, and configuration together; covers are deliberately retained after copy removal.
 
-See [Metron field inventory and initial local-data choices](docs/metron-fields.md) and [API and data model](docs/api.md).
+See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](docs/api.md).
 
 
 ## Credits
@@ -107,7 +137,7 @@ See [Metron field inventory and initial local-data choices](docs/metron-fields.m
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
-Current Server Build: version 1.0.2
+Current Server Build: version 1.0.7
 Hardlight (Android/iOS Client): version 1.1.0
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)

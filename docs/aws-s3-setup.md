@@ -1,4 +1,4 @@
-# AWS S3 cover storage
+# AWS S3 Cover Image Storage
 
 DangerRoom supports `local` (default) and `s3` for newly downloaded covers. Comic metadata and the SQLite database always stay in `DATA_DIR`. Images keep stable `/covers/<sha256>.<extension>` URLs; the server reads private S3 objects on behalf of the browser. **Public read access is not required or recommended.** Keep all S3 Block Public Access settings enabled and Object Ownership set to Bucket owner enforced (ACLs disabled). No bucket CORS configuration is needed because browsers contact DangerRoom, not S3.
 
