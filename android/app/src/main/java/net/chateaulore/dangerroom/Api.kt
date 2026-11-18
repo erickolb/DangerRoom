@@ -5,6 +5,15 @@ import java.net.URI
 import org.json.JSONObject
 
 object Input {
+    // Raise only when a client starts depending on new server behavior.
+    const val minimumServerVersion = "1.1.0"
+    fun supportsServer(version: String): Boolean {
+        if (!version.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+"))) return false
+        val actual=version.split('.').map { it.toIntOrNull() ?: return false }
+        val required=minimumServerVersion.split('.').map { it.toInt() }
+        for(i in 0..2) { if(actual[i]!=required[i]) return actual[i]>required[i] }
+        return true
+    }
     fun origin(raw: String): String {
         val value = if (raw.trim().contains("://")) raw.trim() else "https://${raw.trim()}"
         val uri = URI(value)
@@ -44,7 +53,13 @@ class Api(private val connection: Connection) {
         } finally { conn.disconnect() }
     }
     fun verify() {
+        val health=request("/mobile/api/health")
+        require(health.status==200) { "Unable to check the DangerRoom version. Check your connection and device credentials." }
+        val version=JSONObject(String(health.bytes)).optString("version")
+        if(!Input.supportsServer(version)) throw ServerUpdateRequired()
         val response = request("/mobile/api/device")
         require(response.status == 200 && JSONObject(String(response.bytes)).optBoolean("authorized")) { "Device not authorized. Check the hostname, device ID, secret, and server version." }
     }
 }
+
+class ServerUpdateRequired : Exception("Please update your DangerRoom server to at least ${Input.minimumServerVersion} for Hardlight ${BuildConfig.VERSION_NAME} to work. Then tap Retry. Your collection and connection settings are preserved.")

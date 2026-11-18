@@ -22,6 +22,14 @@ class MainActivity : ComponentActivity() {
     private lateinit var status: TextView
     private val worker = Executors.newSingleThreadExecutor()
     private var screen = "splash"
+    private var connectionGeneration = 0
+    private val coverSearch=registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+        val hash=result.data?.getStringExtra("hash")
+        val distance=result.data?.getIntExtra("distance",16) ?: 16
+        if(result.resultCode==RESULT_OK && hash?.matches(Regex("[a-f0-9]{16}"))==true && distance in 10..20)
+            openWeb("/?cover_hash_near=$hash&cover_hash_max_distance=$distance")
+        else openWeb()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -70,6 +78,7 @@ class MainActivity : ComponentActivity() {
         return EditText(this).apply { setText(value); contentDescription = label; isSingleLine = true; isSaveEnabled = false; setTextColor(Color.WHITE); setHintTextColor(Color.LTGRAY); inputType = if (secret) 129 else 1; column.addView(this) }
     }
     private fun settings() {
+        connectionGeneration++
         screen = "settings"; base("Connect to DangerRoom")
         val saved = connection
         val hostname = field("DangerRoom hostname", saved?.url ?: "")
@@ -95,8 +104,24 @@ class MainActivity : ComponentActivity() {
         if (saved != null) button("Back to menu") { openWeb() }
         text("Danger Room (Hardlight) Android · ${packageManager.getPackageInfo(packageName, 0).versionName}\nMask: Magnific / Flaticon. Cover artwork belongs to its rights holders. Full credits are in DangerRoom.", 13f)
     }
-    @Suppress("SetJavaScriptEnabled")
     private fun openWeb(hash: String = "/home") {
+        val c=connection ?: return settings()
+        val ticket=++connectionGeneration
+        screen="checking";base("Connecting to DangerRoom")
+        status.text="Checking server compatibility…"
+        worker.execute {
+            try { Api(c).verify();runOnUiThread { if(!isDestroyed && ticket==connectionGeneration) loadWeb(hash) } }
+            catch(error:Exception) { runOnUiThread {
+                if(!isDestroyed && ticket==connectionGeneration) {
+                    screen="blocked";base(if(error is ServerUpdateRequired) "Server update needed" else "Unable to connect")
+                    status.text=error.message
+                    button("Retry") { openWeb(hash) };button("Instance and device settings") { settings() }
+                }
+            } }
+        }
+    }
+    @Suppress("SetJavaScriptEnabled")
+    private fun loadWeb(hash: String) {
         val c = connection ?: return settings()
         screen = "web"; destroyWeb()
         val coverCache = CoverCache(java.io.File(cacheDir, "slideshow/${CoverCache.scope(c)}"))
@@ -135,6 +160,7 @@ class MainActivity : ComponentActivity() {
     }
     private fun sameOrigin(address: String, origin: String): Boolean = runCatching { val a = URI(address); val b = URI(origin); a.scheme == b.scheme && a.host == b.host && a.port == b.port && a.userInfo == null }.getOrDefault(false)
     private inner class Bridge(private val c: Connection, private val owner: WebView, private val coverCache: CoverCache) {
+        @JavascriptInterface fun imageCoverSearch() { runOnUiThread { if(web===owner) coverSearch.launch(Intent(this@MainActivity,ImageSearchActivity::class.java)) } }
         @JavascriptInterface fun flushCoverCache(): Boolean = coverCache.clear()
         @JavascriptInterface fun configureCoverCache(files: String, limited: Boolean, megabytes: Int) {
             val array = org.json.JSONArray(files)

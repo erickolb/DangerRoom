@@ -28,26 +28,29 @@ function mountCalendar(container,value,onSelect) {
   render();
 }
 export function cancelReadDialog(){const dialog=document.querySelector('#read-dialog');if(dialog?.open)dialog.close();}
-function readPrompt({logOnly=false,count=0,unread=false,rating=null}={}) {
+function readPrompt({logOnly=false,rating=null}={}) {
   const dialog=document.querySelector('#read-dialog');
   if(dialog.open)return Promise.resolve(null);
   return new Promise(resolve=>{
     let result=null;
-    dialog.innerHTML=unread
-      ? `<h2 id="read-dialog-title">Mark As Unread</h2><p>This issue has ${count} reading log ${count===1?'entry':'entries'}. Remove all of them as well?</p><p class="hint">No keeps the log and marks the issue unread. Ratings are preserved.</p><div class="actions"><button type="button" data-answer="yes">Yes, remove entries</button><button type="button" class="quiet" data-answer="no" autofocus>No, keep entries</button><button type="button" class="quiet" data-cancel>Cancel</button></div>`
-      : `<h2 id="read-dialog-title">${logOnly?'Add Reading Log Entry':'Mark As Read'}</h2><form id="read-log-form">${logOnly?'':'<label class="record-log-switch"><input type="checkbox" role="switch" id="record-reading">Record in Reading Log</label>'}<fieldset class="reading-calendar"><legend>Reading date</legend><div class="inline-calendar" id="reading-calendar"></div><input type="hidden" name="log_date" value="${localToday()}" ${logOnly?'':'disabled'}></fieldset>${logOnly?'':ratingChoices(rating).replace('Your rating','Your rating (optional)')}<div class="actions"><button type="submit">OK</button><button type="button" class="quiet" data-cancel>Cancel</button></div></form>`;
+    dialog.innerHTML=`<h2 id="read-dialog-title">${logOnly?'Add Reading Log Entry':'Reading status and journal'}</h2><form id="read-log-form">${logOnly?'':'<label class="record-log-switch"><input type="checkbox" role="switch" id="read-status" checked>Mark as read</label><label class="record-log-switch" id="preserve-label" hidden><input type="checkbox" role="switch" id="preserve-journal" checked>Preserve reading journal entries</label><label class="record-log-switch"><input type="checkbox" role="switch" id="record-reading">Record a reading journal entry</label>'}<fieldset class="reading-calendar"><legend>Reading date</legend><div class="inline-calendar" id="reading-calendar"></div><input type="hidden" name="log_date" value="${localToday()}"></fieldset>${logOnly?'':ratingChoices(rating).replace('Your rating','Your rating (optional)')}<div class="actions"><button type="submit">OK</button><button type="button" class="quiet" data-cancel>Cancel</button></div></form>`;
     dialog.addEventListener('close',()=>resolve(result),{once:true});
     dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();
-    if(unread)dialog.querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>{result={remove_log_entries:button.dataset.answer==='yes'};dialog.close();});
-    else{
-      const form=dialog.querySelector('form'),toggle=dialog.querySelector('#record-reading'),date=form.querySelector('[name=log_date]');
-      if(toggle)toggle.onchange=()=>{date.disabled=!toggle.checked;};
-      mountCalendar(dialog.querySelector('#reading-calendar'),date.value,day=>{
-        date.value=day;date.disabled=false;if(toggle)toggle.checked=true;
-      });
-      if(!logOnly)bindRatingPreview(form);
-      form.onsubmit=event=>{event.preventDefault();result={};if(logOnly||toggle.checked)result.log_date=date.value;const score=form.querySelector('[name=rating]:checked');if(score)result.rating=Number(score.value);dialog.close();};
-    }
+    const form=dialog.querySelector('form'),read=dialog.querySelector('#read-status'),toggle=dialog.querySelector('#record-reading'),date=form.querySelector('[name=log_date]');
+    if(read)read.onchange=()=>{
+      toggle.disabled=!read.checked;
+      dialog.querySelector('#preserve-label').hidden=read.checked;
+      dialog.querySelector('.reading-calendar').disabled=!read.checked;
+      form.querySelectorAll('[name=rating]').forEach(input=>input.disabled=!read.checked);
+    };
+    mountCalendar(dialog.querySelector('#reading-calendar'),date.value,day=>{date.value=day;if(toggle)toggle.checked=true;});
+    if(!logOnly)bindRatingPreview(form);
+    form.onsubmit=event=>{
+      event.preventDefault();result={read:logOnly||read.checked};
+      if(result.read){if(logOnly||toggle.checked)result.log_date=date.value;const score=form.querySelector('[name=rating]:checked');if(score)result.rating=Number(score.value);}
+      else result.remove_log_entries=!dialog.querySelector('#preserve-journal').checked;
+      dialog.close();
+    };
     dialog.showModal();
   });
 }
@@ -55,18 +58,9 @@ export async function changeRead(ctx,state,{logOnly=false}={}) {
   if(ctx.busy||!state.editionKey)return;
   ctx.busy=true;ctx.notify();
   try{
-    if(!logOnly&&ctx.issue.read){
-      // Refresh counts so the confirmation includes entries added elsewhere.
-      ctx.sync(await ctx.api(`/issues/${ctx.issue.id}`));
-      const count=ctx.issue.reading_log_count||0;
-      const choice=count?await readPrompt({unread:true,count}):{};
-      if(choice===null)return;
-      ctx.sync(await ctx.api(`/issues/${ctx.issue.id}/read`,{method:'PATCH',body:JSON.stringify({read:false,...choice})}));
-    }else{
-      const choice=await readPrompt({logOnly,rating:ctx.issue.user_rating??null});if(choice===null)return;
-      if(ctx.saved)ctx.sync(await ctx.api(`/issues/${ctx.issue.id}/read`,{method:'PATCH',body:JSON.stringify({read:true,edition_key:state.editionKey,...choice})}));
-      else ctx.sync((await ctx.api('/entries',{method:'POST',body:JSON.stringify({issue_id:ctx.issue.id,edition_key:state.editionKey,owned:false,read:true,...choice})})).issue);
-    }
+    const choice=await readPrompt({logOnly,rating:ctx.issue.user_rating??null});if(choice===null)return;
+    if(ctx.saved)ctx.sync(await ctx.api(`/issues/${ctx.issue.id}/read`,{method:'PATCH',body:JSON.stringify({edition_key:state.editionKey,...choice})}));
+    else if(choice.read)ctx.sync((await ctx.api('/entries',{method:'POST',body:JSON.stringify({issue_id:ctx.issue.id,edition_key:state.editionKey,owned:false,...choice})})).issue);
   }catch(error){ctx.onError(error.message);}
   finally{ctx.busy=false;ctx.notify();}
 }

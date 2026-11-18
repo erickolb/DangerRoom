@@ -12,13 +12,13 @@ Features currently supported:
 + Maintain a dated reading journal
 + [Android](docs/hardlight-for-mobile.md#android) and [iOS](docs/hardlight-for-mobile.md#ios) companion app "HardLight"
   + [Search by UPC](docs/upc-mode.md) with a Bluetooth-connected device
-  + Cover image search (coming soon)
+  + Cover image search in the Android beta (capture, crop, rotation, and hash-distance search)
   + Slideshow of covers in your collection
  
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/)
 
 ## Hardlight (Android / iOS Companion App)
-The Android and iOS companions, code named Hardlight, has a six-option menu plus configuration:
+The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.1 adds Image Cover Search:
 1. Want List
 2. My Collection
 3. Search Metron
@@ -93,7 +93,7 @@ The default page centers the comic search function. Searching uses your [Metron]
 
 Whenever adding a comic to your collection or your want list, a modal window opens to confirm which cover variant should be used. Image displays in the app will use the selected variant instead of the standard cover once added. It is possible to have duplicate copies of an individual issue in your collection; go to the comic detail screen and click the "Add another copy" button.
 
-Behavior of the Mark As Read button will be reviewed in a forthcoming update.
+The read icon lights up when an issue is marked read. Clicking either state opens the same dialog: Mark as read defaults on, recording a journal entry defaults off, and choosing a calendar date enables recording. Turning read off disables recording and offers Preserve reading journal entries, on by default. Ratings remain unchanged when marking unread.
 
 The **My Collection** section recalls comics that you have interacted with. The default view presented are comics indicated in your collection. Read and Rated Comics is an alternate view to recall comics you have marked as read or rated but are not in your personal collection (e.g. borrowed from a library). Unread Comics is an alternate view to filter your own collection down to those comics which are not marked as read or rate, behaving as a To-Be-Read list.
 
@@ -137,8 +137,11 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
-Current Server Build: version 1.0.7
-Hardlight (Android/iOS Client): version 1.1.0
+Current Server Build: version 1.1.0
+
+Stable Hardlight (Android/iOS): version 1.1.0
+
+Android beta: [1.2.0-beta.1, version code 17](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.1), requiring server 1.1.0. iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 

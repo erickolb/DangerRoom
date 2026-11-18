@@ -2,6 +2,10 @@
 
 Use this guide for routine updates of an existing instance. Choose the container or source procedure for your installation. Server and Hardlight releases are independent: updating the server does not install a new APK or IPA. Check the [Changelog](../CHANGELOG.md) and [release notes](https://github.com/erickolb/DangerRoom/releases) for compatibility requirements or additional steps before starting.
 
+## Server 1.1.0 and Android beta
+
+Install this server update before Android Hardlight 1.2.0-beta.1. That beta requires server 1.1.0 and blocks access on older instances until updated; Retry checks again. Stable Android and iOS 1.1.0 remain compatible. No collection migration or new server configuration is required. The read-status dialog changes for web and companion users; image capture is available only in the Android beta. Follow the backup and rebuild procedure below with `sudo docker compose`.
+
 ## 1. Prepare
 
 Run commands from your existing DangerRoom checkout. Keep its location, Compose project name, data directory or volume, and configuration unchanged. Check for local work before pulling:

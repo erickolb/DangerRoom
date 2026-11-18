@@ -131,6 +131,7 @@ function bindSearchForm(params) {
   };
 }
 function searchForm(params) {
+  if(params.has('cover_hash_near') && isAndroid)return `<form id="search-form"><p>Image Cover Search · Hash distance ${esc(params.get('cover_hash_max_distance')||'16')}</p><button type="submit">Capture another image</button></form>`;
   const upc=params.get('mode')==='upc';
   const toggle=`<button type="button" id="upc-mode" class="quiet upc-mode-toggle" aria-label="UPC mode" title="Toggle UPC mode" aria-pressed="${upc}">${barcodeIcon}</button>`;
   if(upc)return `<form id="search-form" class="search-form upc-search"><div class="search-main">${toggle}<label>UPC barcode<input id="upc-input" name="upc" value="${esc(params.get('upc')||'')}" placeholder="Scan or type a barcode" inputmode="numeric" pattern="[0-9]{1,18}" maxlength="18" autocomplete="off" type="text"></label><button type="submit">Look up UPC →</button></div><p class="search-help">UPC mode · Scan anytime while this page is active. Enter submits the barcode.</p></form>${upcTips}`;
@@ -138,8 +139,11 @@ function searchForm(params) {
 }
 async function search(params, ticket) {
   app.innerHTML = `<div class="hero ${params.get('mode')==='upc'?'upc-hero':''}"><span class="hero-mark" aria-hidden="true">✦</span><p class="eyebrow">Open up a whole new universe.</p><h2>${params.get('mode')==='upc'?'UPC Lookup':'Pull your next issue'}</h2><p class="intro">Search Metron, choose a cover, and make it yours.<br>Keep the stories you own and the ones you’ve read.</p>${searchForm(params)}</div>${!connected ? '<div class="connection">Connect Metron to start searching: add your API token to <code>METRON_API_TOKEN</code> in the local <code>.env</code> file and restart DangerRoom. <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer">Open Metron ↗</a></div>' : ''}<div id="search-results"></div>`;
-  bindSearchForm(params);
-  if (!params.get('q') && !params.get('upc')) return;
+  if(params.has('cover_hash_near')){
+    if(!isAndroid)throw Error('Image cover search is available only through Hardlight.');
+    $('#search-form').onsubmit=event=>{event.preventDefault();window.DangerRoomAndroid.imageCoverSearch();};
+  }else bindSearchForm(params);
+  if (!params.get('q') && !params.get('upc') && !params.has('cover_hash_near')) return;
   $('#search-results').innerHTML = '<p class="loading metron-progress" role="status"><img src="/metron.svg" alt="" class="metron-spinner">Searching Metron…</p>';
   const button = $('#search-form button[type=submit]'); button.disabled = true;
   try {

@@ -85,6 +85,7 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/metron/diagnostics') return send(200, metron.diagnostics());
       if(req.method==='GET'&&url.pathname==='/api/series-types')return send(200,{items:await metron.seriesTypes()});
       if (req.method === 'GET' && url.pathname === '/api/search') {
+        if(url.searchParams.has('cover_hash_near') && !mobile) throw new AppError(403,'Image cover search is available only through Hardlight.');
         const result=await metron.search(url.searchParams);
         result.results=result.results.map(row=>({...row,...repo.issueStatus(row.id),cover_file:repo.ownedCover(row.id)?.cover_file || null}));
         return send(200,result);

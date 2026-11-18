@@ -5,6 +5,12 @@ licensed under the GNU Affero General Public License, version 3 only
 (`AGPL-3.0-only`). See [LICENSE](LICENSE). This software is provided without
 warranty. You may modify and redistribute it under that license.
 
+## Android cover capture and hashing
+
+The Android beta uses Google ML Kit document scanner (`play-services-mlkit-document-scanner`) through Google Play services. See [Google ML Kit document scanner](https://developers.google.com/ml-kit/vision/doc-scanner) and its applicable terms.
+
+`PerceptualHash.kt` and Python ImageHash golden test vectors are adapted from Eric Kolb’s [CPHTest experiment](https://github.com/erickolb/metron/tree/experiment/perceptual-hash-matching/android). The package name is changed; DangerRoom uses the hash with Metron’s production issue-list filters rather than the experiment endpoint.
+
 ## Metron metadata
 
 Comic data from [Metron](https://metron.cloud), licensed under

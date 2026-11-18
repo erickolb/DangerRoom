@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.1.0', date: '2026-11-18', title: 'Image cover search and reading controls',
+  changes: ['Add companion-only image cover search using Metron perceptual hash matching.', 'Unify reading status controls with optional journal entries and preservation of existing readings.', 'Android Hardlight 1.2.0-beta.1 requires server 1.1.0; stable Android and iOS remain at 1.1.0.'],
+}, {
   version: '1.0.7', date: '2026-11-10', title: 'Flush Metron query cache',
   changes: ['Add Flush query cache to Metron diagnostics, clearing cached provider responses while preserving saved comics, covers, diagnostics, and provider pauses.', 'Server-only update; Android and iOS Hardlight remain at 1.1.0.'],
 }, {

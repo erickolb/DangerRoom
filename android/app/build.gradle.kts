@@ -2,12 +2,13 @@ plugins { id("com.android.application") }
 android {
     namespace = "net.chateaulore.dangerroom"
     compileSdk = 36
+    buildFeatures { buildConfig = true }
     defaultConfig {
         applicationId = "net.chateaulore.hardlight"
         minSdk = 28
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.1.0"
+        versionCode = 17
+        versionName = "1.2.0-beta.1"
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     val signing = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").map { providers.environmentVariable(it).orNull }
@@ -18,6 +19,7 @@ android {
     }
 }
 dependencies {
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
     implementation("androidx.core:core-ktx:1.18.0")
     implementation("androidx.activity:activity-ktx:1.10.1")
     testImplementation("junit:junit:4.13.2")

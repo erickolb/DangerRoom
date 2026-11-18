@@ -32,6 +32,12 @@ The `devices(id,label,token_hash,enabled)` table stores device authorization sep
 
 See [Metron data mapping](metron-data-mapping.md) for imported fields, variant identity, and provenance rules.
 
+## Companion image search (server 1.1.0)
+
+`GET /mobile/api/search?cover_hash_near=<16 hex characters>&cover_hash_max_distance=16&page=1` uses the authenticated device API. Hash distance accepts integers 10–20, default 16. It forwards Metron’s production issue-list filters, preserving closest-first ordering and pagination in the usual search response. Browser `/api/search` requests containing a hash return 403. No photograph upload endpoint is provided, and scanned-hash results are not cached. Main covers are currently matched; variant selection remains available through normal result actions.
+
+Android Hardlight 1.2.0-beta.1 checks authenticated `/mobile/api/health` before opening the application and requires server 1.1.0. Its minimum is raised only for breaking server dependencies, independently from normal server version changes. Stable Android/iOS 1.1.0 remain supported; iOS gets the native check at stable feature promotion.
+
 ## Tables
 
 - `issues`: Metron issue ID, essential metadata JSON, first save timestamp.

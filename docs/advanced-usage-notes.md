@@ -28,7 +28,7 @@ The Reading Log is a dated journal, distinct from the issue's read/unread flag. 
 
 The current **Mark As Read** dialog always shows a calendar, initially set to today on your device. **Record in Reading Log** defaults off. Selecting a day turns recording on; browsing months does not. An optional rating, read status, and selected reading date are saved together with **OK**. Cancel or Escape saves nothing. Dates remain calendar dates without UTC conversion.
 
-When marking an issue unread that has journal entries, **Yes** removes all its entries across covers, **No** keeps them while marking unread, and Cancel leaves everything unchanged. Ratings remain intact.
+Both lit and unlit read buttons open the same dialog. **Mark as read** defaults on regardless of current status. Turn it off to mark unread; journal recording and the calendar become disabled, and **Preserve reading journal entries** appears, enabled by default. Turn preservation off to remove all readings across covers. Cancel leaves everything unchanged. Ratings remain intact.
 
 On comic details, **Log a Reading** records an additional reading and marks the issue read without adding ownership. **Reading Log Entries** includes entries across every cover, with individual removal controls. Existing read flags were not converted into historical journal dates when the feature was introduced.
 

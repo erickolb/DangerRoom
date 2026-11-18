@@ -37,6 +37,12 @@ export function essentialIssue(raw) {
   };
 }
 export function searchFilters(params) {
+  if (params.has('cover_hash_near')) {
+    const hash=params.get('cover_hash_near'), distance=params.get('cover_hash_max_distance') ?? '16';
+    const page=positiveId(params.get('page') || 1,'Page');
+    if(!/^[a-f0-9]{16}$/i.test(hash) || !/^(1[0-9]|20)$/.test(distance) || page>10000) throw new AppError(400,'Choose a valid cover hash and a distance from 10 to 20.');
+    return new URLSearchParams({cover_hash_near:hash.toLowerCase(),cover_hash_max_distance:distance,page:String(page)});
+  }
   const q = (params.get('q') || '').trim();
   const number = (params.get('number') || '').trim();
   const year = (params.get('year') || '').trim();
@@ -144,7 +150,7 @@ export class Metron {
       if (!response.ok) throw new AppError(502, 'Metron is temporarily unavailable. Please try again later.');
       let payload;
       try { payload = await response.json(); } catch { throw new AppError(502, 'Metron returned an unexpected response.'); }
-      if (cacheGeneration === this.cacheGeneration) this.repo.cachePut(path, payload, ttl);
+      if (ttl > 0 && cacheGeneration === this.cacheGeneration) this.repo.cachePut(path, payload, ttl);
       return payload;
     });
     this.queue = task.catch(() => {});
@@ -153,7 +159,8 @@ export class Metron {
   }
   async search(params) {
     const filters = searchFilters(params);
-    const data = await this.get(`issue/?${filters}`, 6 * 60 * 60 * 1000);
+    const imageSearch=filters.has('cover_hash_near');
+    const data = await this.get(`issue/?${filters}`, imageSearch ? 0 : 6 * 60 * 60 * 1000, imageSearch);
     const pending=new Map();
     const results=await Promise.all(data.results.map(async r=>{
       let type=seriesType(r.series.series_type)||seriesType(r.series_type)||seriesType(this.repo.knownSeriesType?.(r.series.id));

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 · 2026-11-18
+
+- Add companion-only image cover search through the standard Metron issue list, using hash distance 10–20 (default 16) and existing result cards, filters, pagination, and actions.
+- Unify the read-status dialog for lit and unlit buttons, with independent optional journal recording, automatic recording on date selection, and preservation of readings by default when marking unread.
+- Android Hardlight 1.2.0-beta.1 (code 17) adds CPHTest-style document capture and editing, local perceptual hashing, and a blocking minimum-server check requiring DangerRoom 1.1.0. Images are never uploaded.
+- Android beta only: stable Android and iOS remain at 1.1.0. The three feature TODOs remain open until stable promotion.
+- Rebuild the server container using [the update guide](docs/updating.md) before installing the Android beta.
+
 ## 1.0.7 · 2026-11-10
 
 - Add **Flush query cache** to Metron diagnostics while preserving saved comics, covers, diagnostic counters, and rate-limit pauses.
