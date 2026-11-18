@@ -49,6 +49,8 @@ Its use here is not a claim of endorsement or ownership.
 
 ## Icons and dependencies
 
+Image Search by Muhammad Adam from [Noun Project](https://thenounproject.com/browse/icons/term/image-search/), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). `public/image-search.png` is the supplied black icon with only its embedded bottom-left credit text cleared; artwork, canvas size, and transparency are retained. CSS inverts it for display on the dark menu. Attribution remains in the app’s Credits and README.
+
 The application Credits section preserves the individual Flaticon and Noun
 Project icon credits and modification notices. These assets retain their own
 terms and are excluded from the original-code AGPL grant. Dependencies retain

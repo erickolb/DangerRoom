@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 · 2026-11-18
+
+- Give Image Cover Search its own Muhammad Adam / Noun Project menu icon. Clear only the original PNG’s bottom credit margin; retain attribution in Credits and documentation.
+- Android Hardlight 1.2.0-beta.2 (code 18) matches image-search setup, review, and bounding-box/rotation screens to the rest of the app: DangerRoom header, serif titles, wine panels, coral primary buttons, quiet secondary actions, and warm text colors.
+- Minimum server stays 1.1.0 because this is a presentation update. Rebuild server 1.1.1 for the menu icon. Stable Android and iOS remain at 1.1.0, and all three feature TODOs stay unchecked.
+- See [container update instructions](docs/updating.md).
+
 ## 1.1.0 · 2026-11-18
 
 - Add companion-only image cover search through the standard Metron issue list, using hash distance 10–20 (default 16) and existing result cards, filters, pagination, and actions.

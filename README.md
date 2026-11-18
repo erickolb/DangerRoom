@@ -18,7 +18,7 @@ Features currently supported:
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/)
 
 ## Hardlight (Android / iOS Companion App)
-The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.1 adds Image Cover Search:
+The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.2 adds Image Cover Search:
 1. Want List
 2. My Collection
 3. Search Metron
@@ -120,6 +120,8 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 
 ## Credits
 
+- Image Search by Muhammad Adam from <a href="https://thenounproject.com/browse/icons/term/image-search/" target="_blank" title="Image Search Icons">Noun Project</a> (CC BY 3.0). `public/image-search.png` uses the supplied black icon; only the embedded bottom-left credit text is cleared. Original artwork pixels, dimensions, and transparency are preserved. Menu CSS inverts it for dark backgrounds.
+
 - `public/black-bag.png` is the original generated black-bag design; `public/black-bag.svg` is the clean vector adaptation used in small controls.
 - Slideshow by Sentya Irma from <a href="https://thenounproject.com/browse/icons/term/slideshow/" target="_blank" rel="noopener noreferrer" title="Slideshow Icons">Noun Project</a> (CC BY 3.0). `public/slideshow.png` is the Cover Slideshow menu icon; its embedded bottom-left credit text is removed.
 - manual guide by Idad Muchlisin Ro Is from <a href="https://thenounproject.com/browse/icons/term/manual-guide/" target="_blank" rel="noopener noreferrer" title="manual guide Icons">Noun Project</a> (CC BY 3.0). `public/reading-log.png` is the Reading Log icon; its bottom text strip is cleared.
@@ -137,11 +139,11 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
-Current Server Build: version 1.1.0
+Current Server Build: version 1.1.1
 
 Stable Hardlight (Android/iOS): version 1.1.0
 
-Android beta: [1.2.0-beta.1, version code 17](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.1), requiring server 1.1.0. iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
+Android beta: [1.2.0-beta.2, version code 18](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.2), requiring server 1.1.0; update to server 1.1.1 for the new Image Search menu icon. iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 

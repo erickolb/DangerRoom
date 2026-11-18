@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.1.1', date: '2026-11-18', title: 'Image search presentation',
+  changes: ['Use Muhammad Adam’s Image Search icon in the Android beta menu, with its embedded credit removed and attribution retained in Credits.', 'Android Hardlight 1.2.0-beta.2 matches capture, review, and editing screens to the app’s typography, colors, header, panels, and buttons.', 'Native minimum-server requirement remains 1.1.0; install server 1.1.1 for the new menu icon. Stable Android and iOS remain at 1.1.0.'],
+}, {
   version: '1.1.0', date: '2026-11-18', title: 'Image cover search and reading controls',
   changes: ['Add companion-only image cover search using Metron perceptual hash matching.', 'Unify reading status controls with optional journal entries and preservation of existing readings.', 'Android Hardlight 1.2.0-beta.1 requires server 1.1.0; stable Android and iOS remain at 1.1.0.'],
 }, {
