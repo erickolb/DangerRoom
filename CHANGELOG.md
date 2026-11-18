@@ -1,5 +1,11 @@
 # Changelog
 
+## Android Hardlight 1.2.0-beta.3 · 2026-11-18
+
+- Android-only beta update, version code 19. The scanner’s **Next** confirmation now computes the cover hash and opens Metron search results directly.
+- Remove the redundant Review cover screen and separate DangerRoom bounding-box/rotation editor. Cropping, corner adjustment, rotation, and confirmation remain in Android’s scanner. Cancel/discard returns to setup without searching; processing errors allow recapture.
+- DangerRoom server stays at 1.1.1; minimum supported server remains 1.1.0. No server container update is required for beta 3. Stable Android and iOS stay at 1.1.0, and the three feature TODOs remain unchecked.
+
 ## 1.1.1 · 2026-11-18
 
 - Give Image Cover Search its own Muhammad Adam / Noun Project menu icon. Clear only the original PNG’s bottom credit margin; retain attribution in Credits and documentation.

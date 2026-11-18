@@ -12,13 +12,13 @@ Features currently supported:
 + Maintain a dated reading journal
 + [Android](docs/hardlight-for-mobile.md#android) and [iOS](docs/hardlight-for-mobile.md#ios) companion app "HardLight"
   + [Search by UPC](docs/upc-mode.md) with a Bluetooth-connected device
-  + Cover image search in the Android beta (capture, crop, rotation, and hash-distance search)
+  + Cover image search in the Android beta (scanner capture, crop, rotation, and hash-distance search; tap Next to search directly)
   + Slideshow of covers in your collection
  
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/)
 
 ## Hardlight (Android / iOS Companion App)
-The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.2 adds Image Cover Search:
+The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.3 adds Image Cover Search:
 1. Want List
 2. My Collection
 3. Search Metron
@@ -143,7 +143,7 @@ Current Server Build: version 1.1.1
 
 Stable Hardlight (Android/iOS): version 1.1.0
 
-Android beta: [1.2.0-beta.2, version code 18](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.2), requiring server 1.1.0; update to server 1.1.1 for the new Image Search menu icon. iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
+Android beta: [1.2.0-beta.3, version code 19](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.3), requiring server 1.1.0; update to server 1.1.1 for the new Image Search menu icon. iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 

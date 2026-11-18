@@ -7,8 +7,8 @@ android {
         applicationId = "net.chateaulore.hardlight"
         minSdk = 28
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.2.0-beta.2"
+        versionCode = 19
+        versionName = "1.2.0-beta.3"
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     val signing = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD").map { providers.environmentVariable(it).orNull }

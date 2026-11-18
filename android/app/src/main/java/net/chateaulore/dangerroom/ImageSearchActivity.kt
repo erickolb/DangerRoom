@@ -1,12 +1,14 @@
 package net.chateaulore.dangerroom
 
 import android.content.Intent
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.MotionEvent
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -21,7 +23,6 @@ import java.util.concurrent.Executors
 class ImageSearchActivity : ComponentActivity() {
     private lateinit var column: LinearLayout
     private var distance=16
-    private var bitmap: Bitmap?=null
     private var busy=false
     private val ink=Color.rgb(255,242,245)
     private val muted=Color.rgb(212,185,193)
@@ -29,24 +30,35 @@ class ImageSearchActivity : ComponentActivity() {
     private val border=Color.rgb(97,48,62)
     private val worker=Executors.newSingleThreadExecutor()
     private val capture=registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if(isFinishing || isDestroyed)return@registerForActivityResult
         busy=false
+        if(result.resultCode!=RESULT_OK) { home();return@registerForActivityResult }
         val uri=GmsDocumentScanningResult.fromActivityResultIntent(result.data)?.pages?.firstOrNull()?.imageUri
-        if(result.resultCode!=RESULT_OK || uri==null) { if(bitmap==null) home() else review();return@registerForActivityResult }
-        screen("Reading captured image…")
+        if(uri==null) { home();message("No cover returned. Please capture it again.");return@registerForActivityResult }
+        busy=true
+        screen("Searching Metron…")
+        label("Preparing your confirmed cover image…")
+        column.addView(ProgressBar(this).apply { indeterminateTintList=ColorStateList.valueOf(accent);contentDescription="Preparing cover search" },LinearLayout.LayoutParams(dp(40),dp(40)).apply { gravity=Gravity.CENTER_HORIZONTAL;topMargin=dp(16) })
         worker.execute {
-            val file=File(cacheDir,"cover-search.jpg")
+            var file:File?=null
             try {
-                contentResolver.openInputStream(uri)!!.use { input -> file.outputStream().use { input.copyTo(it) } }
-                val bounds=BitmapFactory.Options().apply { inJustDecodeBounds=true };BitmapFactory.decodeFile(file.path,bounds)
+                val captureFile=File.createTempFile("cover-search-",".jpg",cacheDir);file=captureFile
+                contentResolver.openInputStream(uri)!!.use { input -> captureFile.outputStream().use { input.copyTo(it) } }
+                val bounds=BitmapFactory.Options().apply { inJustDecodeBounds=true };BitmapFactory.decodeFile(captureFile.path,bounds)
                 require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=32_000_000) { "Image too large or unreadable. Please recapture it." }
                 var sample=1
                 while(bounds.outWidth.toLong()*bounds.outHeight/(sample.toLong()*sample)>4_000_000)sample*=2
-                val image=BitmapFactory.decodeFile(file.path,BitmapFactory.Options().apply { inSampleSize=sample;inPreferredConfig=Bitmap.Config.ARGB_8888 }) ?: error("Unable to read captured image.")
-                runOnUiThread { if(!isDestroyed) { bitmap?.recycle();bitmap=image;review() } else image.recycle() }
-            } catch(error:Exception) { runOnUiThread { if(!isDestroyed) { home();message(error.message ?: "Unable to read capture.") } } }
-            finally { file.delete() }
+                val image=BitmapFactory.decodeFile(captureFile.path,BitmapFactory.Options().apply { inSampleSize=sample;inPreferredConfig=Bitmap.Config.ARGB_8888 }) ?: error("Unable to read captured image.")
+                val hash=try {
+                    val pixels=IntArray(image.width*image.height);image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
+                    PerceptualHash.fromArgb(pixels,image.width,image.height)
+                } finally { image.recycle() }
+                runOnUiThread { if(!isFinishing && !isDestroyed) { setResult(RESULT_OK,Intent().putExtra("hash",hash).putExtra("distance",distance));finish() } }
+            } catch(error:Exception) { runOnUiThread { if(!isFinishing && !isDestroyed) { busy=false;home();message(error.message ?: "Unable to process this capture. Please capture it again.") } } }
+            finally { file?.delete() }
         }
     }
+
     override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState);distance=savedInstanceState?.getInt("distance",16) ?: 16;home() }
     override fun onSaveInstanceState(outState:Bundle) { outState.putInt("distance",distance);super.onSaveInstanceState(outState) }
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
@@ -95,7 +107,7 @@ class ImageSearchActivity : ComponentActivity() {
     }
     private fun home() {
         screen("Image Cover Search")
-        label("Find a comic from a photo of its cover. Capture an image, adjust its edges, then search Metron.")
+        label("Capture a cover and adjust its corners or rotation in the scanner. Tap Next to search Metron.")
         val settings=LinearLayout(this).apply { orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL;setPadding(0,dp(18),0,dp(8)) }
         settings.addView(TextView(this).apply { text="Hash distance";textSize=15f;setTextColor(ink) },LinearLayout.LayoutParams(0,-2,1f))
         val value=TextView(this).apply { text="$distance";textSize=15f;setTextColor(ink);gravity=Gravity.CENTER;setPadding(dp(12),dp(5),dp(12),dp(5));background=rounded(Color.rgb(64,32,44),border,20) }
@@ -109,7 +121,6 @@ class ImageSearchActivity : ComponentActivity() {
         for((index,text) in listOf("10 · Closer matches","20 · Broader search").withIndex())ends.addView(TextView(this).apply { this.text=text;textSize=11f;setTextColor(muted);gravity=if(index==0)Gravity.START else Gravity.END },LinearLayout.LayoutParams(0,-2,1f))
         column.addView(ends,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(12) })
         button("Capture Image",primary=true) { scan() }
-        if(bitmap!=null)button("Review captured image") { review() }
         button("Back to menu") { finish() }
         label("Your photo stays on this device. Only its cover hash is sent to DangerRoom and Metron.",12f).setPadding(0,dp(20),0,0)
     }
@@ -120,72 +131,6 @@ class ImageSearchActivity : ComponentActivity() {
             .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG).setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE).build())
             .getStartScanIntent(this).addOnSuccessListener { if(!isDestroyed && !isFinishing) capture.launch(IntentSenderRequest.Builder(it).build()) }
             .addOnFailureListener { busy=false;message("Scanner unavailable. Google Play services and its first-use scanner download are required. Please try again after the download completes.") }
-    }
-    private fun review() {
-        val image=bitmap ?: return home()
-        screen("Review cover")
-        column.addView(ImageView(this).apply { setImageBitmap(image);adjustViewBounds=true;contentDescription="Captured cover";setPadding(dp(8),dp(8),dp(8),dp(8));background=rounded(Color.rgb(24,10,16),border,8) },LinearLayout.LayoutParams(-1,dp(360)))
-        button("Search",primary=true) {
-            if(busy)return@button
-            busy=true;screen("Calculating cover hash…")
-            worker.execute {
-                try {
-                    val pixels=IntArray(image.width*image.height);image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
-                    val hash=PerceptualHash.fromArgb(pixels,image.width,image.height)
-                    runOnUiThread { if(!isDestroyed) { setResult(RESULT_OK,Intent().putExtra("hash",hash).putExtra("distance",distance));finish() } }
-                } catch(error:Exception) { runOnUiThread { if(!isDestroyed) { busy=false;review();message(error.message ?: "Unable to hash image.") } } }
-            }
-        }
-        button("Edit bounding box and rotation") { edit() }
-        button("Capture again") { scan() }
-        button("Back") { home() }
-    }
-    private fun edit(original:Bitmap?=bitmap) {
-        val image=bitmap ?: return home()
-        screen("Edit cover")
-        label("Drag the corners of the box to the cover edges. Rotate if needed, then apply.")
-        val crop=CropView(image);column.addView(crop,LinearLayout.LayoutParams(-1,dp(420)))
-        button("Rotate 90°") {
-            val rotated=Bitmap.createBitmap(image,0,0,image.width,image.height,Matrix().apply { postRotate(90f) },true)
-            bitmap=rotated;edit(original)
-        }
-        button("Apply bounding box",primary=true) { bitmap=crop.cropped();review() }
-        button("Cancel") { bitmap=original;review() }
-    }
-    private inner class CropView(private val image:Bitmap):View(this@ImageSearchActivity) {
-        private val box=RectF(0f,0f,1f,1f)
-        private val display=RectF()
-        private val paint=Paint(Paint.ANTI_ALIAS_FLAG)
-        private var corner=0
-        init { contentDescription="Cover crop box. Drag a corner to adjust.";isFocusable=true }
-        override fun onDraw(canvas:Canvas) {
-            val scale=minOf(width.toFloat()/image.width,height.toFloat()/image.height)
-            val w=image.width*scale;val h=image.height*scale
-            display.set((width-w)/2,(height-h)/2,(width+w)/2,(height+h)/2)
-            paint.style=Paint.Style.FILL;canvas.drawBitmap(image,null,display,paint)
-            val r=RectF(display.left+box.left*w,display.top+box.top*h,display.left+box.right*w,display.top+box.bottom*h)
-            paint.color=Color.rgb(229,189,135);paint.strokeWidth=dp(3).toFloat();paint.style=Paint.Style.STROKE;canvas.drawRect(r,paint)
-            paint.style=Paint.Style.FILL
-            for(x in listOf(r.left,r.right))for(y in listOf(r.top,r.bottom))canvas.drawCircle(x,y,dp(9).toFloat(),paint)
-        }
-        override fun onTouchEvent(event:MotionEvent):Boolean {
-            if(display.width()==0f)return false
-            val x=((event.x-display.left)/display.width()).coerceIn(0f,1f)
-            val y=((event.y-display.top)/display.height()).coerceIn(0f,1f)
-            if(event.action==MotionEvent.ACTION_DOWN) { parent.requestDisallowInterceptTouchEvent(true);corner=(if(x>(box.left+box.right)/2)1 else 0)+(if(y>(box.top+box.bottom)/2)2 else 0) }
-            if(event.action==MotionEvent.ACTION_MOVE || event.action==MotionEvent.ACTION_DOWN) {
-                if(corner%2==0)box.left=x.coerceAtMost(box.right-.05f) else box.right=x.coerceAtLeast(box.left+.05f)
-                if(corner<2)box.top=y.coerceAtMost(box.bottom-.05f) else box.bottom=y.coerceAtLeast(box.top+.05f)
-                invalidate()
-            }
-            if(event.action==MotionEvent.ACTION_UP) { parent.requestDisallowInterceptTouchEvent(false);performClick() }
-            return true
-        }
-        override fun performClick():Boolean { super.performClick();return true }
-        fun cropped():Bitmap {
-            val left=(box.left*image.width).toInt();val top=(box.top*image.height).toInt()
-            return Bitmap.createBitmap(image,left,top,((box.right-box.left)*image.width).toInt().coerceAtLeast(1),((box.bottom-box.top)*image.height).toInt().coerceAtLeast(1))
-        }
     }
     override fun onDestroy() { worker.shutdown();super.onDestroy() }
 }
