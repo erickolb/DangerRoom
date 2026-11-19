@@ -141,6 +141,8 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
+Prepared for stable release (not yet published): Android Hardlight **1.2.0**, code **22**, and iOS Hardlight **1.2.0**, build **3**. The iOS port includes native cover scanning, default hash distance 14, compatible local hashing, and a server-version gate behind the loading screen. Server remains **1.1.2**. Tags, releases, and website deployment are intentionally deferred.
+
 Current Server Build: version 1.1.2
 
 Stable Hardlight (Android/iOS): version 1.1.0

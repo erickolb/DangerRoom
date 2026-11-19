@@ -15,6 +15,7 @@ struct ClientView: View {
     @State private var secret = ""
     @State private var message = ""
     @State private var testing = false
+    @State private var verificationError: String?
     var body: some View {
         ZStack {
             Color(red: 0.10, green: 0.047, blue: 0.07).ignoresSafeArea()
@@ -25,6 +26,13 @@ struct ClientView: View {
                     Image(uiImage: UIImage(named: "mask.png") ?? UIImage()).resizable().scaledToFit().frame(width: 192, height: 192)
                     Circle().stroke(Color(red: 0.086, green: 0.051, blue: 0.071), lineWidth: 1.5).frame(width: 192, height: 192)
                 }.frame(width: 224, height: 224)
+            } else if let error = verificationError, !editing {
+                VStack(alignment: .leading,spacing: 20) {
+                    Text("Server connection needs attention").font(.largeTitle)
+                    Text(error)
+                    Button("Retry") { Task { await verifyConnection() } }
+                    Button("Instance and device settings") { editing = true; host = connection?.origin ?? ""; device = connection?.device ?? ""; secret = "" }
+                }.padding(24)
             } else if let connection, !editing {
                 Browser(connection: connection) { editing = true; host = connection.origin; device = connection.device; secret = "" }.ignoresSafeArea()
             } else {
@@ -40,7 +48,14 @@ struct ClientView: View {
                     if connection != nil { Button("Back to menu") { editing = false } }
                 }.navigationTitle("Danger Room") }
             }
-        }.task { try? await Task.sleep(for: .milliseconds(700)); splash = false }
+        }.task { try? await Task.sleep(for: .milliseconds(700)); await verifyConnection() }
+    }
+    @MainActor func verifyConnection() async {
+        splash = true; verificationError = nil
+        defer { splash = false }
+        guard let connection else { return }
+        do { try await Transport(connection).verify() }
+        catch { verificationError = error.localizedDescription }
     }
     @MainActor func save() async {
         testing = true; defer { testing = false }
@@ -51,9 +66,8 @@ struct ClientView: View {
             let token = secret.isEmpty && connection?.origin == origin && connection?.device == id ? connection!.secret : secret
             guard UUID(uuidString: id) != nil, token.range(of: "^[a-fA-F0-9]{64}$", options: .regularExpression) != nil else { throw ClientError(message: "Enter the device ID and 64-character secret issued by your administrator.") }
             let next = Connection(origin: origin, device: id, secret: token)
-            let (data, response) = try await Transport(next).get("/api/device")
-            guard response.statusCode == 200, (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["authorized"] as? Bool == true else { throw ClientError(message: "Device not authorized. Check the address, device ID, secret and server version.") }
-            try CredentialStore.save(next); connection = next; secret = ""; editing = false; message = ""
+            try await Transport(next).verify()
+            try CredentialStore.save(next); connection = next; secret = ""; editing = false; message = ""; verificationError = nil
         } catch { message = error.localizedDescription }
     }
 }
@@ -85,6 +99,14 @@ final class Transport {
         for try await byte in bytes { guard data.count < 26 * 1024 * 1024 else { throw ClientError(message: "Response too large.") }; data.append(byte) }
         guard let response = response as? HTTPURLResponse else { throw ClientError(message: "Invalid response.") }
         return (data, response)
+    }
+    func verify() async throws {
+        let (health,response) = try await get("/api/health")
+        guard response.statusCode==200 else { throw ClientError(message: "Unable to check the DangerRoom version. Check the instance address and device credentials.") }
+        let object = try JSONSerialization.jsonObject(with: health) as? [String: Any]
+        guard Input.supportsServer(object?["version"] as? String ?? "") else { throw ServerUpdateRequired() }
+        let (data,deviceResponse) = try await get("/api/device")
+        guard deviceResponse.statusCode==200, (try JSONSerialization.jsonObject(with: data) as? [String: Any])?["authorized"] as? Bool == true else { throw ClientError(message: "Device not authorized. Check the address, device ID, and secret.") }
     }
     static func validPath(_ path: String) -> Bool {
         guard let decoded = path.removingPercentEncoding else { return false }
@@ -138,8 +160,19 @@ final class WebController: UIViewController, WKURLSchemeHandler, WKScriptMessage
     @objc func pause() { web.evaluateJavaScript("document.dispatchEvent(new Event('dangerroompause'))"); UIApplication.shared.isIdleTimerDisabled = false }
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated); pause()
-        web.configuration.userContentController.removeScriptMessageHandler(forName: "hardlight")
         for task in pending.values { task.cancel() }; pending.removeAll()
+    }
+    deinit { NotificationCenter.default.removeObserver(self) }
+    func imageCoverSearch() {
+        guard presentedViewController == nil else { return }
+        let capture = UIHostingController(rootView: CoverSearchView(onMatch: { [weak self] hash,distance in
+            self?.dismiss(animated: true) { [weak self] in
+                self?.web.evaluateJavaScript("location.hash='/?cover_hash_near=\(hash)&cover_hash_max_distance=\(distance)'")
+            }
+        },onClose: { [weak self] in
+            self?.dismiss(animated: true) { [weak self] in self?.web.evaluateJavaScript("location.hash='/home'") }
+        }))
+        present(capture,animated: true)
     }
     override var prefersStatusBarHidden: Bool { immersive }
     var immersive = false
@@ -171,6 +204,7 @@ final class WebController: UIViewController, WKURLSchemeHandler, WKScriptMessage
         guard message.frameInfo.isMainFrame, message.frameInfo.request.url?.scheme == "hardlight", message.frameInfo.request.url?.host == "app", let body = message.body as? [String: Any], let action = body["action"] as? String else { return }
         switch action {
         case "settings": settings()
+        case "imageCoverSearch": imageCoverSearch()
         case "keepAwake": UIApplication.shared.isIdleTimerDisabled = body["enabled"] as? Bool ?? false
         case "fullscreen": immersive = body["enabled"] as? Bool ?? false; setNeedsStatusBarAppearanceUpdate()
         case "configureCoverCache": cache.configure(body)
@@ -202,7 +236,7 @@ final class WebController: UIViewController, WKURLSchemeHandler, WKScriptMessage
     (()=>{const send=(action,data={})=>window.webkit.messageHandlers.hardlight.postMessage({action,...data});
     if(!crypto.randomUUID)crypto.randomUUID=()=>"10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
     window.DangerRoomIOS=true;
-    window.DangerRoomAndroid={settings:()=>send('settings'),keepAwake:enabled=>send('keepAwake',{enabled}),fullscreen:enabled=>send('fullscreen',{enabled}),
+    window.DangerRoomAndroid={imageCoverSearch:()=>send('imageCoverSearch'),settings:()=>send('settings'),keepAwake:enabled=>send('keepAwake',{enabled}),fullscreen:enabled=>send('fullscreen',{enabled}),
     request:(path,method,body,id)=>send('request',{path,method,body,id}),
     configureCoverCache:(files,limited,megabytes)=>send('configureCoverCache',{files,limited,megabytes}),
     flushCoverCache:()=>new Promise(resolve=>{const id=crypto.randomUUID();window.dangerroomResponses??={};window.dangerroomResponses[id]=r=>{delete window.dangerroomResponses[id];resolve(r.cleared)};send('flushCoverCache',{id})})};})();

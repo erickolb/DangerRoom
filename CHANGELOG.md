@@ -1,5 +1,13 @@
 # Changelog
 
+## Hardlight 1.2.0 · Stable preparation (not published)
+
+- Prepare Android code 22 and iOS build 3, with server unchanged at 1.1.2. No tags, GitHub releases, or website deployment in this preparation change.
+- Port image cover search to iOS using Apple's document scanner for capture, corner adjustment, perspective correction, and rotation. Save computes the hash locally and opens normal Metron results, without another review screen. Default distance 14; range 10–20. Camera permission text explains on-device photographs and hash-only transmission.
+- Port the ImageHash-compatible luminance/Lanczos/DCT implementation and validate against Android/Python golden vectors. Add the iOS minimum-server gate (1.1.0) behind the loading screen, with Retry and settings on incompatibility or connection failure.
+- Shared server 1.1.2 supplies the read-status modal and progressive enrichment with quota-stop behavior to both clients. Retain the native bridge after presenting/dismissing capture so menu, search, and cache controls remain usable.
+- Stage feature-page links in both platform release notes. Leave published download links and feature TODO statuses unchanged until publication. Physical-device camera/sideload checks remain part of release acceptance.
+
 ## Android Hardlight 1.2.0-beta.5 · 2026-11-19
 
 - Android-only update, version code 21. Keep server-version and device-authorization checks behind the branded loading screen instead of showing a separate Connecting / Checking server compatibility screen.

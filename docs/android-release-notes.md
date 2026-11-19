@@ -1,14 +1,9 @@
-# Hardlight 1.2.0-beta.5 for Android
+# Hardlight 1.2.0 for Android
 
-Android beta prerelease · version code 21 · application ID `net.chateaulore.hardlight`.
+Version code 22 · app ID `net.chateaulore.hardlight`.
 
-- Keep the initial instance-version check behind Hardlight’s branded loading screen. Remove the separate Connecting / Checking server compatibility screen.
-- If the instance is too old, show the existing update-required error with the minimum server version and this Hardlight version. Connection and authorization failures still show actionable errors, Retry, and instance settings.
-- Restore normal system bars when opening the app, setup, or an error screen. Back during loading exits without scheduling duplicate checks.
-- Android-only update. DangerRoom stays **1.1.2**, native minimum stays **1.1.0**, and no server container update is required for beta 5. Server 1.1.2 remains necessary for asynchronous search enrichment.
-- Retain default hash distance **14**, scanner Next-to-search behavior, progressive metadata enrichment, and quota-stop behavior without automatic retries.
-- Stable Android and iOS remain at 1.1.0. All three feature TODOs stay unchecked until stable approval.
+Read the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). Choose distance 10–20 (default 14), capture one cover, adjust its corners/rotation in the platform scanner, and confirm to search. Photographs stay on device; only the perceptual hash is sent. Standard Metron results retain collection, Want List, and read controls. Missing series types enrich after display, stopping at quota exhaustion without automatic retries on server 1.1.2.
 
-Obtainium users with prereleases enabled can update over earlier betas. Code 21 updates code 20 without reinstalling; app ID and signing key are unchanged.
+Android confirms with **Next**. Initial server checks stay behind the branded loading screen. The native minimum is DangerRoom 1.1.0; use server 1.1.2 for progressive enrichment. The revised read-status/journal dialog is shared with the web and iOS clients.
 
-Artifacts: `DangerRoom.apk`, `SHA256SUMS.txt`, `SIGNING-CERTIFICATE.txt`.
+Update over the existing signed APK to retain settings. Artifacts at publication: DangerRoom.apk, SHA256SUMS.txt, SIGNING-CERTIFICATE.txt. Version code 22 updates beta code 21 without reinstalling.

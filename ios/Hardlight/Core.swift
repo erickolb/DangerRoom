@@ -13,6 +13,14 @@ struct Connection: Codable, Equatable {
 }
 
 enum Input {
+    static let minimumServerVersion = "1.1.0"
+    static func supportsServer(_ version: String) -> Bool {
+        guard version.range(of: "^[0-9]+\\.[0-9]+\\.[0-9]+$",options: .regularExpression) != nil else { return false }
+        let actual = version.split(separator: ".").compactMap { Int($0) }, required = minimumServerVersion.split(separator: ".").compactMap { Int($0) }
+        guard actual.count==3, required.count==3 else { return false }
+        for i in 0..<3 { if actual[i] != required[i] { return actual[i]>required[i] } }
+        return true
+    }
     static func origin(_ raw: String) throws -> String {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let parts = URLComponents(string: text), parts.scheme == "https",
@@ -20,6 +28,13 @@ enum Input {
               parts.query == nil, parts.fragment == nil, parts.path.isEmpty || parts.path == "/",
               parts.url != nil else { throw ClientError(message: "Use an HTTPS server address without a path.") }
         return text.hasSuffix("/") ? String(text.dropLast()) : text
+    }
+}
+
+struct ServerUpdateRequired: LocalizedError {
+    var errorDescription: String? {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.2.0"
+        return "Please update your DangerRoom server to at least \(Input.minimumServerVersion) for Hardlight \(version) to work. Then tap Retry. Your collection and connection settings are preserved."
     }
 }
 

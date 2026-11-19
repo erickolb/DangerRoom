@@ -4,6 +4,8 @@ Hardlight is the Android and iOS companion for your DangerRoom instance. Its ins
 
 ## Requirements
 
+Stable preparation is checked in for Android **1.2.0 / code 22** and iOS **1.2.0 / build 3**, but these versions have not been published. Existing download links below remain the published versions until tagging. Both prepared clients expose Image Cover Search, default distance 14 (range 10–20), local ImageHash-compatible hashing, and a minimum-server check hidden behind startup branding. iOS uses Apple's document scanner: capture one cover, adjust corners/rotation, and tap Save to search directly. Android uses Next. The native minimum is server 1.1.0; server 1.1.2 supplies progressive metadata enrichment. Physical-device camera and sideload acceptance remain release checks.
+
 | | Android | iOS |
 | --- | --- | --- |
 | Devices | Phones and tablets, Android 9 or later | iPhone and iPad, iOS 17 or later |
