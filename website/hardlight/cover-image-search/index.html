@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find a comic by its cover with Hard Light 1.2.0. Choose a match distance, photograph the cover, adjust its corners, and search Metron.">
+  <title>Cover Image Search — Hard Light 1.2.0</title>
+  <link rel="icon" href="../../mask.png">
+  <link rel="stylesheet" href="../../styles.css?v=20261105-gallery">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <main id="content">
+    <header>
+      <img src="../../mask.png" width="88" height="88" alt="Danger Room logo: a blue superhero mask on a red circle">
+      <div><p class="eyebrow">The companion for Danger Room</p><h1>Hard Light</h1></div>
+    </header>
+    <nav aria-label="Main navigation">
+      <a href="../../">Danger Room</a>
+      <a href="../">Hard Light</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="../../privacy/">Privacy</a>
+    </nav>
+    <section class="hero cover-search-hero">
+      <p class="eyebrow">New in Hard Light 1.2.0</p>
+      <h2>Find it <em>by its cover.</em></h2>
+      <p class="lede"><a href="https://metron.cloud">Metron</a> now supports image cover search, and so does Danger Room. Photograph a comic in Hard Light to find matching issues—no title or barcode needed.</p>
+    </section>
+    <section id="how-it-works" class="cover-search-process" aria-label="How to search by a cover image">
+      <ol class="cover-search-steps">
+        <li>
+          <div class="step-copy"><h2>Choose the distance</h2><p>Open <strong>Image Cover Search</strong> from the menu. A maximum hash distance of <strong>14</strong> is a good balance between useful matches and variation in photo quality.</p></div>
+          <figure><a href="../../screenshots/cover-image-search-distance.jpg" target="_blank" rel="noopener" aria-label="View full-size screenshot: choose the maximum hash distance"><img src="../../screenshots/cover-image-search-distance.jpg" width="720" height="1600" alt="Image Cover Search in Hard Light with hash distance set to 14 and the Capture Image button" decoding="async"></a></figure>
+        </li>
+        <li>
+          <div class="step-copy"><h2>Capture the cover</h2><p>Tap <strong>Capture Image</strong> and take a photo of the comic. Keep the full cover in view, with clear lighting and as little glare as possible.</p></div>
+          <figure><a href="../../screenshots/cover-image-search-capture.jpg" target="_blank" rel="noopener" aria-label="View full-size photo: photographing a comic cover"><img src="../../screenshots/cover-image-search-capture.jpg" width="1536" height="2048" alt="A phone held over Marvel Mangaverse: Web of Destiny, with its camera detecting the comic cover" loading="lazy" decoding="async"></a></figure>
+        </li>
+        <li>
+          <div class="step-copy"><h2>Adjust the edges</h2><p>Rotate the image or move the bounding-box corners to the cover’s edges as needed. Apply your adjustments, then tap <strong>Next</strong> to search.</p></div>
+          <figure><a href="../../screenshots/cover-image-search-crop.jpg" target="_blank" rel="noopener" aria-label="View full-size screenshot: adjusting the cover bounding box"><img src="../../screenshots/cover-image-search-crop.jpg" width="720" height="1600" alt="The scanner’s crop screen with four blue bounding-box handles aligned to the corners of a comic cover" loading="lazy" decoding="async"></a></figure>
+        </li>
+        <li>
+          <div class="step-copy"><h2>Find your match</h2><p>Browse the matching issues from Metron. Confirm the comic and cover, then use the familiar controls to add it to your collection or Want List.</p></div>
+          <figure><a href="../../screenshots/cover-image-search-results.jpg" target="_blank" rel="noopener" aria-label="View full-size screenshot: image cover search results"><img src="../../screenshots/cover-image-search-results.jpg" width="720" height="1600" alt="Search results with Marvel Mangaverse: Web of Destiny first among five matching issues, with collection, Want List, and read controls" loading="lazy" decoding="async"></a></figure>
+        </li>
+      </ol>
+      <p class="cover-search-tip"><strong>A closer or broader search.</strong> The slider runs from 10 to 20: lower distances give closer matches; higher distances allow more variation and may return more unrelated covers.</p>
+      <p class="notice">Your photo stays on your device. Only its cover hash is sent to your Danger Room instance and Metron for matching.</p>
+      <p class="cover-search-return"><a href="../">Back to Hard Light</a></p>
+    </section>
+    <footer>
+      <p><a href="../">Hard Light</a> · <a href="../../">Danger Room</a> · <a href="../../privacy/">Privacy policy</a> · <a href="https://github.com/erickolb/DangerRoom">Source on GitHub</a></p>
+      <p>Mask: <a href="https://www.flaticon.com/free-icons/hero">Hero icons created by Magnific – Flaticon</a>. Cover artwork belongs to its respective rights holders.</p>
+      <p>Comic metadata from <a href="https://metron.cloud">Metron</a>, licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. DangerRoom selects and reformats metadata; adaptations remain under CC BY-SA 4.0. Cover artwork is excluded and belongs to its publishers or creators.</p>
+      <p>Copyright © 2026 Eric Kolb. Original DangerRoom and Hardlight code: <a href="https://github.com/erickolb/DangerRoom/blob/main/LICENSE">GNU AGPLv3</a>, without warranty. <a href="https://github.com/erickolb/DangerRoom/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a>.</p>
+      <p>This project was created with AI-assisted programming.</p>
+    </footer>
+  </main>
+</body>
+</html>

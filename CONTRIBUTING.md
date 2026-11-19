@@ -31,6 +31,8 @@ Format badge PNGs are prebuilt assets. On Windows, `scripts/generate-format-badg
 
 ## Component versions and releases
 
+For the Hardlight 1.2.0 stable launch, publish the prepared `website/hardlight/cover-image-search/` page and its linked Hardlight gallery entry at the same time as the release. Include the feature-page link from `docs/hardlight-1.2.0-release-notes.md` in both platform release notes. Keep this website preparation off `main` until the stable launch; Pages deploys website changes pushed to `main` automatically.
+
 Before implementing a requested change, agree with the maintainer on whether it affects the DangerRoom server, Hardlight, or both, and on each affected component's version. Follow [AGENTS.md](AGENTS.md): major changes increment the first number, features the second, and incremental changes the third, resetting lower numbers. Server and client versions are independent. Do not bump an unaffected component. Research and documentation alone do not require an application release.
 
 `public/releases.js` drives the server footer build label and in-app Changelog. Keep the package version, release data, [Changelog](CHANGELOG.md), and README release information consistent. Keep alpha and beta histories separately collapsed. Related implementation and verification fixes belong to the agreed build.
