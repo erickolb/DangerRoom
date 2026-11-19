@@ -38,7 +38,7 @@ export function essentialIssue(raw) {
 }
 export function searchFilters(params) {
   if (params.has('cover_hash_near')) {
-    const hash=params.get('cover_hash_near'), distance=params.get('cover_hash_max_distance') ?? '16';
+    const hash=params.get('cover_hash_near'), distance=params.get('cover_hash_max_distance') ?? '14';
     const page=positiveId(params.get('page') || 1,'Page');
     if(!/^[a-f0-9]{16}$/i.test(hash) || !/^(1[0-9]|20)$/.test(distance) || page>10000) throw new AppError(400,'Choose a valid cover hash and a distance from 10 to 20.');
     return new URLSearchParams({cover_hash_near:hash.toLowerCase(),cover_hash_max_distance:distance,page:String(page)});
@@ -161,20 +161,21 @@ export class Metron {
     const filters = searchFilters(params);
     const imageSearch=filters.has('cover_hash_near');
     const data = await this.get(`issue/?${filters}`, imageSearch ? 0 : 6 * 60 * 60 * 1000, imageSearch);
-    const pending=new Map();
-    const results=await Promise.all(data.results.map(async r=>{
-      let type=seriesType(r.series.series_type)||seriesType(r.series_type)||seriesType(this.repo.knownSeriesType?.(r.series.id));
-      if(!type){
-        if(!pending.has(r.series.id))pending.set(r.series.id,this.get(`series/${positiveId(r.series.id)}/`,24*60*60*1000).then(series=>{
-          if(series.id!==r.series.id)throw new AppError(502,'Metron returned unexpected series data.');
-          return seriesType(series.series_type);
-        }));
-        type=await pending.get(r.series.id);
-      }
+    const results=data.results.map(r=>{
+      const cached=this.repo.cacheGet(`series/${positiveId(r.series.id)}/`);
+      const type=seriesType(r.series.series_type)||seriesType(r.series_type)||seriesType(this.repo.knownSeriesType?.(r.series.id))||seriesType(cached?.id===r.series.id ? cached.series_type : null);
       return {id:r.id,display_name:r.issue||`${r.series.name} #${r.number}`,series:{...r.series,series_type:type},
+        series_type_pending:!type && cached?.id!==r.series.id,
         number:r.number,cover_date:r.cover_date,image:imageURL(r.image)};
-    }));
+    });
     return {count:data.count,page:Number(filters.get('page')),next:Boolean(data.next),previous:Boolean(data.previous),results};
+  }
+
+  async enrichSeriesType(id) {
+    id=positiveId(id,'Series');
+    const series=await this.get(`series/${id}/`,24*60*60*1000);
+    if(series.id!==id)throw new AppError(502,'Metron returned unexpected series data.');
+    return {series_id:id,series_type:seriesType(series.series_type),quota_exhausted:this.repo.stateGet('blocked_until')>Date.now()};
   }
 
   async seriesTypes() {

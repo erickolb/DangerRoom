@@ -2,7 +2,7 @@ export function selectedSeriesTypes(params){
   return new Set((params.get('series_types')||'').split(',').filter(value=>/^\d+$/.test(value)).map(Number).filter(Number.isSafeInteger));
 }
 export function filterSearchResults(rows,{hideOwned=false,seriesTypes=new Set(),seriesNames=new Set()}={}){
-  return rows.filter(row=>(!hideOwned||!row.owned)&&(!seriesNames.size||seriesNames.has(row.series.name))&&(!seriesTypes.size||seriesTypes.has(row.series.series_type?.id||0)));
+  return rows.filter(row=>(!hideOwned||!row.owned)&&(!seriesNames.size||seriesNames.has(row.series.name))&&(!seriesTypes.size||row.series_type_pending||seriesTypes.has(row.series.series_type?.id||0)));
 }
 export function seriesTypeOptions(rows,catalog=[],selected=new Set()){
   const types=new Map(catalog.map(type=>[type.id,type.name]));

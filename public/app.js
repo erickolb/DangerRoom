@@ -1,4 +1,5 @@
 import { createUPCScanner, validUPC, matchingEdition } from './upc-scanner.js';
+import { enrichSearchSeries } from './search-enrichment.js';
 import { selectedSeriesNames,seriesNameOptions,selectedSeriesTypes, filterSearchResults, seriesTypeOptions } from './search-filters.js';
 import { comicTitle, comicTitleText } from './comic-title.js';
 import { ratingChoices, bindRatingPreview } from './ratings.js';
@@ -16,6 +17,10 @@ const localCover = edition => edition?.cover_file ? `/covers/${edition.cover_fil
 const field = (label, value) => `<div><dt>${esc(label)}</dt><dd>${esc(value || 'Not supplied')}</dd></div>`;
 let pendingSeriesNameCheck = null;
 let connected = false, generation = 0, dialogGeneration = 0, collectionView = 'owned';
+let searchEnrichmentEpoch=0,stopVisibleSearchEnrichment=null;
+function interruptSearchEnrichment(){searchEnrichmentEpoch++;stopVisibleSearchEnrichment?.();}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)interruptSearchEnrichment();});
+document.addEventListener('dangerroompause',interruptSearchEnrichment);
 $('#build-label').textContent = releases[0].version;
 async function api(path, options = {}) {
   if(isAndroid){
@@ -70,6 +75,7 @@ function closeDialog() { dialogGeneration++; dialog.close(); }
 dialog.addEventListener('close', () => { dialogGeneration++; });
 async function route() {
   const ticket = ++generation;
+  stopVisibleSearchEnrichment=null;
   message(''); cancelReadDialog(); closeDialog(); if(lightbox.open)lightbox.close();
   const { path, params } = routeData();
   document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === `#${path}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
@@ -131,13 +137,15 @@ function bindSearchForm(params) {
   };
 }
 function searchForm(params) {
-  if(params.has('cover_hash_near') && isAndroid)return `<form id="search-form"><p>Image Cover Search · Hash distance ${esc(params.get('cover_hash_max_distance')||'16')}</p><button type="submit">Capture another image</button></form>`;
+  if(params.has('cover_hash_near') && isAndroid)return `<form id="search-form"><p>Image Cover Search · Hash distance ${esc(params.get('cover_hash_max_distance')||'14')}</p><button type="submit">Capture another image</button></form>`;
   const upc=params.get('mode')==='upc';
   const toggle=`<button type="button" id="upc-mode" class="quiet upc-mode-toggle" aria-label="UPC mode" title="Toggle UPC mode" aria-pressed="${upc}">${barcodeIcon}</button>`;
   if(upc)return `<form id="search-form" class="search-form upc-search"><div class="search-main">${toggle}<label>UPC barcode<input id="upc-input" name="upc" value="${esc(params.get('upc')||'')}" placeholder="Scan or type a barcode" inputmode="numeric" pattern="[0-9]{1,18}" maxlength="18" autocomplete="off" type="text"></label><button type="submit">Look up UPC →</button></div><p class="search-help">UPC mode · Scan anytime while this page is active. Enter submits the barcode.</p></form>${upcTips}`;
   return `<form id="search-form" class="search-form">${[...selectedSeriesNames(params)].map(name=>`<input type="hidden" name="series_name_filter" value="${esc(name)}">`).join('')}${selectedSeriesTypes(params).size?`<input type="hidden" name="series_types" value="${[...selectedSeriesTypes(params)].join(',')}">`:''}<div class="search-main">${toggle}<label>Series name<input name="q" value="${esc(params.get('q') || '')}" placeholder="Search series, from Batman to Saga…" maxlength="160" autocomplete="off" type="search"></label><button type="submit">Search Metron <span aria-hidden="true">→</span></button></div><details class="search-options" ${params.get('number') || params.get('year') || params.get('upc') ? 'open' : ''}><summary>Issue, year & barcode</summary><div class="fields"><label>Issue number<input name="number" value="${esc(params.get('number') || '')}" placeholder="e.g. 1 or ½" maxlength="30"></label><label>Series start year<input name="year" value="${esc(params.get('year') || '')}" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 2024"></label><label>UPC<input name="upc" value="${esc(params.get('upc') || '')}" inputmode="numeric" pattern="[0-9]{8,18}" placeholder="Full comic barcode"></label></div></details><div class="search-filter-row"><p class="search-help">Search by series name, or use a UPC on its own.</p>${params.get('hide_owned')==='1'?'<input type="hidden" name="hide_owned" value="1">':''}</div></form>`;
 }
 async function search(params, ticket) {
+  const enrichmentEpoch=searchEnrichmentEpoch;
+  stopVisibleSearchEnrichment=null;
   app.innerHTML = `<div class="hero ${params.get('mode')==='upc'?'upc-hero':''}"><span class="hero-mark" aria-hidden="true">✦</span><p class="eyebrow">Open up a whole new universe.</p><h2>${params.get('mode')==='upc'?'UPC Lookup':'Pull your next issue'}</h2><p class="intro">Search Metron, choose a cover, and make it yours.<br>Keep the stories you own and the ones you’ve read.</p>${searchForm(params)}</div>${!connected ? '<div class="connection">Connect Metron to start searching: add your API token to <code>METRON_API_TOKEN</code> in the local <code>.env</code> file and restart DangerRoom. <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer">Open Metron ↗</a></div>' : ''}<div id="search-results"></div>`;
   if(params.has('cover_hash_near')){
     if(!isAndroid)throw Error('Image cover search is available only through Hardlight.');
@@ -162,7 +170,7 @@ async function search(params, ticket) {
     const seriesNames=selectedSeriesNames(params);
     const visible=filterSearchResults(data.results,{hideOwned,seriesTypes,seriesNames});
     const unfilteredParams=new URLSearchParams(params);unfilteredParams.delete('series_types');unfilteredParams.delete('hide_owned');unfilteredParams.delete('series_name_filter');
-    $('#search-results').innerHTML = `<div class="results"><div class="section-heading"><div><p class="eyebrow">From Metron</p><h2>Search results</h2></div><div class="result-tools"><button type="button" class="quiet hide-owned-toggle" id="hide-owned" aria-label="Hide issues in My Collection" title="Hide issues in My Collection (any cover)" aria-pressed="${params.get('hide_owned')==='1'}"><span class="collection-filter-icon"><img class="icon light-icon" src="/boxes.png" alt=""><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/></svg></span></button><details class="results-filter" id="results-filter"><summary class="button quiet">Filters${seriesTypes.size+seriesNames.size?` (${seriesTypes.size+seriesNames.size})`:''}</summary><div class="results-filter-panel"><form id="series-type-filters"><div class="filter-columns"><div><fieldset><legend>Series type</legend><div id="series-type-options"></div></fieldset><p class="hint">No selections shows all types.</p></div><div><fieldset><legend>Series Name</legend><div id="series-name-options">${seriesNameOptions(data.results,seriesNames).map(name=>`<label class="series-type-choice"><input type="checkbox" name="series_name" value="${esc(name)}" ${seriesNames.has(name)?'checked':''}><span>${esc(name)}</span></label>`).join('')}</div></fieldset><p class="hint">No selections shows all series names. Options come from this results page.</p></div></div><div class="actions"><button type="submit">Apply</button><button type="button" class="quiet" id="clear-series-types">Clear</button></div><p class="hint" id="series-type-status" role="status"></p></form></div></details><span class="count">${Number(data.count).toLocaleString()} issue${data.count === 1 ? '' : 's'} on Metron</span></div></div>${hideOwned||seriesTypes.size||seriesNames.size?`<p class="muted">${visible.length} issue${visible.length===1?'':'s'} shown on this page.${hideOwned?' Owned issues in any cover are hidden.':''}${seriesTypes.size?' Series type filters are active.':''}${seriesNames.size?' Series name filters are active.':''}</p>`:''}${visible.length ? `<div class="shelf">${visible.map(r => `<article class="comic-card">${cover(localCover(r) || r.image, comicTitleText(r,{year:true}))}<div class="card-info"><p class="eyebrow">${esc(r.series.year_began || '')} · Volume ${esc(r.series.volume || '—')}</p><h3>${comicTitle(r)}</h3><p class="muted">${esc(date(r.cover_date))}</p><div class="comic-actions" data-choose="${r.id}">${actionButton('owned',r.owned)}${actionButton('wanted',r.wanted)}${actionButton('read',r.read)}</div></div></article>`).join('')}</div>` : hideOwned||seriesTypes.size||seriesNames.size ? `<div class="empty-state"><h3>No issues on this page match these filters.</h3><p>Adjust <a href="#/?${esc(unfilteredParams.toString())}">or remove</a> the filters or continue to another results page.</p></div>` : '<div class="empty-state"><h3>No issues found</h3><p>Try another series name or adjust the issue number and year.</p></div>'}<div class="pagination">${data.previous ? '<button class="quiet" id="previous">← Previous</button>' : ''}<span class="muted">Page ${data.page}</span>${data.next ? '<button class="quiet" id="next">Next →</button>' : ''}</div></div>`;
+    $('#search-results').innerHTML = `<div class="results"><div class="section-heading"><div><p class="eyebrow">From Metron</p><h2>Search results</h2></div><div class="result-tools"><button type="button" class="quiet hide-owned-toggle" id="hide-owned" aria-label="Hide issues in My Collection" title="Hide issues in My Collection (any cover)" aria-pressed="${params.get('hide_owned')==='1'}"><span class="collection-filter-icon"><img class="icon light-icon" src="/boxes.png" alt=""><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/></svg></span></button><details class="results-filter" id="results-filter"><summary class="button quiet">Filters${seriesTypes.size+seriesNames.size?` (${seriesTypes.size+seriesNames.size})`:''}</summary><div class="results-filter-panel"><form id="series-type-filters"><div class="filter-columns"><div><fieldset><legend>Series type</legend><div id="series-type-options"></div></fieldset><p class="hint">No selections shows all types.</p></div><div><fieldset><legend>Series Name</legend><div id="series-name-options">${seriesNameOptions(data.results,seriesNames).map(name=>`<label class="series-type-choice"><input type="checkbox" name="series_name" value="${esc(name)}" ${seriesNames.has(name)?'checked':''}><span>${esc(name)}</span></label>`).join('')}</div></fieldset><p class="hint">No selections shows all series names. Options come from this results page.</p></div></div><div class="actions"><button type="submit">Apply</button><button type="button" class="quiet" id="clear-series-types">Clear</button></div><p class="hint" id="series-type-status" role="status"></p></form></div></details><span class="count">${Number(data.count).toLocaleString()} issue${data.count === 1 ? '' : 's'} on Metron</span></div></div><p class="hint" id="search-enrichment-status" role="status"></p><p class="muted" id="search-page-summary"></p><div class="shelf" id="search-shelf">${data.results.map(r => `<article class="comic-card" data-result-issue="${r.id}" ${visible.includes(r)?'':'hidden'}>${cover(localCover(r) || r.image, comicTitleText(r,{year:true}))}<div class="card-info"><p class="eyebrow">${esc(r.series.year_began || '')} · Volume ${esc(r.series.volume || '—')}</p><h3>${comicTitle(r)}</h3><p class="muted">${esc(date(r.cover_date))}</p><p class="hint" data-result-type-state ${r.series_type_pending?'':'hidden'}>Series type pending</p><div class="comic-actions" data-choose="${r.id}">${actionButton('owned',r.owned)}${actionButton('wanted',r.wanted)}${actionButton('read',r.read)}</div></div></article>`).join('')}</div><div class="empty-state" id="search-empty" ${visible.length?'hidden':''}><h3>${data.results.length?'No issues on this page match these filters.':'No issues found'}</h3><p>${data.results.length?`Adjust <a href="#/?${esc(unfilteredParams.toString())}">or remove</a> the filters or continue to another results page.`:'Try another search or adjust its options.'}</p></div><div class="pagination">${data.previous ? '<button class="quiet" id="previous">← Previous</button>' : ''}<span class="muted">Page ${data.page}</span>${data.next ? '<button class="quiet" id="next">Next →</button>' : ''}</div></div>`;
   $('#hide-owned').onclick=()=>{const p=new URLSearchParams(params);if(p.get('hide_owned')==='1')p.delete('hide_owned');else p.set('hide_owned','1');location.hash=`#/?${p}`;};
     function renderTypeOptions(catalog=[]){
       $('#series-type-options').innerHTML=seriesTypeOptions(data.results,catalog,seriesTypes).map(type=>`<label class="series-type-choice"><input type="checkbox" name="type" value="${type.id}" ${seriesTypes.has(type.id)?'checked':''}><span>${esc(type.name)}</span></label>`).join('');
@@ -196,6 +204,36 @@ async function search(params, ticket) {
         const key=issue.read?.edition_key||issue.editions.find(e=>e.key==='standard')?.key||issue.editions[0]?.key;
         await changeRead(ctx,copyState(ctx,key));if(ticket===generation)await route();
       }catch(error){message(error.message,true);}finally{b.disabled=false;}
+    }));
+    let enrichmentPhase=data.results.some(row=>row.series_type_pending)?(enrichmentEpoch===searchEnrichmentEpoch && !document.hidden?'loading':'stopped'):'complete';
+    function refreshEnrichmentView(){
+      if(ticket!==generation || !$('#search-enrichment-status'))return;
+      const shown=filterSearchResults(data.results,{hideOwned,seriesTypes,seriesNames}),shownIds=new Set(shown.map(row=>row.id));
+      for(const row of data.results){
+        const card=app.querySelector(`[data-result-issue="${row.id}"]`);if(!card)continue;
+        card.hidden=!shownIds.has(row.id);
+        card.querySelector('h3').innerHTML=comicTitle(row);
+        const artwork=card.querySelector('img.cover');if(artwork)artwork.alt=comicTitleText(row,{year:true});
+        const note=card.querySelector('[data-result-type-state]');note.hidden=!row.series_type_pending;
+        note.textContent=enrichmentPhase==='loading'?'Series type pending':'Series type unavailable';
+      }
+      $('#search-shelf').hidden=!shown.length;$('#search-empty').hidden=Boolean(shown.length);
+      const pending=data.results.filter(row=>row.series_type_pending).length;
+      $('#search-enrichment-status').textContent=pending?(enrichmentPhase==='loading'?'Loading series types…':'Some series types unavailable; results are still usable.')+(seriesTypes.size?' Matches with unknown types remain visible.':''):'';
+      $('#search-page-summary').textContent=`${shown.length} issue${shown.length===1?'':'s'} shown on this page.${hideOwned?' Owned issues in any cover are hidden.':''}`;
+      // Append/update type labels without replacing checkboxes or losing unapplied edits/focus.
+      for(const type of seriesTypeOptions(data.results,[],seriesTypes)){
+        const existing=app.querySelector(`#series-type-options input[value="${type.id}"]`);
+        if(existing)existing.closest('label').querySelector('span').textContent=type.name;
+        else $('#series-type-options').insertAdjacentHTML('beforeend',`<label class="series-type-choice"><input type="checkbox" name="type" value="${type.id}" ${seriesTypes.has(type.id)?'checked':''}><span>${esc(type.name)}</span></label>`);
+      }
+    }
+    refreshEnrichmentView();
+    stopVisibleSearchEnrichment=()=>{enrichmentPhase='stopped';refreshEnrichmentView();};
+    const enrichmentCurrent=()=>ticket===generation && enrichmentEpoch===searchEnrichmentEpoch && !document.hidden;
+    // Let the result cards paint before starting optional requests.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if(enrichmentCurrent())void enrichSearchSeries(data.results,{request:api,current:enrichmentCurrent,onUpdate:refreshEnrichmentView,onState:state=>{enrichmentPhase=state;refreshEnrichmentView();}});
     }));
     for (const [id, delta] of [['previous', -1], ['next', 1]]) if ($(`#${id}`)) $(`#${id}`).onclick = () => { const p = new URLSearchParams(params); p.set('page', String(data.page + delta)); location.hash = `#/?${p}`; };
   } catch (e) { if (ticket === generation) { $('#search-results').innerHTML = ''; message(e.message, true); } }

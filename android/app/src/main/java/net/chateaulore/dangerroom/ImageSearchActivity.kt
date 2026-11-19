@@ -22,7 +22,7 @@ import java.util.concurrent.Executors
 /** Uses the same document scanner and ImageHash-compatible pHash as CPHTest. Images stay on device. */
 class ImageSearchActivity : ComponentActivity() {
     private lateinit var column: LinearLayout
-    private var distance=16
+    private var distance=14
     private var busy=false
     private val ink=Color.rgb(255,242,245)
     private val muted=Color.rgb(212,185,193)
@@ -59,7 +59,7 @@ class ImageSearchActivity : ComponentActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState);distance=savedInstanceState?.getInt("distance",16) ?: 16;home() }
+    override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState);distance=savedInstanceState?.getInt("distance",14) ?: 14;home() }
     override fun onSaveInstanceState(outState:Bundle) { outState.putInt("distance",distance);super.onSaveInstanceState(outState) }
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
     private fun screen(title:String) {

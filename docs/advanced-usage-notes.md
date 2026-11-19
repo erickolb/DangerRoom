@@ -42,6 +42,8 @@ An inactive Want List card remains until navigation or refresh so it can be togg
 
 **Filters** supports series types and exact series names. Multiple choices within either group are combined as alternatives; the two groups and **Hide owned** narrow the results together. Hide owned excludes issues owned in any variant. **Clear** resets type and name selections; hide-owned is a separate control.
 
+Search matches display before optional series-type fetching. Pending types remain visible and are marked, even when a type filter is selected; as types resolve, badges and filtering update in place. Enrichment stops at quota exhaustion, on errors, or when leaving the page, without automatic retry. Some types may remain unavailable for that visit. Successful lookups are cached for 24 hours and reused by later searches.
+
 Filtering operates on the current page of Metron results. The total remains Metron's unfiltered match count, so a page may show no matching items while later pages still contain matches. Pagination remains available. Selections persist in the URL through pagination and new searches.
 
 Series-name options come from the current results page, with selected names retained across pages. A selected title includes all runs with that exact name. The type catalog is fetched when opening the dropdown and cached for 24 hours; if unavailable, types found on the current page remain selectable.

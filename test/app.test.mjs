@@ -577,16 +577,19 @@ test('offline backfill refuses incomplete cache and rolls back if a record chang
   assert.throws(()=>applySeriesTypeBackfill(h.repo.db,plan),/changed/);assert.equal(h.repo.issue(42).series.series_type,undefined);
 });
 
-test('search badges resolve missing types once per series and cache them across requests',async t=>{
+test('search displays unknown formats without provider lookups; explicit enrichment coalesces and caches series types',async t=>{
   let seriesCalls=0;
   const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async url=>{
     if(url.includes('/api/series/4/')){seriesCalls++;return Response.json({id:4,series_type:{id:10,name:'Trade Paperback'}});}
     const series={id:4,name:'Test Heroes',volume:1,year_began:2025};
     return Response.json({count:2,next:null,previous:null,results:[{id:42,series,number:'1'},{id:43,series,number:'2'}]});
   }}});
-  let result=await h.request('/api/search?q=Test');assert.equal(result.status,200);assert.equal(result.data.results.length,2);assert.equal(seriesCalls,1);
-  assert.ok(result.data.results.every(row=>row.series.series_type.name==='Trade Paperback'));
+  let result=await h.request('/api/search?q=Test');assert.equal(result.status,200);assert.equal(result.data.results.length,2);assert.equal(seriesCalls,0);
+  assert.ok(result.data.results.every(row=>row.series_type_pending && row.series.series_type===null));
+  const lookups=await Promise.all([h.request('/api/metron/series/4/type'),h.request('/api/metron/series/4/type')]);
+  assert.ok(lookups.every(result=>result.status===200 && result.data.series_type.name==='Trade Paperback'));
   result=await h.request('/api/search?q=Heroes');assert.equal(result.status,200);assert.equal(seriesCalls,1);
+  assert.ok(result.data.results.every(row=>!row.series_type_pending && row.series.series_type.name==='Trade Paperback'));
 });
 test('search format enrichment reuses locally stored type without provider series calls',async t=>{
   const h=await harness(t,{metronOptions:{token:'test',interval:0,fetchImpl:async url=>{

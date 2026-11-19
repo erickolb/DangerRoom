@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.2 · 2026-11-18
+
+- Return regular and image-search matches immediately using types already supplied, saved, or cached. Missing series types are fetched sequentially only after results display.
+- Update format badges and type filter options in place; preserve filter edits and match order. Mark pending/unavailable types and retain those matches under explicit type filters.
+- Stop optional enrichment at the quota limit, after lookup errors, on navigation, or when the companion pauses. No automatic retry or background resumption. Successful lookups are cached for 24 hours so later searches can fill remaining gaps.
+- Android Hardlight 1.2.0-beta.4 (code 20) defaults hash distance to 14, retaining range 10–20. Native minimum remains server 1.1.0; server 1.1.2 provides deferred enrichment. Stable Android and iOS remain at 1.1.0; three feature TODOs stay unchecked.
+- Rebuild the server container using [the update guide](docs/updating.md).
+
 ## Android Hardlight 1.2.0-beta.3 · 2026-11-18
 
 - Android-only beta update, version code 19. The scanner’s **Next** confirmation now computes the cover hash and opens Metron search results directly.

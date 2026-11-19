@@ -23,6 +23,7 @@ const staticFiles = new Map([
   ['/slideshow.js', ['slideshow.js', 'text/javascript; charset=utf-8']],
   ['/cover-transition.js', ['cover-transition.js', 'text/javascript; charset=utf-8']],
   ['/search-filters.js', ['search-filters.js', 'text/javascript; charset=utf-8']],
+  ['/search-enrichment.js', ['search-enrichment.js', 'text/javascript; charset=utf-8']],
   ['/comic-title.js', ['comic-title.js', 'text/javascript; charset=utf-8']], ['/format-tpb.png', ['format-tpb.png', 'image/png']], ['/format-hc.png', ['format-hc.png', 'image/png']], ['/format-omni.png', ['format-omni.png', 'image/png']], ['/format-gn.png', ['format-gn.png', 'image/png']],
   ['/ratings.js', ['ratings.js', 'text/javascript; charset=utf-8']],
   ['/reading-log.js', ['reading-log.js', 'text/javascript; charset=utf-8']], ['/reading-log.png', ['reading-log.png', 'image/png']],
@@ -92,6 +93,8 @@ export function createApp(options = {}) {
         return send(200,result);
       }
       let match = url.pathname.match(/^\/api\/issues\/(\d+)\/black-bag$/);
+      const seriesTypeMatch=url.pathname.match(/^\/api\/metron\/series\/(\d+)\/type$/);
+      if(req.method==='GET' && seriesTypeMatch)return send(200,await metron.enrichSeriesType(positiveId(seriesTypeMatch[1],'Series')));
       if (req.method === 'PATCH' && match) {
         const data = await body(req);
         return send(200, repo.setBlackBag(positiveId(match[1]),data.edition_key,data.black_bagged));

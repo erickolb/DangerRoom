@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
     private var connectionGeneration = 0
     private val coverSearch=registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
         val hash=result.data?.getStringExtra("hash")
-        val distance=result.data?.getIntExtra("distance",16) ?: 16
+        val distance=result.data?.getIntExtra("distance",14) ?: 14
         if(result.resultCode==RESULT_OK && hash?.matches(Regex("[a-f0-9]{16}"))==true && distance in 10..20)
             openWeb("/?cover_hash_near=$hash&cover_hash_max_distance=$distance")
         else openWeb()

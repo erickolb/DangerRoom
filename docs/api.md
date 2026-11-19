@@ -34,9 +34,19 @@ See [Metron data mapping](metron-data-mapping.md) for imported fields, variant i
 
 ## Companion image search (server 1.1.0)
 
-`GET /mobile/api/search?cover_hash_near=<16 hex characters>&cover_hash_max_distance=16&page=1` uses the authenticated device API. Hash distance accepts integers 10–20, default 16. It forwards Metron’s production issue-list filters, preserving closest-first ordering and pagination in the usual search response. Browser `/api/search` requests containing a hash return 403. No photograph upload endpoint is provided, and scanned-hash results are not cached. Main covers are currently matched; variant selection remains available through normal result actions.
+`GET /mobile/api/search?cover_hash_near=<16 hex characters>&cover_hash_max_distance=14&page=1` uses the authenticated device API. Hash distance accepts integers 10–20, default 14. It forwards Metron’s production issue-list filters, preserving closest-first ordering and pagination in the usual search response. Browser `/api/search` requests containing a hash return 403. No photograph upload endpoint is provided, and scanned-hash results are not cached. Main covers are currently matched; variant selection remains available through normal result actions.
 
 Android Hardlight 1.2.0-beta.1 checks authenticated `/mobile/api/health` before opening the application and requires server 1.1.0. Its minimum is raised only for breaking server dependencies, independently from normal server version changes. Stable Android/iOS 1.1.0 remain supported; iOS gets the native check at stable feature promotion.
+
+## Deferred search enrichment (server 1.1.2)
+
+Regular and image search return issue matches immediately, with series types from the list response, saved metadata, or unexpired series cache. Each row has `series_type_pending` when a separate optional lookup is still needed. No series-detail provider calls block the search response.
+
+`GET /api/metron/series/:id/type` (also `/mobile/api/metron/series/:id/type` with device credentials) returns `{series_id, series_type, quota_exhausted}`. It shares the provider queue, coalesces concurrent lookups, validates the returned series ID, and caches successful responses for 24 hours. A resolved null type is distinct from a pending lookup. Rate-limit failures use the normal 429 response.
+
+After cards paint, the UI requests distinct pending series sequentially. Each response updates badges and filter options without replacing cards or checkboxes. Unknown-type matches remain visible under explicit type filters and are labeled pending/unavailable. A successful lookup that exhausts quota stops subsequent lookups; any error also stops enrichment. Navigation, visibility loss, and companion pause stop future scheduling. One already-in-flight lookup may finish into cache, but its result is ignored after leaving. There is no timer or automatic resumption. A later search reuses cached types and can request remaining ones.
+
+Hardlight beta 4 changes its default distance to 14 without adding a native server dependency; its native minimum remains 1.1.0. Update the server to 1.1.2 for deferred enrichment.
 
 ## Tables
 

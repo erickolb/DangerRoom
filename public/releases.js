@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.1.2', date: '2026-11-18', title: 'Display search matches before enrichment',
+  changes: ['Return search matches immediately using supplied, locally known, or cached series types. Fetch missing types sequentially after results display, updating badges and filters in place.', 'Stop optional enrichment at the quota limit, on lookup failure, or when leaving the page. No automatic retry; later searches reuse completed lookups and can fill remaining gaps. Unknown-type matches stay visible and labeled.', 'Default image hash distance is now 14 (range 10–20). Android Hardlight 1.2.0-beta.4 uses code 20; stable Android and iOS stay at 1.1.0.'],
+}, {
   version: '1.1.1', date: '2026-11-18', title: 'Image search presentation',
   changes: ['Use Muhammad Adam’s Image Search icon in the Android beta menu, with its embedded credit removed and attribution retained in Credits.', 'Android Hardlight 1.2.0-beta.2 matches capture, review, and editing screens to the app’s typography, colors, header, panels, and buttons.', 'Native minimum-server requirement remains 1.1.0; install server 1.1.1 for the new menu icon. Stable Android and iOS remain at 1.1.0.'],
 }, {
