@@ -2,20 +2,6 @@
 
 Use this guide for routine updates of an existing instance. Choose the container or source procedure for your installation. Server and Hardlight releases are independent: updating the server does not install a new APK or IPA. Check the [Changelog](../CHANGELOG.md) and [release notes](https://github.com/erickolb/DangerRoom/releases) for compatibility requirements or additional steps before starting.
 
-## Server 1.1.2 and Android beta 4
-
-Rebuild server 1.1.2 to return search matches before optional series-type lookups. Missing types load after display and stop at quota exhaustion, on errors, or when leaving the page. There is no automatic retry; successful lookups remain cached for later searches. No database migration or new configuration is required. Use the backup and `sudo docker compose` rebuild procedure below.
-
-Android Hardlight 1.2.0-beta.4 (code 20) changes the default hash distance to 14. Its native minimum stays 1.1.0 because the new enrichment endpoint is used only by the matching UI delivered by server 1.1.2. Stable Android/iOS remain compatible and unchanged.
-
-### Earlier presentation update (server 1.1.1)
-
-Rebuild server 1.1.1 to use the new Image Search menu icon and its attribution in Credits. Android Hardlight 1.2.0-beta.2 (code 18) restyles the native image-search screens. Its minimum server remains 1.1.0: the icon/style update adds no breaking server dependency. Follow the same backup and `sudo docker compose` rebuild procedure below; no configuration or collection migration is needed.
-
-### Initial feature requirement
-
-Install this server update before Android Hardlight 1.2.0-beta.1. That beta requires server 1.1.0 and blocks access on older instances until updated; Retry checks again. Stable Android and iOS 1.1.0 remain compatible. No collection migration or new server configuration is required. The read-status dialog changes for web and companion users; image capture is available only in the Android beta. Follow the backup and rebuild procedure below with `sudo docker compose`.
-
 ## 1. Prepare
 
 Run commands from your existing DangerRoom checkout. Keep its location, Compose project name, data directory or volume, and configuration unchanged. Check for local work before pulling:
