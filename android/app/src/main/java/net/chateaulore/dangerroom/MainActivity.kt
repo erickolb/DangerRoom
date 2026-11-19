@@ -40,25 +40,36 @@ class MainActivity : ComponentActivity() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val current = web
-                if (screen == "web" && current != null) current.evaluateJavascript("location.hash === '#/home'", { home -> if (home == "true") finish() else current.evaluateJavascript("location.hash='#/home'", null) })
+                if (screen == "splash" || screen == "checking") finish()
+                else if (screen == "web" && current != null) current.evaluateJavascript("location.hash === '#/home'", { home -> if (home == "true") finish() else current.evaluateJavascript("location.hash='#/home'", null) })
                 else if (connection != null) openWeb() else finish()
             }
         })
+        val splash = showLoading()
+        splash.postDelayed({
+            if (!isFinishing && !isDestroyed && screen == "splash") {
+                if (connection == null) settings() else openWeb()
+            }
+        }, 700)
+    }
+    private fun showLoading(): FrameLayout {
+        destroyWeb()
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.rgb(231, 0, 31)))
+        window.statusBarColor = Color.rgb(231, 0, 31)
+        window.navigationBarColor = Color.rgb(231, 0, 31)
         val splash = FrameLayout(this).apply { setBackgroundColor(Color.rgb(231, 0, 31)) }
         val mask = ImageView(this).apply { setImageResource(R.drawable.splash_badge); contentDescription = "DangerRoom mask"; scaleType = ImageView.ScaleType.FIT_CENTER }
         splash.addView(mask, FrameLayout.LayoutParams(dp(224), dp(224), android.view.Gravity.CENTER))
         setContentView(splash)
         val bars = androidx.core.view.WindowInsetsControllerCompat(window, splash)
         bars.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-        splash.postDelayed({
-            if (!isDestroyed && screen == "splash") {
-                window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.rgb(25, 12, 18)))
-                window.statusBarColor = Color.rgb(25, 12, 18)
-                window.navigationBarColor = Color.rgb(25, 12, 18)
-                bars.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-                if (connection == null) settings() else openWeb()
-            }
-        }, 700)
+        return splash
+    }
+    private fun showAppBars(view: View) {
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.rgb(25, 12, 18)))
+        window.statusBarColor = Color.rgb(25, 12, 18)
+        window.navigationBarColor = Color.rgb(25, 12, 18)
+        androidx.core.view.WindowInsetsControllerCompat(window, view).show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
     }
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun destroyWeb() { web?.let { it.removeJavascriptInterface("DangerRoomAndroid"); it.stopLoading(); it.destroy() }; web = null; window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
@@ -68,6 +79,7 @@ class MainActivity : ComponentActivity() {
         val scroll = ScrollView(this).apply { addView(column); fitsSystemWindows = true }
         scroll.setOnApplyWindowInsetsListener { view, insets -> view.setPadding(insets.systemWindowInsetLeft, insets.systemWindowInsetTop, insets.systemWindowInsetRight, insets.systemWindowInsetBottom); insets }
         setContentView(scroll)
+        showAppBars(scroll)
         text(title, 30f).typeface = Typeface.create("serif", Typeface.BOLD)
         status = text("", 16f).apply { accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE }
     }
@@ -107,12 +119,11 @@ class MainActivity : ComponentActivity() {
     private fun openWeb(hash: String = "/home") {
         val c=connection ?: return settings()
         val ticket=++connectionGeneration
-        screen="checking";base("Connecting to DangerRoom")
-        status.text="Checking server compatibility…"
+        screen="checking";showLoading()
         worker.execute {
-            try { Api(c).verify();runOnUiThread { if(!isDestroyed && ticket==connectionGeneration) loadWeb(hash) } }
+            try { Api(c).verify();runOnUiThread { if(!isFinishing && !isDestroyed && ticket==connectionGeneration) loadWeb(hash) } }
             catch(error:Exception) { runOnUiThread {
-                if(!isDestroyed && ticket==connectionGeneration) {
+                if(!isFinishing && !isDestroyed && ticket==connectionGeneration) {
                     screen="blocked";base(if(error is ServerUpdateRequired) "Server update needed" else "Unable to connect")
                     status.text=error.message
                     button("Retry") { openWeb(hash) };button("Instance and device settings") { settings() }
@@ -156,7 +167,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         view.setOnApplyWindowInsetsListener { v, insets -> v.setPadding(insets.systemWindowInsetLeft, insets.systemWindowInsetTop, insets.systemWindowInsetRight, insets.systemWindowInsetBottom); insets }
-        setContentView(view); view.loadUrl("${c.url}/mobile/#$hash")
+        setContentView(view); showAppBars(view); view.loadUrl("${c.url}/mobile/#$hash")
     }
     private fun sameOrigin(address: String, origin: String): Boolean = runCatching { val a = URI(address); val b = URI(origin); a.scheme == b.scheme && a.host == b.host && a.port == b.port && a.userInfo == null }.getOrDefault(false)
     private inner class Bridge(private val c: Connection, private val owner: WebView, private val coverCache: CoverCache) {

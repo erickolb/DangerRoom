@@ -1,5 +1,11 @@
 # Changelog
 
+## Android Hardlight 1.2.0-beta.5 · 2026-11-19
+
+- Android-only update, version code 21. Keep server-version and device-authorization checks behind the branded loading screen instead of showing a separate Connecting / Checking server compatibility screen.
+- Show the existing blocking update-required message only after an incompatible server is detected. Preserve actionable connection errors, Retry, and instance settings. Restore normal app bars when opening the app, setup, or an error screen. Back during loading exits rather than scheduling another check.
+- DangerRoom server remains 1.1.2 and the native minimum remains 1.1.0. No server container update is needed for this beta. Stable Android/iOS remain at 1.1.0; three feature TODOs remain unchecked.
+
 ## 1.1.2 · 2026-11-18
 
 - Return regular and image-search matches immediately using types already supplied, saved, or cached. Missing series types are fetched sequentially only after results display.

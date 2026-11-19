@@ -1,15 +1,14 @@
-# Hardlight 1.2.0-beta.4 for Android
+# Hardlight 1.2.0-beta.5 for Android
 
-Android beta prerelease · version code 20 · application ID `net.chateaulore.hardlight`.
+Android beta prerelease · version code 21 · application ID `net.chateaulore.hardlight`.
 
-- Default image-search hash distance is **14**, retaining slider range **10–20**.
-- With **DangerRoom server 1.1.2**, regular and image search display matches immediately. Optional series-type lookups run sequentially after display, updating badges and filter options in place.
-- Stop enrichment at quota exhaustion, on a lookup error, or when leaving/pausing the page. There is no automatic retry after the limit resets. A single in-flight request can finish into cache; later searches reuse successful lookups and can fill remaining gaps.
-- Unknown-type results remain visible and labeled, including under explicit type filters. Quota exhaustion during enrichment does not discard successful matches.
-- Update the server using [container update instructions](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md) for this behavior. The native minimum remains 1.1.0: beta 4’s native change is the default distance, and enrichment is provided by the matching server-delivered UI.
-- Keep the scanner’s crop, corner adjustment, and rotation controls. **Next** proceeds directly to hashing and standard search results; no second review/editor screen.
+- Keep the initial instance-version check behind Hardlight’s branded loading screen. Remove the separate Connecting / Checking server compatibility screen.
+- If the instance is too old, show the existing update-required error with the minimum server version and this Hardlight version. Connection and authorization failures still show actionable errors, Retry, and instance settings.
+- Restore normal system bars when opening the app, setup, or an error screen. Back during loading exits without scheduling duplicate checks.
+- Android-only update. DangerRoom stays **1.1.2**, native minimum stays **1.1.0**, and no server container update is required for beta 5. Server 1.1.2 remains necessary for asynchronous search enrichment.
+- Retain default hash distance **14**, scanner Next-to-search behavior, progressive metadata enrichment, and quota-stop behavior without automatic retries.
 - Stable Android and iOS remain at 1.1.0. All three feature TODOs stay unchecked until stable approval.
 
-Obtainium users with prereleases enabled can update over earlier betas. The application ID and signing key are unchanged; code 20 updates code 19 without reinstalling. Google Play services and its first-use scanner download are required. Photographs stay on device; only the hash is sent.
+Obtainium users with prereleases enabled can update over earlier betas. Code 21 updates code 20 without reinstalling; app ID and signing key are unchanged.
 
 Artifacts: `DangerRoom.apk`, `SHA256SUMS.txt`, `SIGNING-CERTIFICATE.txt`.

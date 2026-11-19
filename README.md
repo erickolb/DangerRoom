@@ -18,7 +18,7 @@ Features currently supported:
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/)
 
 ## Hardlight (Android / iOS Companion App)
-The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.4 adds Image Cover Search:
+The stable Android and iOS companions, code named Hardlight, have a six-option menu plus configuration. Android beta 1.2.0-beta.5 adds Image Cover Search:
 1. Want List
 2. My Collection
 3. Search Metron
@@ -145,7 +145,7 @@ Current Server Build: version 1.1.2
 
 Stable Hardlight (Android/iOS): version 1.1.0
 
-Android beta: [1.2.0-beta.4, version code 20](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.4), requiring server 1.1.0; update to server 1.1.2 for immediate search results and background series-type enrichment. Image hash distance defaults to 14 (range 10–20). iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
+Android beta: [1.2.0-beta.5, version code 21](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.5), requiring server 1.1.0; update to server 1.1.2 for immediate search results and background series-type enrichment. Image hash distance defaults to 14 (range 10–20). The initial server compatibility check stays behind the branded loading screen; outdated-server and connection errors are shown when detected. iOS remains unchanged during Android beta testing. The website footer offers an Obtainium beta setup link; stable downloads remain the default.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 
