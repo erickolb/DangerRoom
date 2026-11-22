@@ -149,10 +149,9 @@ Current Server Build: version 1.2.0
 
 Stable Hardlight: [Android 1.2.0, code 22](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0) and [iOS 1.2.0, build 3](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.2.0-build3).
 
-Android beta preparation: **1.3.0-beta.1**, code **23**, requires DangerRoom **1.2.0** for subscription APIs. Web UX is approved; the beta adds the Subscriptions menu and comic controls. iOS remains at stable 1.2.0 during beta testing. The footer’s Obtainium beta setup tracks Android prereleases.
+Android beta: [**1.3.0-beta.1**, code **23**](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.0-beta.1), requires DangerRoom **1.2.0** for subscription APIs. Web UX is approved; the beta adds the Subscriptions menu and comic controls. iOS remains at stable 1.2.0 during beta testing. The footer’s Obtainium beta setup tracks Android prereleases.
 
-
-Both clients support native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.1.0**; server **1.1.2** provides immediate results and background metadata enrichment. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default.
+Both stable clients support native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.1.0**; server **1.1.2** provides immediate results and background metadata enrichment. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 
