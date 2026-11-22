@@ -10,7 +10,7 @@ Hardlight **1.2.0** supports Image Cover Search on both platforms, with default 
 | --- | --- | --- |
 | Devices | Phones and tablets, Android 9 or later | iPhone and iPad, iOS 17 or later |
 | Published client | 1.2.0, version code 22 | 1.2.0, build 3 |
-| Server | DangerRoom β-030 or later over HTTPS | DangerRoom β-030 or later over HTTPS |
+| Server | DangerRoom 1.1.0 or later over HTTPS | DangerRoom 1.1.0 or later over HTTPS |
 | Distribution | GitHub APK; Obtainium updates | GitHub IPA; iOS sideloading |
 
 Server and client versions are independent. Public downloads do not authorize access to an instance. Neither platform is distributed through commercial app stores. Start with the [Hardlight download page](https://erickolb.github.io/DangerRoom/hardlight/).
@@ -54,7 +54,7 @@ Android uses Keystore-encrypted credential storage; iOS uses the unlocked, devic
 
 ## Use Hardlight
 
-The menu contains Want List, My Collection, Search Metron, UPC Mode, Cover Slideshow, and Reading Log. Collection, exact cover selection, ratings, and reading history use the shared site's behavior; see [Advanced usage notes](advanced-usage-notes.md).
+The menu contains Want List, My Collection, Search Metron, UPC Mode, Cover Slideshow, Reading Log, and Image Cover Search. Collection, exact cover selection, ratings, and reading history use the shared site's behavior; see [Advanced usage notes](advanced-usage-notes.md).
 
 The instance must be reachable to browse or save. Cached slideshow artwork does not provide offline inventory. Cover scanning runs locally through Google ML Kit on Android and Apple VisionKit on iOS; no advertising or analytics SDK is bundled. After a server update, the main menu's **Reload** button fetches the latest server code without exiting Hardlight; native client changes require installing a client update.
 
