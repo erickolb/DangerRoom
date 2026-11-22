@@ -1,5 +1,14 @@
 # Changelog
 
+## DangerRoom 1.2.0 · Web preview (not released)
+
+- Add series subscriptions independent of collection and Want List status, with direct toggles and four views: Releasing This Week, Upcoming Releases, Missing Issues, and Subscription List. Use local Sunday–Saturday weeks and store release dates; undated issues are excluded from date views.
+- Prefer the earliest-added wanted variant on release cards. Series thumbnails use the next dated release or most recent release, preferring wanted or collected variants. Load pages progressively and retain results if the provider pauses requests.
+- Resolve issue #2 by showing slideshow-hide controls only on owned covers. Show future cover dates beneath Want List cover names, fit action buttons to card width, and collapse neutral search copy for active queries.
+- Add the subscriptions table without altering collection, reading, or Want List records. Back up the database before updating; use [the general update guide](docs/updating.md).
+- Web UX review comes first. Android and iOS Hardlight remain at published 1.2.0; client integration and Android beta follow web approval.
+
+
 ## Hardlight 1.2.0 · 2026-11-22
 
 - Release Android code 22 and iOS build 3 at feature parity, with server unchanged at 1.1.2.

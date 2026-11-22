@@ -19,7 +19,7 @@ test('upgrade removes retained scan data and hash-search cache while preserving 
     repo.cachePut('issue/42/',{id:42},60000);db.close();
     db=openDatabase(dir);const upgraded=new Repository(db);
     assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name='scan_captures'").get(),undefined);
-    assert.equal(db.prepare('PRAGMA user_version').get().user_version,7);
+    assert.equal(db.prepare('PRAGMA user_version').get().user_version,8);
     assert.equal(upgraded.cacheGet('issue/?cover_hash=a8c2de64d3cf1a2a&page=1'),null);
     assert.equal(upgraded.cacheGet('issue/42/').id,42);
     assert.equal(upgraded.issue(42).copies.length,1);assert.equal(upgraded.issue(42).user_rating,4);assert.ok(upgraded.issue(42).read);

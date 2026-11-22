@@ -110,3 +110,23 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .collection-sort{max-width:280px;margin:0 0 24px;gap:8px}
 
 .comic-refresh-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:22px}.comic-refresh-actions .full-series-search{margin-top:0}
+
+/* Subscription preview: native menu integration follows web UX approval. */
+.android-app .subscription-nav{display:none}
+.subscription-nav{display:inline-flex;align-items:center;gap:8px}.subscription-nav .icon{width:22px;height:22px}
+.comic-actions .comic-toggle.subscription-toggle{--status-rgb:239,190,94}
+.comic-card .comic-actions{flex-wrap:nowrap;gap:clamp(3px,1vw,8px)}
+.comic-card .comic-actions .comic-toggle{flex:1 1 44px;min-width:0;max-width:46px;width:auto;padding:6px}
+.comic-card .comic-actions .comic-toggle .icon{max-width:100%;height:25px;object-fit:contain;flex-shrink:1}
+.subscription-list{padding:0;list-style:none;display:grid;gap:12px}
+.subscription-list>li{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid #61303e;border-radius:10px;background:#2b141e}
+.subscription-series{flex:1;min-width:0;display:flex;align-items:center;gap:18px;text-decoration:none}
+.subscription-series>.cover{width:68px;height:102px;flex:none;object-fit:contain}
+.subscription-series>span{display:grid;gap:8px;min-width:0;overflow-wrap:anywhere}
+.subscription-series strong{font:1.3rem Georgia,serif}.subscription-series span span{font-size:.85rem}
+.subscription-remove{flex:none;font-size:1.5rem;min-width:44px;min-height:44px}
+.search-welcome{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows .18s ease,opacity .15s ease}
+.search-welcome>div{overflow:hidden;min-height:0}
+.search-welcome.collapsed{grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .18s ease,opacity .15s ease,visibility 0s .18s}
+@media(prefers-reduced-motion:reduce){.search-welcome,.search-welcome.collapsed{transition:none}}
+@media(max-width:600px){.subscription-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.subscription-tabs a{padding:10px 8px;font-size:.8rem;justify-content:center;text-align:center}}

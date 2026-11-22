@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { AppError, positiveId } from './errors.mjs';
+import {subscriptionWeek} from '../public/subscription-dates.js';
 
 const imageHosts = new Set(['static.metron.cloud', 'metron.cloud']);
 export function imageURL(value) {
@@ -176,6 +177,25 @@ export class Metron {
     const series=await this.get(`series/${id}/`,24*60*60*1000);
     if(series.id!==id)throw new AppError(502,'Metron returned unexpected series data.');
     return {series_id:id,series_type:seriesType(series.series_type),quota_exhausted:this.repo.stateGet('blocked_until')>Date.now()};
+  }
+
+  async subscriptionPage(id, page=1, {view='list',today}={}) {
+    id=positiveId(id,'Series');page=positiveId(page,'Page');
+    if(page>10000)throw new AppError(400,'Invalid results page.');
+    if(!['week','upcoming','missing','list'].includes(view))throw new AppError(400,'Choose a subscription view.');
+    const filters=new URLSearchParams({series_id:String(id),page:String(page)});
+    if(view!=='list'){
+      let week;try{week=subscriptionWeek(today);}catch{throw new AppError(400,'Choose a valid date.');}
+      if(view==='week'){filters.set('store_date_range_after',week.start);filters.set('store_date_range_before',week.end);}
+      if(view==='upcoming')filters.set('store_date_range_after',new Date(Date.parse(week.end+'T12:00:00Z')+86400000).toISOString().slice(0,10));
+      if(view==='missing')filters.set('store_date_range_before',new Date(Date.parse(week.start+'T12:00:00Z')-86400000).toISOString().slice(0,10));
+    }
+    const data=await this.get(`issue/?${filters}`,6*60*60*1000);
+    if(!Array.isArray(data.results)||data.results.some(r=>r.series?.id!==id))throw new AppError(502,'Metron returned unexpected series issues.');
+    return {page,next:Boolean(data.next),results:data.results.map(r=>({
+      id:positiveId(r.id),series:r.series,number:String(r.number),display_name:r.issue||`${r.series.name} #${r.number}`,
+      cover_date:r.cover_date||null,store_date:r.store_date||null,image:imageURL(r.image),
+    }))};
   }
 
   async seriesTypes() {

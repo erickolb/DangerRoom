@@ -1,3 +1,4 @@
+import {subscriptionButton,bindSubscriptionButtons} from './subscriptions.js';
 import { changeRead } from './reading-log.js';
 const icons = { owned:'box-add', wanted:'shopping-list', read:'book-check', extra:'duplicate', black_bag:'black-bag' };
 const names = { owned:'Add to collection', wanted:'Add to Want List', read:'Mark as read', extra:'Add another copy', black_bag:'Black bag this cover' };
@@ -24,8 +25,9 @@ export function bindToggles(container,ctx,state,{actions=['owned','wanted','read
   function render(){
     const selected=ctx.editions.find(e=>e.key===state.editionKey);
     const focused=container.contains(document.activeElement) ? document.activeElement.dataset.action : null;
-    container.innerHTML=actions.map(action=>actionButton(action,action==='owned'?Boolean(state.copyId):action==='wanted'?selected?.wanted:action==='black_bag'?selected?.black_bagged:Boolean(ctx.issue.read),ctx.busy || !selected || action==='wanted' && selected.owned || action==='extra' && !selected.owned)).join('')+(extra?actionButton('extra',false,ctx.busy || !selected?.owned):'');
-    container.querySelectorAll('button').forEach(button=>button.onclick=()=>perform(button.dataset.action));
+    container.innerHTML=actions.filter(action=>action!=='black_bag'||selected?.owned).map(action=>actionButton(action,action==='owned'?Boolean(state.copyId):action==='wanted'?selected?.wanted:action==='black_bag'?selected?.black_bagged:Boolean(ctx.issue.read),ctx.busy || !selected || action==='wanted' && selected.owned || action==='extra' && !selected.owned)).join('')+(extra?actionButton('extra',false,ctx.busy || !selected?.owned):'')+subscriptionButton(ctx.issue.series,ctx.issue.subscribed);
+    container.querySelectorAll('[data-action]').forEach(button=>button.onclick=()=>perform(button.dataset.action));
+    bindSubscriptionButtons(container,ctx.issue.series,ctx.issue.subscribed,ctx.api,ctx.onError);
     if(focused && !ctx.busy)container.querySelector(`[data-action=${focused}]`)?.focus({preventScroll:true});
   }
   async function perform(action){

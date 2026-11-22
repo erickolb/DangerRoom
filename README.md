@@ -5,6 +5,7 @@ Features currently supported:
 + Search the [Metron.cloud](https://metron.cloud) database.
   + Keyword search
   + [UPC search (12- and 17-digits)](docs/upc-mode.md)
++ [Subscribe to series](docs/subscriptions.md) and browse weekly, upcoming, and missing issues (web preview)
 + Add comics to My Collection
 + Attach ratings (5-stars in half-star increments) to comics
 + Keep a Want List of comics to pull
@@ -139,10 +140,12 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 - [CC BY 3.0 license](https://creativecommons.org/licenses/by/3.0/). The seven Noun Project icons have their embedded attribution text removed from the bottom margin; creator credits and license links are retained here and in the app. Icon artwork and canvas sizes are unchanged. CSS inverts the icons for contrast on dark controls.
 - Comic metadata and images: [Metron](https://metron.cloud). Cover artwork belongs to its respective rights holders.
 
+[Study icons created by riajulislam - Flaticon](https://www.flaticon.com/free-icons/study) supplies the subscriptions icon.
+
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
-Current Server Build: version 1.1.2
+Current Server Build: version 1.2.0 (subscriptions web preview; not released)
 
 Stable Hardlight: [Android 1.2.0, code 22](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0) and [iOS 1.2.0, build 3](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.2.0-build3).
 

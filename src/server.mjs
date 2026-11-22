@@ -13,6 +13,9 @@ import { Devices } from './devices.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/subscriptions.png', ['subscriptions.png','image/png']],
+  ['/subscriptions.js', ['subscriptions.js','text/javascript; charset=utf-8']],
+  ['/subscription-dates.js', ['subscription-dates.js','text/javascript; charset=utf-8']],
   ['/upc-scanner.js', ['upc-scanner.js', 'text/javascript; charset=utf-8']],
   ['/barcode.svg', ['barcode.svg', 'image/svg+xml']],
   ['/mobile.js', ['mobile.js', 'text/javascript; charset=utf-8']],
@@ -89,8 +92,34 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/api/search') {
         if(url.searchParams.has('cover_hash_near') && !mobile) throw new AppError(403,'Image cover search is available only through Hardlight.');
         const result=await metron.search(url.searchParams);
-        result.results=result.results.map(row=>({...row,...repo.issueStatus(row.id),cover_file:repo.ownedCover(row.id)?.cover_file || null}));
+        result.results=result.results.map(row=>({...row,...repo.issueStatus(row.id),subscribed:repo.isSubscribed(row.series.id),cover_file:repo.ownedCover(row.id)?.cover_file || null}));
         return send(200,result);
+      }
+      if(req.method==='GET'&&url.pathname==='/api/subscriptions')return send(200,{items:repo.subscriptions()});
+      const subscriptionMatch=url.pathname.match(/^\/api\/subscriptions\/(\d+)(\/issues)?$/);
+      if(subscriptionMatch){
+        const id=positiveId(subscriptionMatch[1],'Series');
+        if(req.method==='PUT'&&!subscriptionMatch[2]){
+          const data=await body(req);
+          if(typeof data.subscribed!=='boolean')throw new AppError(400,'Subscription status must be true or false.');
+          if(data.subscribed&&!repo.isSubscribed(id)){
+            const series=await metron.get(`series/${id}/`,24*60*60*1000);
+            if(series.id!==id||typeof series.name!=='string'||!series.name.trim())throw new AppError(502,'Metron returned incomplete series data.');
+            repo.subscribe(series);
+          }else if(!data.subscribed)repo.unsubscribe(id);
+          return send(200,{series_id:id,subscribed:repo.isSubscribed(id)});
+        }
+        if(req.method==='GET'&&subscriptionMatch[2]){
+          if(!repo.isSubscribed(id))throw new AppError(404,'This series is not subscribed.');
+          const data=await metron.subscriptionPage(id,url.searchParams.get('page')||1,{view:url.searchParams.get('view')||'list',today:url.searchParams.get('today')});
+          data.results=data.results.map(row=>{
+            const standard={key:'standard',name:'Standard cover',source_image:row.image};
+            return {...row,...repo.issueStatus(row.id),subscribed:true,
+              edition:repo.subscriptionCover(row.id)||standard,
+              thumbnail_edition:repo.subscriptionCover(row.id,{collected:true})||standard};
+          });
+          return send(200,data);
+        }
       }
       let match = url.pathname.match(/^\/api\/issues\/(\d+)\/black-bag$/);
       const seriesTypeMatch=url.pathname.match(/^\/api\/metron\/series\/(\d+)\/type$/);
@@ -104,7 +133,7 @@ export function createApp(options = {}) {
         const issue = await metron.issue(positiveId(match[1]));
         issue.editions = issue.editions.map(e => ({ ...e, ...repo.coverStatus(issue.id,e.key) }));
         const local=repo.issue(issue.id);
-        Object.assign(issue,{saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null,reading_log_count:local?.reading_log_count || 0});
+        Object.assign(issue,{subscribed:repo.isSubscribed(issue.series.id),saved:Boolean(local),copies:local?.copies || [],read:local?.read || null,user_rating:local?.user_rating ?? null,reading_log_count:local?.reading_log_count || 0});
         return send(200, issue);
       }
       if (req.method === 'GET' && url.pathname === '/api/wants') return send(200, { items: repo.wantList((url.searchParams.get('q') || '').slice(0,160)) });

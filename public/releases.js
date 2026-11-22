@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.2.0', date: '2026-11-22', title: 'Subscriptions · Web preview',
+  changes: ['Follow series independently of ownership and Want Lists. Browse this week, upcoming releases, missing issues, and your subscription list.', 'Prefer wanted variants on release cards; show the next or latest release in each subscribed series.', 'Hide slideshow exclusions on unowned covers, show future cover dates on the Want List, fit comic controls to narrow cards, and simplify active Metron search headings.', 'Web UX preview only. Android and iOS Hardlight remain at published 1.2.0; native subscription integration is deferred until web approval, followed by Android beta testing.'],
+}, {
   version: '1.1.2', date: '2026-11-18', title: 'Display search matches before enrichment',
   changes: ['Return search matches immediately using supplied, locally known, or cached series types. Fetch missing types sequentially after results display, updating badges and filters in place.', 'Stop optional enrichment at the quota limit, on lookup failure, or when leaving the page. No automatic retry; later searches reuse completed lookups and can fill remaining gaps. Unknown-type matches stay visible and labeled.', 'Default image hash distance is now 14 (range 10–20). Android Hardlight 1.2.0-beta.4 uses code 20; stable Android and iOS stay at 1.1.0.'],
 }, {

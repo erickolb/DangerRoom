@@ -49,13 +49,33 @@ export function openDatabase(directory) {
     CREATE INDEX IF NOT EXISTS reading_log_issue ON reading_log(issue_id);
     CREATE TABLE IF NOT EXISTS black_bags (issue_id INTEGER NOT NULL, edition_key TEXT NOT NULL,
       PRIMARY KEY(issue_id,edition_key), FOREIGN KEY(issue_id,edition_key) REFERENCES editions(issue_id,key));
+    CREATE TABLE IF NOT EXISTS subscriptions (series_id INTEGER PRIMARY KEY, metadata TEXT NOT NULL, subscribed_at TEXT NOT NULL);
     DROP TABLE IF EXISTS scan_captures;
     DELETE FROM cache WHERE key LIKE 'issue/?cover_hash=%';
-    PRAGMA user_version=7;`);
+    PRAGMA user_version=8;`);
   return db;
 }
 export class Repository {
   constructor(db) { this.db = db; }
+  isSubscribed(id) { return Boolean(this.db.prepare('SELECT 1 FROM subscriptions WHERE series_id=?').get(id)); }
+  subscriptions() {
+    return this.db.prepare('SELECT * FROM subscriptions').all().map(row=>({...JSON.parse(row.metadata),subscribed_at:row.subscribed_at}))
+      .sort((a,b)=>naturalOrder.compare(a.name,b.name)||(a.year_began||0)-(b.year_began||0)||a.id-b.id);
+  }
+  subscribe(series) {
+    const metadata={id:series.id,name:series.name,volume:series.volume??null,year_began:series.year_began??null};
+    this.db.prepare('INSERT OR IGNORE INTO subscriptions VALUES (?,?,?)').run(series.id,JSON.stringify(metadata),new Date().toISOString());
+  }
+  unsubscribe(id) { this.db.prepare('DELETE FROM subscriptions WHERE series_id=?').run(id); }
+  subscriptionCover(id, { collected=false }={}) {
+    const wanted=this.db.prepare("SELECT * FROM wants WHERE issue_id=? AND edition_key!='standard' ORDER BY added_at, rowid LIMIT 1").get(id);
+    if(wanted){const value=JSON.parse(wanted.metadata);return {...value.edition,cover_file:wanted.cover_file};}
+    if(collected){
+      const owned=this.ownedCover(id),issue=this.issue(id);
+      if(owned)return issue.editions.find(e=>e.key===owned.edition_key);
+    }
+    return null;
+  }
   cacheGet(key) {
     const row = this.db.prepare('SELECT payload FROM cache WHERE key=? AND expires_at>?').get(key, Date.now());
     return row ? JSON.parse(row.payload) : null;
@@ -69,7 +89,8 @@ export class Repository {
   issue(id) {
     const row = this.db.prepare('SELECT * FROM issues WHERE id=?').get(id);
     if (!row) return null;
-    return { ...JSON.parse(row.metadata), saved_at: row.saved_at,
+    const metadata=JSON.parse(row.metadata);
+    return { ...metadata, subscribed:this.isSubscribed(metadata.series.id), saved_at: row.saved_at,
       reading_log_count: this.db.prepare('SELECT COUNT(*) AS count FROM reading_log WHERE issue_id=?').get(id).count,
       user_rating: (this.db.prepare('SELECT half_stars FROM issue_ratings WHERE issue_id=?').get(id)?.half_stars ?? 0) / 2 || null,
       editions: this.db.prepare('SELECT * FROM editions WHERE issue_id=?').all(id).map(e => ({ ...JSON.parse(e.metadata), cover_file: e.cover_file, ...this.coverStatus(id, e.key), black_bagged: this.blackBagged(id, e.key) })),
@@ -165,7 +186,7 @@ export class Repository {
   wantList(query = '') {
     const needle = query.toLocaleLowerCase();
     return this.db.prepare('SELECT * FROM wants ORDER BY added_at DESC,issue_id DESC,edition_key').all()
-      .map(row => ({ ...JSON.parse(row.metadata), cover_file: row.cover_file, added_at: row.added_at }))
+      .map(row => {const metadata=JSON.parse(row.metadata);return { ...metadata, subscribed:this.isSubscribed(metadata.series.id), cover_file: row.cover_file, added_at: row.added_at };})
       .filter(row => !needle || [row.display_name,row.series.name,row.edition.name].join(' ').toLocaleLowerCase().includes(needle));
   }
   removeWant(id, key) {

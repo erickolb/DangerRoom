@@ -49,6 +49,9 @@ Its use here is not a claim of endorsement or ownership.
 
 ## Icons and dependencies
 
+Study icons created by riajulislam from [Flaticon](https://www.flaticon.com/free-icons/study). `public/subscriptions.png` is the supplied books icon, unchanged. Attribution is preserved in app Credits and README.
+
+
 Image Search by Muhammad Adam from [Noun Project](https://thenounproject.com/browse/icons/term/image-search/), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). `public/image-search.png` is the supplied black icon with only its embedded bottom-left credit text cleared; artwork, canvas size, and transparency are retained. CSS inverts it for display on the dark menu. Attribution remains in the app’s Credits and README.
 
 The application Credits section preserves the individual Flaticon and Noun
