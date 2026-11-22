@@ -6,4 +6,4 @@ Read the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/
 
 iOS confirms with **Save** in Apple's document scanner. Scan one cover at a time; cancellation returns to setup. The native minimum is DangerRoom 1.1.0; use server 1.1.2 for progressive enrichment. Version checking stays behind the loading screen; an incompatible instance blocks use with Retry and settings. Existing Keychain credentials and local slideshow caching are preserved.
 
-Install the IPA through LiveContainer + SideStore, retaining the same app identity/settings. Packages are ad-hoc signed and must be re-signed for the device. Artifacts at publication: DangerRoom.ipa and its SHA-256 checksum. Physical-device camera and sideload acceptance are required before launch.
+Install the IPA through LiveContainer + SideStore, retaining the same app identity/settings. Packages are ad-hoc signed and must be re-signed for the device. Artifacts at publication: DangerRoom.ipa and its SHA-256 checksum. Validation includes device IPA signature verification and seven simulator tests. Physical-device camera and sideload acceptance were not performed.

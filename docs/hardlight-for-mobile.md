@@ -4,38 +4,38 @@ Hardlight is the Android and iOS companion for your DangerRoom instance. Its ins
 
 ## Requirements
 
-Stable preparation is checked in for Android **1.2.0 / code 22** and iOS **1.2.0 / build 3**, but these versions have not been published. Existing download links below remain the published versions until tagging. Both prepared clients expose Image Cover Search, default distance 14 (range 10–20), local ImageHash-compatible hashing, and a minimum-server check hidden behind startup branding. iOS uses Apple's document scanner: capture one cover, adjust corners/rotation, and tap Save to search directly. Android uses Next. The native minimum is server 1.1.0; server 1.1.2 supplies progressive metadata enrichment. Physical-device camera and sideload acceptance remain release checks.
+Hardlight **1.2.0** supports Image Cover Search on both platforms, with default distance 14 (range 10–20) and on-device hashing. The minimum-server check stays behind startup branding. iOS uses Apple's document scanner: capture one cover, adjust corners/rotation, and tap **Save** to search directly. Android uses **Next**. See the [walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). Minimum server: **1.1.0**; **1.1.2** supplies progressive metadata enrichment.
 
 | | Android | iOS |
 | --- | --- | --- |
 | Devices | Phones and tablets, Android 9 or later | iPhone and iPad, iOS 17 or later |
-| Published client | 1.1.0, version code 16 | 1.1.0, build 2 |
+| Published client | 1.2.0, version code 22 | 1.2.0, build 3 |
 | Server | DangerRoom β-030 or later over HTTPS | DangerRoom β-030 or later over HTTPS |
 | Distribution | GitHub APK; Obtainium updates | GitHub IPA; iOS sideloading |
 
 Server and client versions are independent. Public downloads do not authorize access to an instance. Neither platform is distributed through commercial app stores. Start with the [Hardlight download page](https://erickolb.github.io/DangerRoom/hardlight/).
 
-## Android beta
+## Android beta channel
 
-Stable Android and iOS remain at 1.1.0. Android **1.2.0-beta.5**, version code **21**, is a signed [GitHub prerelease](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0-beta.5) with APK, checksum, and signing certificate. It requires DangerRoom **1.1.0**; server **1.1.2** displays search matches immediately and fetches missing series types afterward. Enrichment stops at the quota limit, on errors, or when leaving the page; it does not resume automatically. Completed lookups are cached for later searches. Unknown-type matches remain visible and labeled while badges and filters update. The beta’s setup screen matches the app’s header, serif headings, wine panels, and coral buttons. Android’s scanner handles all cropping, rotation, corner editing, and confirmation; tapping Next computes the hash and opens results directly. Update the [server container](updating.md) first. The initial compatibility check runs behind the branded loading screen without separate checking text. Older instances show a blocking error with the required server and client versions; Retry after updating or change instance settings. Raise the minimum only for breaking server dependencies.
+The website footer’s **Android beta (Obtainium)** link imports the same app ID and repository with prereleases enabled and Android releases selected. It updates the existing app using the same signing key. Stable 1.2.0 (code 22) can replace beta 5 (code 21) without reinstalling. Future stable version codes must exceed every beta code.
 
-The website footer’s **Android beta (Obtainium)** link imports the same app ID and repository with prereleases enabled and Android releases selected. It updates the existing app using the same signing key. Future stable version codes must exceed every beta code so promotion needs no reinstall.
+## Cover image search
 
-Open **Image Cover Search** in the beta menu. Select hash distance 10–20 (default 14), then **Capture Image**. The CPHTest document scanner supports corner adjustment, perspective correction, and rotation. Use the scanner’s crop, corner-adjustment, and rotation controls, then tap **Next** to compute the hash and search immediately. There is no second review or editor screen. Discarding or canceling returns to capture setup without searching. Main-cover matches use the regular Metron results, filters, pagination, and actions. Google Play services and its first-use scanner download are required. Captures stay on device; only a perceptual hash is sent through the server to Metron. iOS receives native changes after approval for stable; all three related TODO items remain open until then.
+Open **Image Cover Search** from the menu. Select hash distance 10–20 (default 14), then **Capture Image**. Adjust corners and rotation in the platform scanner, then confirm to search immediately. Canceling returns to setup. Results use regular Metron cards, filters, pagination, and actions. Android requires Google Play services and its first-use scanner download; iOS uses Apple VisionKit. Captures stay on device; only a perceptual hash is sent through the server to Metron.
 
-## Install and update
+Server 1.1.2 displays matches immediately and fetches missing series types afterward. Enrichment stops at quota exhaustion, lookup errors, or navigation without automatic resumption. Successful lookups are cached for later queries. Unknown-type matches remain visible while badges and filters update. Incompatible servers show a blocking message with required versions, Retry, and instance settings.
 
-### Android
+## Android
 
-Download the signed **DangerRoom.apk** from the [Android 1.1.0 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.1.0), alongside `SHA256SUMS.txt`. Open the APK and allow installation from your browser if prompted. Install updates over the existing signed Hardlight app to retain local configuration.
+Download the signed **DangerRoom.apk** from the [Android 1.2.0 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0), alongside `SHA256SUMS.txt`. Open the APK and allow installation from your browser if prompted. Install updates over the existing signed Hardlight app to retain local configuration.
 
-For automatic update tracking, install Obtainium, then use **Install with Obtainium** on the download page to add `erickolb/DangerRoom` as the release source. Track application ID `net.chateaulore.hardlight`. Version 1.1.0 is a normal release and does not require prerelease updates.
+For automatic update tracking, install Obtainium, then use **Install with Obtainium** on the download page to add `erickolb/DangerRoom` as the release source. Track application ID `net.chateaulore.hardlight`. Version 1.2.0 is a normal release and does not require prerelease updates.
 
 The older `net.chateaulore.dangerroom` client is a separate installation. It can coexist with Hardlight, but Hardlight needs its own instance and device configuration. Official updates retain the Hardlight app ID and signing key. Debug builds use a different key and cannot update an official release installation.
 
 ### iOS
 
-Download [DangerRoom.ipa](https://github.com/erickolb/DangerRoom/releases/download/ios-v1.1.0-build2/DangerRoom.ipa) and its [SHA-256 checksum](https://github.com/erickolb/DangerRoom/releases/download/ios-v1.1.0-build2/DangerRoom.ipa.sha256), or use the [iOS download page](https://erickolb.github.io/DangerRoom/hardlight/#ios).
+Download [DangerRoom.ipa](https://github.com/erickolb/DangerRoom/releases/download/ios-v1.2.0-build3/DangerRoom.ipa) and its [SHA-256 checksum](https://github.com/erickolb/DangerRoom/releases/download/ios-v1.2.0-build3/DangerRoom.ipa.sha256), or use the [iOS download page](https://erickolb.github.io/DangerRoom/hardlight/#ios).
 
 Set up [SideStore](https://sidestore.io/), add `https://erickolb.github.io/DangerRoom/sidestore.json` as a source, and install Hardlight. You can also import the IPA manually. For the LiveContainer route, follow the [LiveContainer + SideStore installation guide](https://livecontainer.github.io/docs/installation/lc_sidestore). The package is ad-hoc signed and verified during the build; SideStore must re-sign it for your Apple account and device before direct installation. Enable Developer Mode if prompted and refresh through SideStore before its signing period expires. Hardlight has no extensions and uses one app ID.
 
@@ -56,7 +56,7 @@ Android uses Keystore-encrypted credential storage; iOS uses the unlocked, devic
 
 The menu contains Want List, My Collection, Search Metron, UPC Mode, Cover Slideshow, and Reading Log. Collection, exact cover selection, ratings, and reading history use the shared site's behavior; see [Advanced usage notes](advanced-usage-notes.md).
 
-The instance must be reachable to browse or save. Cached slideshow artwork does not provide offline inventory. Stable clients do not bundle camera recognition. The Android beta uses Google ML Kit document scanning locally; no advertising or analytics SDK is bundled. After a server update, the main menu's **Reload** button fetches the latest server code without exiting Hardlight; native client changes require installing a client update.
+The instance must be reachable to browse or save. Cached slideshow artwork does not provide offline inventory. Cover scanning runs locally through Google ML Kit on Android and Apple VisionKit on iOS; no advertising or analytics SDK is bundled. After a server update, the main menu's **Reload** button fetches the latest server code without exiting Hardlight; native client changes require installing a client update.
 
 ### UPC Mode
 
@@ -87,9 +87,9 @@ cd android
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v1.1.0`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
+For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v1.2.0`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
 
-Stable version: **1.1.0**, Android version code **16**, tag `v1.1.0`. Android beta: **1.2.0-beta.5**, version code **21**, tag `v1.2.0-beta.5`. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+Stable version: **1.2.0**, Android version code **22**, tag `v1.2.0`; iOS build **3**, tag `ios-v1.2.0-build3`. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
 
 The launcher icon matches the loading screen's red palette, thin dark circle outline, and lower-right dark-red shadow. Adaptive foreground artwork uses a transparent 1080×1080 canvas with a centered 480px badge, a 40px diagonal shadow offset, and a 3.75px outline. Legacy launcher resources cover mdpi through xxxhdpi.
 
