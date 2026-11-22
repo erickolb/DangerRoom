@@ -2,7 +2,7 @@
 
 Subscriptions follow a specific Metron series, independently of individual issues, collection copies, reading status, and wanted covers. Use the books button on a comic to subscribe or unsubscribe immediately, without a confirmation window. Every displayed comic in that series shares the same subscription status.
 
-Open **Subscriptions** from the web navigation or the Hardlight Android beta menu:
+Open **Subscriptions** from the web navigation or the Hardlight menu:
 
 - **Releasing This Week** includes store release dates from Sunday through Saturday of the current week, using your browser's local date.
 - **Upcoming Releases** includes store release dates after that Saturday.
@@ -17,6 +17,6 @@ Results load progressively from Metron, using cached pages for six hours. Date v
 
 ## Client availability
 
-DangerRoom **1.2.0** provides subscriptions for the web and Android Hardlight **1.3.0-beta.1** (code **23**). The Android beta requires server **1.2.0** for the new endpoints. Update the instance before using the beta. Existing stable Android and iOS **1.2.0** clients retain their existing menu and do not expose subscriptions. iOS integration follows Android testing and stable promotion.
+DangerRoom **1.2.0** provides subscriptions for the web and Hardlight **1.3.0** on Android (code **24**) and iOS (build **4**). Both clients require server **1.2.0** for the new endpoints. Update the instance before using these clients. Existing Hardlight 1.2.0 clients retain their previous menu until upgraded.
 
 The database upgrade adds a separate subscriptions table without rewriting collection, Want List, or reading records. Back up the database before updating; follow the [general update and rollback guide](updating.md).

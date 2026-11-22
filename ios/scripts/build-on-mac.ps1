@@ -1,7 +1,7 @@
 param(
     [string]$Mac = 'erickolb@barovia.chateaulore.net',
     [string]$HostKeyAlias = 'barovia.local',
-    [ValidateRange(1, 2147483647)][int]$BuildNumber = 3,
+    [ValidateRange(1, 2147483647)][int]$BuildNumber = 4,
     [switch]$Test
 )
 $ErrorActionPreference = 'Stop'

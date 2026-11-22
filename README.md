@@ -5,7 +5,7 @@ Features currently supported:
 + Search the [Metron.cloud](https://metron.cloud) database.
   + Keyword search
   + [UPC search (12- and 17-digits)](docs/upc-mode.md)
-+ [Subscribe to series](docs/subscriptions.md) and browse weekly, upcoming, and missing issues (web and Android beta)
++ [Subscribe to series](docs/subscriptions.md) and browse weekly, upcoming, and missing issues (web, Android, and iOS)
 + Add comics to My Collection
 + Attach ratings (5-stars in half-star increments) to comics
 + Keep a Want List of comics to pull
@@ -19,7 +19,7 @@ Features currently supported:
 [DangerRoom website](https://erickolb.github.io/DangerRoom/) · [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) · [Privacy policy](https://erickolb.github.io/DangerRoom/privacy/)
 
 ## Hardlight (Android / iOS Companion App)
-The stable Android and iOS companions, code named Hardlight, have a seven-option menu plus configuration:
+The stable Android and iOS companions, code named Hardlight, have a eight-option menu plus configuration:
 1. Want List
 2. My Collection
 3. Search Metron
@@ -27,8 +27,9 @@ The stable Android and iOS companions, code named Hardlight, have a seven-option
 5. Cover Slideshow
 6. Reading Log
 7. Image Cover Search
+8. Subscriptions
 
-Client is configurable for your Danger Room instance and allow-listed device credentials, seven-section menu. Cover slideshow features a local six-month artwork cache, a configurable 300 MB cache limit, and a flush cache button in addition to controls inactivity timeout (default 10 seconds, minimum 3) and independent title display duration (0 disables, full rotation duration keeps titles visible). The main menu’s reload button refreshes server code without exiting Hardlight.
+Client is configurable for your Danger Room instance and allow-listed device credentials, eight-section menu. Cover slideshow features a local six-month artwork cache, a configurable 300 MB cache limit, and a flush cache button in addition to controls inactivity timeout (default 10 seconds, minimum 3) and independent title display duration (0 disables, full rotation duration keeps titles visible). The main menu’s reload button refreshes server code without exiting Hardlight.
 
 The Hardlight client is deployed through [Obtainium](https://obtainium.imranr.dev/) for Android and [LiveContainer + SideStore](https://livecontainer.github.io/docs/installation/lc_sidestore) for iOS. The app is not available on commercial app stores. See [Hardlight download and setup](https://erickolb.github.io/DangerRoom/hardlight/) for further instructions.
 
@@ -147,11 +148,9 @@ These credits also appear in the footer's collapsed **Credits** section. The vis
 ## Releases
 Current Server Build: version 1.2.0
 
-Stable Hardlight: [Android 1.2.0, code 22](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0) and [iOS 1.2.0, build 3](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.2.0-build3).
+Stable Hardlight: [Android 1.3.0, code 24](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.0) and [iOS 1.3.0, build 4](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.3.0-build4).
 
-Android beta: [**1.3.0-beta.1**, code **23**](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.0-beta.1), requires DangerRoom **1.2.0** for subscription APIs. Web UX is approved; the beta adds the Subscriptions menu and comic controls. iOS remains at stable 1.2.0 during beta testing. The footer’s Obtainium beta setup tracks Android prereleases.
-
-Both stable clients support native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.1.0**; server **1.1.2** provides immediate results and background metadata enrichment. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default.
+Both clients support [series subscriptions](docs/subscriptions.md), native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.2.0** for subscription endpoints. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default. Android code 24 upgrades subscription beta code 23 without reinstalling.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 

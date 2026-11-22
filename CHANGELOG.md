@@ -1,5 +1,13 @@
 # Changelog
 
+## Hardlight 1.3.0 · 2026-11-22
+
+- Promote subscriptions to stable at Android/iOS feature parity: Android code 24, iOS build 4. DangerRoom server remains 1.2.0.
+- Port the subscription capability and authenticated PUT transport to iOS, expose the eight-item menu and shared comic controls, and require server 1.2.0 on both clients. Preserve the branded loading screen, image cover search, credentials, and caches.
+- Publish separate platform artifacts, release notes, checksums, updated installation links, and SideStore metadata. Android code 24 upgrades beta code 23 without reinstalling.
+- Android beta testing was approved. Automated validation includes both platform builds and tests, authenticated companion browser checks, and signed artifact verification; physical-device iOS acceptance is not claimed.
+
+
 ## Android Hardlight 1.3.0-beta.1 · 2026-11-22
 
 - Android beta, code 23. Add Subscriptions to the top-level menu and enable the approved four-view interface and synchronized series buttons.

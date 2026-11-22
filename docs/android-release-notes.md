@@ -1,15 +1,17 @@
-# Hardlight 1.3.0-beta.1 for Android
+# Hardlight 1.3.0 for Android
 
-Version code **23** · app ID `net.chateaulore.hardlight` · Android 9+.
+Version code **24** · Android 9+ · app ID `net.chateaulore.hardlight`.
 
-Add **Subscriptions** to the top-level menu and the books button to comic cards. Subscribe or unsubscribe from an entire Metron series without a modal, independently of collection and Want List status. All visible comics in the series share the lit/unlit status.
+Follow a whole series with **Subscriptions**, independently of collection, reading status, and Want List entries. The books button toggles subscription immediately without a modal and lights up on every displayed comic in the same series.
 
-The approved four-view interface uses equal-width compact icon-and-text buttons on one row: **List**, **Missing**, **This Week**, **Upcoming**. Release views use store dates and Sunday–Saturday weeks. Prefer the first wanted variant; otherwise use the standard cover. List thumbnails use the next release or latest past release and prefer wanted/collected variants. Pages appear progressively and remain usable if Metron's quota stops loading.
+Browse **List**, **Missing**, **This Week**, and **Upcoming** using the approved compact icon-and-text buttons, equally spaced across one row. Date views use store release dates and Sunday–Saturday weeks. Release cards prefer the first wanted variant; list thumbnails use the next release or latest past issue with wanted/collected variant preferences. Cached pages appear progressively and remain usable if Metron's quota stops further loading.
 
-Includes server fixes for slideshow-hide controls on unowned comics, future Want List cover dates, narrow card action rows, and compact active Metron search headings. The supplied books icon is credited to [Study icons created by riajulislam - Flaticon](https://www.flaticon.com/free-icons/study).
+Includes the server's improved Want List dates, narrow comic action rows, compact active search headings, and slideshow-hide controls only on owned covers. The supplied books icon is credited to [Study icons created by riajulislam - Flaticon](https://www.flaticon.com/free-icons/study).
 
-**Requires DangerRoom server 1.2.0. Update the instance first.** The Android client now depends on subscription endpoints and supports authenticated PUT updates. The server check stays behind the branded loading screen; an older instance shows the blocking update message. Follow the [general server update guide](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md).
+**Requires DangerRoom server 1.2.0** for subscription endpoints. Update older instances using the [general server update guide](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md). Initial checks stay behind the branded loading screen; outdated instances show the required versions and Retry/settings. Both stable clients provide subscriptions at feature parity.
 
-Install over the existing signed APK to keep settings. Code 23 upgrades stable code 22 without reinstalling. Artifacts: `DangerRoom.apk`, `SHA256SUMS.txt`, `SIGNING-CERTIFICATE.txt`. The website footer's **Android beta (Obtainium)** link tracks this prerelease; stable downloads remain 1.2.0. iOS remains unchanged during Android beta testing.
+Install over the existing signed APK to retain settings. Code 24 upgrades beta code 23 without reinstalling. Artifacts: `DangerRoom.apk`, `SHA256SUMS.txt`, and `SIGNING-CERTIFICATE.txt`.
 
-Validation: Android unit tests, lint, debug build, and signed release workflow; authenticated companion bridge browser checks covering subscription PUT, menu, synchronized controls, view layout, and legacy-client isolation; server tests. Physical-device acceptance is not claimed by these automated checks.
+Existing image cover search remains available: [walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). Photographs stay on device; only the perceptual hash is sent for matching. Stable downloads remain the default; the website's quiet Obtainium beta footer remains available for future testing.
+
+Validation covers Android unit tests/lint/build, iOS simulator menu and authenticated subscription transport tests, server and companion browser checks, and artifact signatures/checksums. Physical-device iOS installation acceptance is not claimed by automated tests.

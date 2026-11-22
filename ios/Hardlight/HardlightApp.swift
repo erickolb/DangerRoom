@@ -88,7 +88,7 @@ final class Transport {
     }
     deinit { session.invalidateAndCancel() }
     func get(_ path: String, method: String = "GET", body: String = "") async throws -> (Data, HTTPURLResponse) {
-        guard Self.validPath(path), ["GET", "POST", "PATCH", "DELETE"].contains(method), body.utf8.count <= 8192 else { throw ClientError(message: "Invalid request.") }
+        guard Self.validPath(path), ["GET", "POST", "PUT", "PATCH", "DELETE"].contains(method), body.utf8.count <= 8192 else { throw ClientError(message: "Invalid request.") }
         var request = URLRequest(url: URL(string: connection.origin + "/mobile" + path)!)
         request.httpMethod = method
         request.setValue(connection.device, forHTTPHeaderField: "X-Device-Id")
@@ -236,7 +236,7 @@ final class WebController: UIViewController, WKURLSchemeHandler, WKScriptMessage
     (()=>{const send=(action,data={})=>window.webkit.messageHandlers.hardlight.postMessage({action,...data});
     if(!crypto.randomUUID)crypto.randomUUID=()=>"10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
     window.DangerRoomIOS=true;
-    window.DangerRoomAndroid={imageCoverSearch:()=>send('imageCoverSearch'),settings:()=>send('settings'),keepAwake:enabled=>send('keepAwake',{enabled}),fullscreen:enabled=>send('fullscreen',{enabled}),
+    window.DangerRoomAndroid={supportsSubscriptions:()=>true,imageCoverSearch:()=>send('imageCoverSearch'),settings:()=>send('settings'),keepAwake:enabled=>send('keepAwake',{enabled}),fullscreen:enabled=>send('fullscreen',{enabled}),
     request:(path,method,body,id)=>send('request',{path,method,body,id}),
     configureCoverCache:(files,limited,megabytes)=>send('configureCoverCache',{files,limited,megabytes}),
     flushCoverCache:()=>new Promise(resolve=>{const id=crypto.randomUUID();window.dangerroomResponses??={};window.dangerroomResponses[id]=r=>{delete window.dangerroomResponses[id];resolve(r.cleared)};send('flushCoverCache',{id})})};})();

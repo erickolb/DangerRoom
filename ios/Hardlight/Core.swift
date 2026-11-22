@@ -13,7 +13,7 @@ struct Connection: Codable, Equatable {
 }
 
 enum Input {
-    static let minimumServerVersion = "1.1.0"
+    static let minimumServerVersion = "1.2.0"
     static func supportsServer(_ version: String) -> Bool {
         guard version.range(of: "^[0-9]+\\.[0-9]+\\.[0-9]+$",options: .regularExpression) != nil else { return false }
         let actual = version.split(separator: ".").compactMap { Int($0) }, required = minimumServerVersion.split(separator: ".").compactMap { Int($0) }

@@ -4,8 +4,8 @@ import WebKit
 
 final class HardlightTests: XCTestCase {
     func testMinimumServerVersion() {
-        for version in ["1.1.0","1.1.2","1.10.0","2.0.0"] { XCTAssertTrue(Input.supportsServer(version)) }
-        for version in ["1.0.7","0.99.99","β-030","","1.1","1.1.0-beta.1"] { XCTAssertFalse(Input.supportsServer(version)) }
+        for version in ["1.2.0","1.2.1","1.10.0","2.0.0"] { XCTAssertTrue(Input.supportsServer(version)) }
+        for version in ["1.1.0","1.1.2","1.1.99","1.0.7","0.99.99","β-030","","1.1","1.1.0-beta.1"] { XCTAssertFalse(Input.supportsServer(version)) }
     }
     func testHashMatchesAndroidAndPythonGoldenVectors() throws {
         struct Vector: Decodable { let width: Int; let height: Int; let seed: UInt32; let white: Bool; let hash: String }
@@ -50,15 +50,15 @@ final class HardlightTests: XCTestCase {
         var count = 0
         for _ in 0..<100 {
             count = (try? await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item').length")) as? Int ?? 0
-            if count == 7 { break }
+            if count == 8 { break }
             try await Task.sleep(for: .milliseconds(200))
         }
-        XCTAssertEqual(count, 7, "Shared ES modules and mobile menu must load through the custom scheme")
-        if count != 7 { print("Web diagnostics:", (try? await controller.web.evaluateJavaScript("JSON.stringify({errors:window.testErrors,bridge:typeof window.DangerRoomAndroid,uuid:typeof crypto.randomUUID,html:document.body?.innerHTML.slice(0,1500)})")) ?? "No JavaScript response") }
-        guard count == 7 else { return }
-        let upcShortcut = try await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item')[3].textContent.includes('UPC Mode')") as? Bool
+        XCTAssertEqual(count, 8, "Shared ES modules and mobile menu must load through the custom scheme")
+        if count != 8 { print("Web diagnostics:", (try? await controller.web.evaluateJavaScript("JSON.stringify({errors:window.testErrors,bridge:typeof window.DangerRoomAndroid,uuid:typeof crypto.randomUUID,html:document.body?.innerHTML.slice(0,1500)})")) ?? "No JavaScript response") }
+        guard count == 8 else { return }
+        let upcShortcut = try await controller.web.evaluateJavaScript("document.querySelector('.mobile-menu-item[href=\"#/?mode=upc\"]').textContent.includes('UPC Mode')") as? Bool
         XCTAssertEqual(upcShortcut, true)
-        _ = try await controller.web.evaluateJavaScript("document.querySelectorAll('.mobile-menu-item')[3].click()")
+        _ = try await controller.web.evaluateJavaScript("document.querySelector('.mobile-menu-item[href=\"#/?mode=upc\"]').click()")
         for _ in 0..<40 {
             if (try? await controller.web.evaluateJavaScript("!!document.querySelector('#upc-input')")) as? Bool == true { break }
             try await Task.sleep(for: .milliseconds(100))
@@ -69,8 +69,24 @@ final class HardlightTests: XCTestCase {
         XCTAssertEqual(stored, "saved", "Slideshow preferences must be writable in the per-instance web data store")
         let result = try await controller.web.callAsyncJavaScript("return await Promise.race([new Promise(resolve=>{let id=crypto.randomUUID();window.dangerroomResponses[id]=resolve;window.DangerRoomAndroid.request('/api/health','GET','',id)}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Native API timeout')),10000))])", arguments: [:], in: nil, contentWorld: .page) as? [String: Any]
         XCTAssertEqual(result?["status"] as? Int, 200)
+        let capable = try await controller.web.evaluateJavaScript("window.DangerRoomAndroid.supportsSubscriptions()") as? Bool
+        XCTAssertEqual(capable,true)
+        let subscription = try await controller.web.callAsyncJavaScript("return await new Promise(resolve=>{let id=crypto.randomUUID();window.dangerroomResponses[id]=resolve;window.DangerRoomAndroid.request('/api/subscriptions/44','PUT',JSON.stringify({subscribed:true}),id)})", arguments: [:], in: nil, contentWorld: .page) as? [String: Any]
+        XCTAssertEqual(subscription?["status"] as? Int,200)
+        let subscriptionData = subscription?["data"] as? [String: Any]
+        XCTAssertEqual(subscriptionData?["method"] as? String,"PUT")
+        XCTAssertEqual(subscriptionData?["authenticated"] as? Bool,true)
         let cleared = try await controller.web.callAsyncJavaScript("return await Promise.race([window.DangerRoomAndroid.flushCoverCache(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Cache bridge timeout')),10000))])", arguments: [:], in: nil, contentWorld: .page) as? Bool
         XCTAssertEqual(cleared, true)
+    }
+    func testTransportAllowsSubscriptionUpdates() async throws {
+        let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [FixtureProtocol.self]
+        let transport = Transport(Connection(origin: "https://fixture.example",device: "test",secret: "test"),configuration: config)
+        let (data,response) = try await transport.get("/api/subscriptions/44",method: "PUT",body: "{\"subscribed\":true}")
+        XCTAssertEqual(response.statusCode,200)
+        let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        XCTAssertEqual(object?["method"] as? String,"PUT")
+        XCTAssertEqual(object?["authenticated"] as? Bool,true)
     }
     func testOriginsAndRequestBoundaries() throws {
         XCTAssertEqual(try Input.origin("https://comics.example.net:8443/"), "https://comics.example.net:8443")
@@ -100,7 +116,7 @@ final class OldInstanceProtocol: URLProtocol {
     override class func canInit(with request: URLRequest) -> Bool { request.url?.host == "fixture.example" }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
-        let data = Data("{\"version\":\"1.0.7\",\"authorized\":true}".utf8)
+        let data = Data("{\"version\":\"1.1.2\",\"authorized\":true}".utf8)
         client?.urlProtocol(self,didReceive: HTTPURLResponse(url: request.url!,statusCode: 200,httpVersion: nil,headerFields: ["Content-Type":"application/json"])!,cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self,didLoad: data); client?.urlProtocolDidFinishLoading(self)
     }
@@ -113,7 +129,10 @@ final class FixtureProtocol: URLProtocol {
     override func startLoading() {
         let path = String(request.url!.path.dropFirst("/mobile".count))
         let data: Data; let type: String
-        if path.hasPrefix("/api/") { data = Data("{\"status\":\"ok\",\"mobile_api\":1,\"version\":\"1.1.2\",\"authorized\":true}".utf8); type = "application/json" }
+        if path == "/api/subscriptions/44" {
+            data = try! JSONSerialization.data(withJSONObject: ["series_id":44,"subscribed":true,"method":request.httpMethod ?? "", "authenticated":request.value(forHTTPHeaderField: "X-Device-Id") != nil && request.value(forHTTPHeaderField: "Authorization")?.hasPrefix("Bearer ") == true]); type = "application/json"
+        }
+        else if path.hasPrefix("/api/") { data = Data("{\"status\":\"ok\",\"mobile_api\":1,\"version\":\"1.2.0\",\"authorized\":true}".utf8); type = "application/json" }
         else {
             let file = path.isEmpty || path == "/" ? "/index.html" : path
             let root = Bundle(for: HardlightTests.self).resourceURL!.appendingPathComponent("Fixtures")
