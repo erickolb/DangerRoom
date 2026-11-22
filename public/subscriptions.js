@@ -3,6 +3,13 @@ import {comicTitle,comicTitleText} from './comic-title.js';
 import {localToday} from './reading-log.js';
 import {subscriptionWeek,subscriptionIssues,subscriptionThumbnail} from './subscription-dates.js';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const viewIcons={
+  list:'<path d="M5 3h14v18H5z"/><path d="M10 8h6M10 12h6M10 16h6"/><path d="M8 8h.01M8 12h.01M8 16h.01"/>',
+  missing:'<circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5M8.5 8a2 2 0 0 1 4 0c0 1.5-2 1.5-2 3"/><path d="M10.5 14h.01"/>',
+  week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/>',
+  upcoming:'<circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M2 16 5 5h3l2 11M14 16l2-11h3l3 11M10 13h4M8 5V3H5v2M16 5V3h3v2"/>',
+};
+const viewButtons=[['list','List','Subscription List'],['missing','Missing','Missing Issues'],['week','This Week','Releasing This Week'],['upcoming','Upcoming','Upcoming Releases']];
 const pending=new Set();
 const statuses=new Map();
 export function subscriptionButton(series,subscribed,{remove=false}={}){
@@ -45,7 +52,7 @@ export async function subscriptionsPage(app,params,api,current,choose,onError,ac
     const src=edition?.cover_file?`/covers/${edition.cover_file}`:edition?.source_image||row?.image;
     return src?`<img class="cover" src="${esc(src)}" alt="${esc(row?comicTitleText(row,{year:true}):'Series cover')}" loading="lazy">`:'<div class="cover missing-cover">Cover unavailable</div>';
   };
-  app.innerHTML=`<div class="section-heading"><div><p class="eyebrow">Your regular pulls</p><h2>Subscriptions</h2></div></div><nav class="tabs subscription-tabs" aria-label="Subscription views">${[['week','Releasing This Week'],['upcoming','Upcoming Releases'],['missing','Missing Issues'],['list','Subscription List']].map(([key,label])=>`<a href="#/subscriptions?view=${key}" ${view===key?'aria-current="page"':''}>${label}</a>`).join('')}</nav><p class="muted">${view==='week'?`${format(week.start)} – ${format(week.end)}`:view==='upcoming'?`After ${format(week.end)}`:view==='missing'?`Before ${format(week.start)} · Issues outside your collection`:'Series you follow · Next release or most recent issue'}</p><p class="hint" id="subscription-status" role="status">Opening subscriptions…</p><div id="subscription-results"></div>`;
+  app.innerHTML=`<div class="section-heading"><div><p class="eyebrow">Your regular pulls</p><h2>Subscriptions</h2></div></div><nav class="tabs subscription-tabs" aria-label="Subscription views">${viewButtons.map(([key,label,title])=>`<a href="#/subscriptions?view=${key}" aria-label="${title}" title="${title}" ${view===key?'aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${viewIcons[key]}</svg><span>${label}</span></a>`).join('')}</nav><p class="muted">${view==='week'?`${format(week.start)} – ${format(week.end)}`:view==='upcoming'?`After ${format(week.end)}`:view==='missing'?`Before ${format(week.start)} · Issues outside your collection`:'Series you follow · Next release or most recent issue'}</p><p class="hint" id="subscription-status" role="status">Opening subscriptions…</p><div id="subscription-results"></div>`;
   const data=await api('/subscriptions');if(!current())return;
   app.querySelector('#subscription-status').textContent=data.items.length?'Loading releases…':'';
   let series=data.items;const catalogs=new Map(series.map(s=>[s.id,new Map()]));
