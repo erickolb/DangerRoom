@@ -129,7 +129,7 @@ header .header-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 .search-welcome>div{overflow:hidden;min-height:0}
 .search-welcome.collapsed{grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .18s ease,opacity .15s ease,visibility 0s .18s}
 @media(prefers-reduced-motion:reduce){.search-welcome,.search-welcome.collapsed{transition:none}}
-.subscription-tabs{display:flex;flex-wrap:nowrap;gap:8px;width:fit-content;max-width:100%}
+.subscription-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
 .subscription-tabs a{min-width:0;min-height:38px;display:inline-flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;padding:7px 10px;font-size:.8rem;white-space:nowrap}
 .subscription-tabs svg{width:18px;height:18px;flex:none}
-@media(max-width:600px){.subscription-tabs{gap:4px}.subscription-tabs a{min-height:34px;font-size:.65rem;gap:3px;padding:7px 3px}.subscription-tabs svg{width:14px;height:14px}}
+@media(max-width:600px){.subscription-tabs{gap:4px}.subscription-tabs a{min-height:34px;font-size:.6rem;gap:3px;padding:7px 2px}.subscription-tabs svg{width:12px;height:12px}}
