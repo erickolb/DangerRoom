@@ -1,7 +1,7 @@
 # TODO
 
 - [x] Review project docs.
-- [ ] Subscriptions and upcoming releases.
+- [x] Subscriptions and upcoming releases.
 - [x] Implement image-based cover search — see [Metron discussion #680](https://github.com/Metron-Project/metron/discussions/680).
 - [x] Revisit the behavior of the Mark As Read button.
 
