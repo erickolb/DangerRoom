@@ -171,6 +171,7 @@ class MainActivity : ComponentActivity() {
     }
     private fun sameOrigin(address: String, origin: String): Boolean = runCatching { val a = URI(address); val b = URI(origin); a.scheme == b.scheme && a.host == b.host && a.port == b.port && a.userInfo == null }.getOrDefault(false)
     private inner class Bridge(private val c: Connection, private val owner: WebView, private val coverCache: CoverCache) {
+        @JavascriptInterface fun supportsSubscriptions(): Boolean = true
         @JavascriptInterface fun imageCoverSearch() { runOnUiThread { if(web===owner) coverSearch.launch(Intent(this@MainActivity,ImageSearchActivity::class.java)) } }
         @JavascriptInterface fun flushCoverCache(): Boolean = coverCache.clear()
         @JavascriptInterface fun configureCoverCache(files: String, limited: Boolean, megabytes: Int) {

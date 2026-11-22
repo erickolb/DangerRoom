@@ -5,8 +5,12 @@ import org.junit.Test
 
 class InputTest {
     @Test fun serverMinimumTracksBreakingDependencies() {
-        for(version in listOf("1.1.0","1.1.1","1.2.0","1.10.0","2.0.0"))assertTrue(version,Input.supportsServer(version))
-        for(version in listOf("1.0.7","1.0.99","0.99.99","β-030","","1.1","1.1.0-beta.1","999999999999999.0.0"))assertFalse(version,Input.supportsServer(version))
+        for(version in listOf("1.2.0","1.2.1","1.10.0","2.0.0"))assertTrue(version,Input.supportsServer(version))
+        for(version in listOf("1.1.0","1.1.2","1.1.99","1.0.7","1.0.99","0.99.99","β-030","","1.1","1.1.0-beta.1","999999999999999.0.0"))assertFalse(version,Input.supportsServer(version))
+    }
+    @Test fun subscriptionUpdatesUseAnAllowedHttpMethod() {
+        assertTrue(Input.apiMethod("PUT"))
+        for(method in listOf("TRACE","CONNECT","OPTIONS","put",""))assertFalse(method,Input.apiMethod(method))
     }
     @Test fun originsSupportSelfHosting() {
         assertEquals("https://comics.example.net", Input.origin(" comics.example.net "))

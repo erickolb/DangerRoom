@@ -2,7 +2,7 @@
 
 Subscriptions follow a specific Metron series, independently of individual issues, collection copies, reading status, and wanted covers. Use the books button on a comic to subscribe or unsubscribe immediately, without a confirmation window. Every displayed comic in that series shares the same subscription status.
 
-Open **Subscriptions** from the web navigation:
+Open **Subscriptions** from the web navigation or the Hardlight Android beta menu:
 
 - **Releasing This Week** includes store release dates from Sunday through Saturday of the current week, using your browser's local date.
 - **Upcoming Releases** includes store release dates after that Saturday.
@@ -15,8 +15,8 @@ Issues without a store date are excluded from date views. Collection and Want Li
 
 Results load progressively from Metron, using cached pages for six hours. Date views request only their relevant date range. If a provider request fails or reaches its quota, loaded results remain usable, including unsubscribe controls. Loading stops without automatic retries. Reopen the view to try again; completed pages can be reused.
 
-## Preview scope
+## Client availability
 
-DangerRoom 1.2.0 is a web UX preview on the preparation branch. Hardlight Android and iOS remain at their published 1.2.0 versions. Native menu integration and Android beta testing follow approval of the web experience. No client build or stable release is part of this preview.
+DangerRoom **1.2.0** provides subscriptions for the web and Android Hardlight **1.3.0-beta.1** (code **23**). The Android beta requires server **1.2.0** for the new endpoints. Update the instance before using the beta. Existing stable Android and iOS **1.2.0** clients retain their existing menu and do not expose subscriptions. iOS integration follows Android testing and stable promotion.
 
 The database upgrade adds a separate subscriptions table without rewriting collection, Want List, or reading records. Back up the database before updating; follow the [general update and rollback guide](updating.md).

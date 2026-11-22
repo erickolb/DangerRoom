@@ -82,6 +82,39 @@ try{
   assert.equal(await page.locator('[data-subscription-issue]').count(),2);
   await page.locator('[data-subscription-issue="302"] [data-subscription]').click();
   await page.waitForFunction(()=>document.querySelector('#subscription-results')?.textContent.includes('No subscribed series yet'));
+  // Native subscriptions require the new capability; older Android/iOS bridges retain their stable menu.
+  failPage=false;fixture.metron.flushQueryCache();fixture.repo.statePut('blocked_until',0);fixture.repo.statePut('burst_until',0);
+  const device=fixture.devices.add('Subscriptions companion browser test');
+  for(const enabled of [false,true]){
+    const nativeContext=await browser.newContext({viewport:{width:390,height:844}});
+    await nativeContext.addInitScript(({deviceId,token,enabled})=>{
+      window.DangerRoomAndroid={settings(){},imageCoverSearch(){},request(path,method,body,id){
+        fetch('/mobile'+path,{method,headers:{'X-Device-Id':deviceId,Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body}:{})})
+          .then(async response=>({status:response.status,data:await response.json()})).then(result=>window.dangerroomResponses[id](result));
+      }};
+      if(enabled)window.DangerRoomAndroid.supportsSubscriptions=()=>true;
+    },{deviceId:device.deviceId,token:device.token,enabled});
+    const native=await nativeContext.newPage();native.on('pageerror',e=>errors.push(e.message));
+    await native.route('https://static.metron.cloud/**',route=>route.fulfill({body:png,contentType:'image/png'}));
+    await native.goto(origin+'/#/home');await native.locator('.mobile-menu').waitFor();
+    assert.equal(await native.locator('.mobile-menu a[href="#/subscriptions"]').count(),enabled?1:0);
+    await native.goto(origin+'/#/?q=Preview');await native.locator('[data-result-issue="301"]').waitFor();
+    assert.equal(await native.locator('[data-result-issue="301"] [data-subscription]').count(),enabled?1:0);
+    if(enabled){
+      await native.locator('[data-result-issue="301"] [data-subscription]').click();
+      await native.waitForFunction(()=>document.querySelector('[data-result-issue="301"] [data-subscription]')?.getAttribute('aria-pressed')==='true');
+      assert.equal(fixture.repo.isSubscribed(44),true,'companion PUT passes authenticated API bridge');
+      await native.goto(origin+'/#/home');await native.getByRole('link',{name:'Subscriptions',exact:true}).click();
+      await native.waitForFunction(()=>document.querySelector('#subscription-status')?.textContent==='');
+      assert.equal(await native.locator('[data-subscription-issue]').count(),2);
+      const tabs=await native.locator('.subscription-tabs a').evaluateAll(items=>items.map(a=>({top:a.getBoundingClientRect().top,width:a.getBoundingClientRect().width})));
+      assert(tabs.every(a=>a.top===tabs[0].top&&Math.abs(a.width-tabs[0].width)<1));
+      await native.getByRole('link',{name:'Subscription List',exact:true}).click();await native.locator('.subscription-remove').click();
+      await native.waitForFunction(()=>document.querySelector('#subscription-results')?.textContent.includes('No subscribed series yet'));
+      assert.equal(fixture.repo.isSubscribed(44),false);
+    }
+    await nativeContext.close();
+  }
   assert.deepEqual(errors,[]);console.log('Subscriptions, synchronized toggles, week views, variants, list removal, quota retention, slideshow controls, narrow cards, Want List dates, and search welcome passed. Provider calls:',calls);
 }finally{
   await browser?.close();await new Promise(resolve=>fixture.server.close(resolve));await rm(directory,{recursive:true,force:true});

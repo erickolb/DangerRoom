@@ -8,7 +8,7 @@ import { localToday, shiftMonth, mountMonthPicker, changeRead, cancelReadDialog 
 import { seriesRatingChart } from './series-ratings.js';
 import { releases } from './releases.js';
 import { actionButton, context, copyState, bindToggles } from './actions.js';
-import { isAndroid, mobileHome, mobilePage } from './mobile.js';
+import { isAndroid, supportsSubscriptions, mobileHome, mobilePage } from './mobile.js';
 const $ = s => document.querySelector(s), app = $('#app'), notice = $('#notice'), dialog = $('#dialog');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icon = (name, light = false) => `<img class="icon${light ? ' light-icon' : ''}" src="/${name}.png" alt="">`;
@@ -85,7 +85,7 @@ async function route() {
     if(path==='/home'&&isAndroid)return mobileHome(app);
     if(await mobilePage(path,app,api,()=>ticket===generation))return;
     if(path==='/reading-log')return await readingLogPage(params,ticket);
-    if(path==='/subscriptions'&&!isAndroid)return await subscriptionsPage(app,params,api,()=>ticket===generation,choose,text=>message(text,true),actionButton);
+    if(path==='/subscriptions'&&supportsSubscriptions)return await subscriptionsPage(app,params,api,()=>ticket===generation,choose,text=>message(text,true),actionButton);
     if (path === '/wants') return await wantList(params,ticket);
     if (path === '/changelog') return changelog();
     if (path === '/metron-diagnostics') return await metronDiagnostics(ticket);

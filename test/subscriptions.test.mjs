@@ -59,6 +59,12 @@ test('subscription API decorates search and paginated releases without importing
   app.server.listen(0,'127.0.0.1');await once(app.server,'listening');
   t.after(async()=>{await new Promise(resolve=>app.server.close(resolve));await rm(dir,{recursive:true,force:true});});
   const base=`http://127.0.0.1:${app.server.address().port}/api`;
+  const device=app.devices.add('Subscription API test');
+  const mobileBase=base.replace('/api','/mobile/api');
+  const headers={'Content-Type':'application/json','X-Device-Id':device.deviceId,Authorization:`Bearer ${device.token}`};
+  assert.equal((await fetch(mobileBase+'/subscriptions')).status,401);
+  assert.equal((await fetch(mobileBase+'/subscriptions/8',{method:'PUT',headers,body:JSON.stringify({subscribed:true})})).status,200);
+  assert.equal((await fetch(mobileBase+'/subscriptions/8/issues',{headers})).status,200);
   const put=body=>fetch(base+'/subscriptions/8',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   assert.equal((await put({subscribed:'yes'})).status,400);
   assert.equal((await put({subscribed:true})).status,200);

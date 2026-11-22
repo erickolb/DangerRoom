@@ -17,7 +17,9 @@ Server and client versions are independent. Public downloads do not authorize ac
 
 ## Android beta channel
 
-The website footer’s **Android beta (Obtainium)** link imports the same app ID and repository with prereleases enabled and Android releases selected. It updates the existing app using the same signing key. Stable 1.2.0 (code 22) can replace beta 5 (code 21) without reinstalling. Future stable version codes must exceed every beta code.
+The website footer’s **Android beta (Obtainium)** link imports the same app ID and repository with prereleases enabled and Android releases selected. It updates the existing app using the same signing key. [Android 1.3.0-beta.1](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.0-beta.1), code **23**, adds [series subscriptions](subscriptions.md), including the top-level menu, comic toggles, and the approved four-view interface. It requires DangerRoom server **1.2.0**, unlike the stable clients. Update your [server container](updating.md) before using the beta. Initial compatibility checks remain behind the branded loading screen; an outdated server blocks use with the required server and client versions. Stable Android and iOS remain **1.2.0** and do not expose subscriptions.
+
+The beta installs over stable code 22 using the same signing identity. Future stable version codes must exceed every beta code; returning from beta to the older stable build would require a downgrade.
 
 ## Cover image search
 

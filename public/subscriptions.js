@@ -1,4 +1,4 @@
-import {isAndroid} from './mobile.js';
+import {supportsSubscriptions} from './mobile.js';
 import {comicTitle,comicTitleText} from './comic-title.js';
 import {localToday} from './reading-log.js';
 import {subscriptionWeek,subscriptionIssues,subscriptionThumbnail} from './subscription-dates.js';
@@ -13,7 +13,7 @@ const viewButtons=[['list','List','Subscription List'],['missing','Missing','Mis
 const pending=new Set();
 const statuses=new Map();
 export function subscriptionButton(series,subscribed,{remove=false}={}){
-  if(isAndroid||!series?.id)return '';
+  if(!supportsSubscriptions||!series?.id)return '';
   return `<button type="button" class="${remove?'quiet subscription-remove':'comic-toggle subscription-toggle'}" data-subscription="${Number(series.id)}" data-remove-subscription="${remove}" aria-pressed="${Boolean(subscribed)}" aria-label="${remove?'Unsubscribe from':'Subscribe to'} ${esc(series.name)}" title="${remove?'Unsubscribe from':'Subscribe to'} ${esc(series.name)}">${remove?'×':'<img class="icon" src="/subscriptions.png" alt="">'}</button>`;
 }
 function updateButtons(id,subscribed){
@@ -26,7 +26,7 @@ function updateButtons(id,subscribed){
   }
 }
 export function bindSubscriptionButtons(container,series,subscribed,api,onError){
-  if(isAndroid||!series?.id)return;
+  if(!supportsSubscriptions||!series?.id)return;
   const id=Number(series.id);if(!statuses.has(id))statuses.set(id,Boolean(subscribed));
   container.querySelectorAll(`[data-subscription="${id}"]`).forEach(button=>{
     button.dataset.seriesName=series.name;

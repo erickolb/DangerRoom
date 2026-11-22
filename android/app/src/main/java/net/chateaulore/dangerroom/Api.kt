@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 object Input {
     // Raise only when a client starts depending on new server behavior.
-    const val minimumServerVersion = "1.1.0"
+    const val minimumServerVersion = "1.2.0"
     fun supportsServer(version: String): Boolean {
         if (!version.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+"))) return false
         val actual=version.split('.').map { it.toIntOrNull() ?: return false }
@@ -14,6 +14,7 @@ object Input {
         for(i in 0..2) { if(actual[i]!=required[i]) return actual[i]>required[i] }
         return true
     }
+    fun apiMethod(method: String): Boolean = method in listOf("GET", "POST", "PUT", "PATCH", "DELETE")
     fun origin(raw: String): String {
         val value = if (raw.trim().contains("://")) raw.trim() else "https://${raw.trim()}"
         val uri = URI(value)
@@ -33,7 +34,7 @@ class Api(private val connection: Connection) {
     }
     private fun exchange(path: String, method: String, body: ByteArray, contentType: String): Response {
         require(path.startsWith("/") && !path.startsWith("//") && !path.contains("\\") && !path.contains(".."))
-        require(method in listOf("GET", "POST", "PATCH", "DELETE"))
+        require(Input.apiMethod(method))
         val url = URI(Input.origin(connection.url) + path).toURL()
         val conn = url.openConnection() as HttpURLConnection
         try {

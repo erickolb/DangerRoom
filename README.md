@@ -5,7 +5,7 @@ Features currently supported:
 + Search the [Metron.cloud](https://metron.cloud) database.
   + Keyword search
   + [UPC search (12- and 17-digits)](docs/upc-mode.md)
-+ [Subscribe to series](docs/subscriptions.md) and browse weekly, upcoming, and missing issues (web preview)
++ [Subscribe to series](docs/subscriptions.md) and browse weekly, upcoming, and missing issues (web and Android beta)
 + Add comics to My Collection
 + Attach ratings (5-stars in half-star increments) to comics
 + Keep a Want List of comics to pull
@@ -145,9 +145,12 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
-Current Server Build: version 1.2.0 (subscriptions web preview; not released)
+Current Server Build: version 1.2.0
 
 Stable Hardlight: [Android 1.2.0, code 22](https://github.com/erickolb/DangerRoom/releases/tag/v1.2.0) and [iOS 1.2.0, build 3](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.2.0-build3).
+
+Android beta preparation: **1.3.0-beta.1**, code **23**, requires DangerRoom **1.2.0** for subscription APIs. Web UX is approved; the beta adds the Subscriptions menu and comic controls. iOS remains at stable 1.2.0 during beta testing. The footer’s Obtainium beta setup tracks Android prereleases.
+
 
 Both clients support native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.1.0**; server **1.1.2** provides immediate results and background metadata enrichment. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default.
 

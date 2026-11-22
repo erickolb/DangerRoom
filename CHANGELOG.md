@@ -1,12 +1,19 @@
 # Changelog
 
-## DangerRoom 1.2.0 · Web preview (not released)
+## Android Hardlight 1.3.0-beta.1 · 2026-11-22
+
+- Android beta, code 23. Add Subscriptions to the top-level menu and enable the approved four-view interface and synchronized series buttons.
+- Add authenticated PUT support for subscription toggles. Advertise native subscription support explicitly so existing stable Android/iOS clients retain their existing menu and controls.
+- Require DangerRoom server **1.2.0** because subscription endpoints are a breaking client dependency. Keep initial compatibility checks behind the branded loading screen. Update the server container before using this beta; follow [the general update guide](docs/updating.md).
+- Stable Android and iOS remain 1.2.0. iOS subscription parity follows successful Android beta testing and stable promotion. The subscription TODO remains unchecked until stable publication.
+
+## DangerRoom 1.2.0 · 2026-11-22
 
 - Add series subscriptions independent of collection and Want List status, with direct toggles and four views: Releasing This Week, Upcoming Releases, Missing Issues, and Subscription List. Use local Sunday–Saturday weeks and store release dates; undated issues are excluded from date views.
 - Prefer the earliest-added wanted variant on release cards. Series thumbnails use the next dated release or most recent release, preferring wanted or collected variants. Load pages progressively and retain results if the provider pauses requests.
 - Resolve issue #2 by showing slideshow-hide controls only on owned covers. Show future cover dates beneath Want List cover names, fit action buttons to card width, and collapse neutral search copy for active queries.
 - Add the subscriptions table without altering collection, reading, or Want List records. Back up the database before updating; use [the general update guide](docs/updating.md).
-- Web UX review comes first. Android and iOS Hardlight remain at published 1.2.0; client integration and Android beta follow web approval.
+- Web UX is approved. Use four equal-width compact icon-and-text buttons in a single row: List, Missing, This Week, Upcoming. Enable native subscription controls only for clients advertising compatible subscription support.
 
 
 ## Hardlight 1.2.0 · 2026-11-22
