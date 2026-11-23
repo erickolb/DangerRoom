@@ -1,5 +1,9 @@
 # TODO
 
+- [ ] Add optional integration with Metron’s inventory.
+- [ ] Add optional integration with Metron’s reviews.
+- [ ] Add optional integration with Metron’s reading journal.
+
 - [x] Review project docs.
 - [x] Subscriptions and upcoming releases.
 - [x] Implement image-based cover search — see [Metron discussion #680](https://github.com/Metron-Project/metron/discussions/680).
