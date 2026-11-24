@@ -17,6 +17,7 @@ export function decodeRecovery(raw, scope, now = Date.now()) {
     if (value.picker && (!Number.isSafeInteger(value.picker.id) || value.picker.id <= 0 || typeof value.picker.edition !== 'string' || value.picker.edition.length > 256)) return null;
     if (value.read && (!Number.isSafeInteger(value.read.id) || value.read.id <= 0 || typeof value.read.edition !== 'string' || value.read.edition.length > 256 || typeof value.read.logOnly !== 'boolean')) return null;
     if (value.gallery && (typeof value.gallery !== 'string' || value.gallery.length > 256)) return null;
+    if (value.galleryPlaying !== undefined && typeof value.galleryPlaying !== 'boolean') return null;
     if (value.options !== undefined && typeof value.options !== 'boolean') return null;
     return value;
   } catch { return null; }
@@ -51,10 +52,10 @@ export function createRecovery({window, document, scope, enabled, restoreDialogs
   if (pending && (!window.location.hash || window.location.hash === '#/home' || window.location.hash === pending.route)) {
     window.history.replaceState(null,'',pending.route === '#/image-cover-search' ? '#/home' : pending.route);
   } else pending = null;
-  let route = window.location.hash, ready = false, restoring = false, picker = null, read = null, gallery = null, timer;
+  let route = window.location.hash, ready = false, restoring = false, picker = null, read = null, gallery = null, galleryPlaying, timer;
   function save() {
     if (!enabled || !ready || restoring || !safeRoute(route)) return;
-    const value = {version:RECOVERY_VERSION,scope,at:Date.now(),route,scroll:window.scrollY || 0,fields:captureFields(document),picker,read,gallery,options:Boolean(document.querySelector('#gallery-options')?.open)};
+    const value = {version:RECOVERY_VERSION,scope,at:Date.now(),route,scroll:window.scrollY || 0,fields:captureFields(document),picker,read,gallery,galleryPlaying,options:Boolean(document.querySelector('#gallery-options')?.open)};
     const raw = JSON.stringify(value);
     try { if (new TextEncoder().encode(raw).length <= MAX_RECOVERY_BYTES) storage?.setItem(key,raw); } catch { /* A full disk must not interrupt scanning. */ }
   }
@@ -63,6 +64,7 @@ export function createRecovery({window, document, scope, enabled, restoreDialogs
     clearTimeout(timer);
     if (ready) save();
     route = window.location.hash; ready = false; picker = read = gallery = null;
+    galleryPlaying=undefined;
     if(pending && pending.route !== route)pending=null;
     if(enabled && !pending && safeRoute(route)) {
       try { storage?.setItem(key,JSON.stringify({version:RECOVERY_VERSION,scope,at:Date.now(),route,scroll:0,fields:[]})); } catch { /* Optional recovery. */ }
@@ -93,6 +95,6 @@ export function createRecovery({window, document, scope, enabled, restoreDialogs
     // Explicit shell checkpoint runs before Android saves its activity state.
     window.dangerroomCheckpoint = save;
   }
-  return {begin,complete,save,fail(){ready=false;},get restoredGallery(){return pending?.gallery || null;},
-    picker(value){picker=value;save();},read(value){read=value;save();},gallery(value){gallery=value;save();}};
+  return {begin,complete,save,fail(){ready=false;},get restoredGallery(){return pending && (pending.gallery || typeof pending.galleryPlaying==='boolean') ? {cover:pending.gallery || null,playing:pending.galleryPlaying ?? false} : null;},
+    picker(value){picker=value;save();},read(value){read=value;save();},gallery(value){gallery=value.cover;galleryPlaying=value.playing;save();}};
 }

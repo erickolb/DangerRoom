@@ -4,6 +4,15 @@ import {decodeRecovery,safeRoute,createRecovery,captureFields,restoreFields,MAX_
 const now=Date.now(),scope='device-a';
 const snapshot=(overrides={})=>({version:1,scope,at:now,route:'#/?mode=upc&upc=001234567890',scroll:125,fields:[],...overrides});
 test('completed barcode and leading zeros survive decoding',()=>assert.equal(decodeRecovery(JSON.stringify(snapshot()),scope,now).route,snapshot().route));
+test('playback snapshots round trip both playing and paused, rejecting nonboolean state',async()=>{
+  for(const playing of [true,false]){
+    const f=fixture(JSON.stringify(snapshot({route:'#/slideshow',gallery:'2:standard',galleryPlaying:playing})));
+    assert.deepEqual(f.recovery.restoredGallery,{cover:'2:standard',playing});
+    f.recovery.begin();f.recovery.gallery({cover:'2:standard',playing});await f.recovery.complete(()=>true);
+    assert.equal(f.read().galleryPlaying,playing);
+  }
+  assert.equal(decodeRecovery(JSON.stringify(snapshot({galleryPlaying:'true'})),scope,now),null);
+});
 for(const [name,overrides] of [
   ['unknown version',{version:2}],['different device',{scope:'device-b'}],['expired state',{at:now-8*86400000}],
   ['future timestamp',{at:now+120000}],['external route',{route:'https://example.com'}],['protocol relative route',{route:'#//example.com'}],

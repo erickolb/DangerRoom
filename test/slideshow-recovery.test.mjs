@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mountSlideshow } from '../public/slideshow.js';
 
-async function gallery(t, ids = [1, 2, 3], apiOverride, settings = {}, healthy = false) {
+async function gallery(t, ids = [1, 2, 3], apiOverride, settings = {}, healthy = false, restored=null) {
   const saved = new Map();
   function global(name, value) {
     saved.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
@@ -11,7 +11,7 @@ async function gallery(t, ids = [1, 2, 3], apiOverride, settings = {}, healthy =
   t.after(() => { for (const [name, descriptor] of saved) {
     if (descriptor) Object.defineProperty(globalThis, name, descriptor); else delete globalThis[name];
   } });
-  const timers = new Map(), listeners = new Map(), attempts = [], cacheConfigurations = [];
+  const timers = new Map(), listeners = new Map(), attempts = [], cacheConfigurations = [], checkpoints=[];
   let timerId = 0, clock = 0, active = true, requests = 0;
   const failures = new Set(healthy ? [] : ids);
   global('setTimeout', (fn, ms) => { timers.set(++timerId, { fn, at: clock + ms }); return timerId; });
@@ -27,7 +27,7 @@ async function gallery(t, ids = [1, 2, 3], apiOverride, settings = {}, healthy =
     if (!elements.has(selector)) elements.set(selector, element()); return elements.get(selector);
   } };
   global('window', { DangerRoomAndroid: { fullscreen() {}, keepAwake() {}, configureCoverCache(...args) { cacheConfigurations.push(args); } }, addEventListener(name, fn) { listeners.set(name, fn); }, removeEventListener(name) { listeners.delete(name); } });
-  global('document', { hidden: false, createElement() { return spinner; }, addEventListener() {}, removeEventListener() {} });
+  global('document', { hidden: false, createElement() { return spinner; }, addEventListener(name,fn) {listeners.set('document:'+name,fn);}, removeEventListener(name) {listeners.delete('document:'+name);},dispatchEvent(event){if(event.type==='recoverygallery')checkpoints.push(event.detail);} });
   global('location', { origin: 'https://test.example' });
   global('localStorage', { getItem() { return JSON.stringify({ settings: { shuffle: false, seconds: 3, fade: false, ...settings } }); }, setItem() {} });
   const items = ids.map(id => ({ issue: { id, series: { name: 'Heroes' }, number: String(id) }, edition: { key: 'standard', name: 'Standard', cover_file: `${id}.png` } }));
@@ -43,10 +43,36 @@ async function gallery(t, ids = [1, 2, 3], apiOverride, settings = {}, healthy =
     }
     clock = target;
   };
-  await mountSlideshow(app, api, () => active); await settle();
-  return { attempts, failures, spinner, run, elements, timers, cacheConfigurations, get requests() { return requests; },
+  await mountSlideshow(app, api, () => active,restored); await settle();
+  return { attempts, failures, spinner, run, elements, timers, cacheConfigurations, checkpoints, suspend(){listeners.get('document:dangerroompause')();},get requests() { return requests; },
     exit() { active = false; listeners.get('hashchange')(); } };
 }
+
+test('playing recovery selects its cover and resumes timed rotation',async t=>{
+  const h=await gallery(t,[1,2,3],undefined,{},true,{cover:'2:standard',playing:true});
+  assert.deepEqual(h.attempts,[2]);assert.deepEqual(h.checkpoints.at(-1),{cover:'2:standard',playing:true});
+  await h.run(3000);assert.deepEqual(h.attempts,[2,3]);h.exit();
+});
+test('paused recovery selects its cover without timed rotation',async t=>{
+  const h=await gallery(t,[1,2,3],undefined,{},true,{cover:'2:standard',playing:false});
+  await h.run(6000);assert.deepEqual(h.attempts,[2]);assert.equal(h.elements.get('#play-covers').textContent,'Play');h.exit();
+});
+test('explicit pause and play checkpoint immediately; lifecycle suspension retains intent',async t=>{
+  const h=await gallery(t,[1,2],undefined,{},true);
+  h.elements.get('#play-covers').onclick();assert.equal(h.checkpoints.at(-1).playing,false);
+  h.suspend();assert.equal(h.checkpoints.at(-1).playing,false);
+  h.elements.get('#play-covers').onclick();assert.equal(h.checkpoints.at(-1).playing,true);
+  h.suspend();assert.equal(h.checkpoints.at(-1).playing,true);
+  await h.run(6000);assert.deepEqual(h.attempts,[1,1]);h.exit();
+});
+test('old cover-only recovery stays paused',async t=>{
+  const h=await gallery(t,[1,2],undefined,{},true,'2:standard');
+  await h.run(6000);assert.deepEqual(h.attempts,[2]);h.exit();
+});
+test('a removed selected cover falls back while retaining playback state',async t=>{
+  const h=await gallery(t,[1,2],undefined,{},true,{cover:'99:standard',playing:true});
+  await h.run(3000);assert.deepEqual(h.attempts,[1,2]);h.exit();
+});
 
 test('three failed cycles remove covers individually, then wait ten minutes and rebuild from scratch', async t => {
   const h = await gallery(t);

@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.2.3', date: '2026-11-24', title: 'Restore slideshow playback',
+  changes: ['Restore slideshow play/pause state alongside the selected cover after restart. Preserve the user’s playback choice when backgrounding temporarily suspends playback.', 'Server-only incremental fix; Android Hardlight remains 1.3.1 and iOS remains 1.3.0. Older recovery snapshots without playback state retain their paused behavior. No migration required.'],
+}, {
   version: '1.2.2', date: '2026-11-24', title: 'Cover loading and unavailable artwork',
   changes: ['Replace unavailable-cover text with the approved subdued comic-book icon on charcoal grey.', 'Distinguish pending subscription artwork from confirmed missing covers; show a continuous, subtly swelling three-bar loader until images load, with static artwork for paused loads and reduced motion.', 'Server-only fix for issue #5. Android Hardlight remains 1.3.1; iOS remains 1.3.0. No migration required.'],
 },{

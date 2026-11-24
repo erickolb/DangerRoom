@@ -146,11 +146,11 @@ See [Metron data mapping](docs/metron-data-mapping.md) and [API and data model](
 These credits also appear in the footer's collapsed **Credits** section. The visual defaults use deep wine surfaces, scarlet accents, warm text, Georgia headings, system body text, rounded panels, and responsive controls.
 
 ## Releases
-Current Server Build: version 1.2.2
+Current Server Build: version 1.2.3
 
 Stable Hardlight: [Android 1.3.1, code 25](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.1) and [iOS 1.3.0, build 4](https://github.com/erickolb/DangerRoom/releases/tag/ios-v1.3.0-build4).
 
-Both clients support [series subscriptions](docs/subscriptions.md), native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.2.0** for subscription endpoints. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default. Android code 25 upgrades earlier stable and beta builds without reinstalling. Server 1.2.1 adds [companion state recovery](docs/state-recovery.md); Android 1.3.1 also prevents Bluetooth scanner connections from restarting the app. The iOS binary remains 1.3.0.
+Both clients support [series subscriptions](docs/subscriptions.md), native cover scanning, default hash distance 14 (range 10–20), local hashing, and a server-version check behind the loading screen. Minimum server: **1.2.0** for subscription endpoints. See the [cover image search walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). The website footer retains an Obtainium beta-channel setup link; stable downloads remain the default. Android code 25 upgrades earlier stable and beta builds without reinstalling. Server 1.2.1 adds [companion state recovery](docs/state-recovery.md); Android 1.3.1 also prevents Bluetooth scanner connections from restarting the app. The iOS binary remains 1.3.0. Server 1.2.3 also restores the slideshow’s saved playing or paused state after restart.
 
 [View All Releases](https://github.com/erickolb/DangerRoom/releases)
 

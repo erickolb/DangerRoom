@@ -63,7 +63,10 @@ export function chooseCovers(items, settings, random = Math.random) {
 
 export async function mountSlideshow(app, api, current, restoredCover=null) {
   const { key, stored, settings } = preferences();
-  let rows = [], index = 0, playing = !restoredCover, loading = true, disposed = false;
+  let playbackRequested = restoredCover ? restoredCover.playing === true : true;
+  restoredCover = typeof restoredCover === 'string' ? restoredCover : restoredCover?.cover || null;
+  let shownCover = restoredCover;
+  let rows = [], index = 0, playing = playbackRequested, loading = true, disposed = false;
   let timer = null, controlsTimer = null, titleTimer = null, retryTimer = null, generation = 0;
   let refreshing = false;
   const strikes = new Map();
@@ -86,10 +89,15 @@ export async function mountSlideshow(app, api, current, restoredCover=null) {
     clearTimeout(controlsTimer); stage.classList.add('gallery-controls-visible');
     if (!disposed) controlsTimer = setTimeout(() => stage.classList.remove('gallery-controls-visible'), settings.controlsSeconds * 1000);
   }
-  function pause() {
+  function checkpointPlayback() {
+    if(!disposed && current())document.dispatchEvent?.(new CustomEvent('recoverygallery',{detail:{cover:shownCover,playing:playbackRequested}}));
+  }
+  function pause(remember=true) {
+    if(remember)playbackRequested=false;
     playing = false; clearTimeout(timer);
     stage.classList.remove('gallery-playing'); revealControls();
     play.textContent = 'Play'; window.DangerRoomAndroid?.keepAwake(false);
+    checkpointPlayback();
   }
   function schedule() {
     clearTimeout(timer);
@@ -119,7 +127,7 @@ export async function mountSlideshow(app, api, current, restoredCover=null) {
       if (strikes.get(`${row.issue.id}:${row.edition.key}`)) strikes.clear();
       loading = false;
       caption.textContent = `${alt} · ${index + 1} / ${rows.length}`;
-      document.dispatchEvent?.(new CustomEvent('recoverygallery',{detail:`${row.issue.id}:${row.edition.key}`}));
+      shownCover=`${row.issue.id}:${row.edition.key}`;checkpointPlayback();
       clearTimeout(titleTimer);
       rotationTitle.textContent = alt;
       stage.classList.remove('gallery-title-visible');
@@ -149,6 +157,7 @@ export async function mountSlideshow(app, api, current, restoredCover=null) {
     if (playing) pause();
     else if (rows.length) {
       playing = true; play.textContent = 'Pause'; stage.classList.add('gallery-playing');
+      playbackRequested=true;checkpointPlayback();
       window.DangerRoomAndroid?.keepAwake(true); revealControls(); display();
     }
   };
@@ -157,25 +166,27 @@ export async function mountSlideshow(app, api, current, restoredCover=null) {
   stage.onclick = () => revealControls();
   stage.onfocusin = () => revealControls();
   stage.onkeydown = event => { if (event.key === 'Escape') exit(); else revealControls(); };
-  const visibility = () => { if (document.hidden) pause(); };
+  const suspend = () => pause(false);
+  const visibility = () => { if (document.hidden) suspend(); };
   const fullscreenChange = () => { if (!window.DangerRoomAndroid && !document.fullscreenElement) pause(); };
   const cleanup = () => {
     if (current() || disposed) return;
     disposed = true; pause(); clearTimeout(controlsTimer); clearTimeout(titleTimer); clearTimeout(retryTimer); generation++; transition.cancel(); leaveFullscreen();
     window.removeEventListener('hashchange', cleanup);
     document.removeEventListener('visibilitychange', visibility);
-    document.removeEventListener('dangerroompause', pause);
+    document.removeEventListener('dangerroompause', suspend);
     document.removeEventListener('fullscreenchange', fullscreenChange);
   };
   // Register cleanup before the first request so exiting while loading also restores the menu.
   window.addEventListener('hashchange', cleanup);
   document.addEventListener('visibilitychange', visibility);
-  document.addEventListener('dangerroompause', pause);
+  document.addEventListener('dangerroompause', suspend);
   document.addEventListener('fullscreenchange', fullscreenChange);
   window.DangerRoomAndroid?.fullscreen(true);
   if (!window.DangerRoomAndroid) stage.requestFullscreen?.().catch(() => {});
   stage.focus(); revealControls();
-  if(!playing)pause();
+  if(!playing)pause(false);
+  checkpointPlayback();
   window.DangerRoomAndroid?.keepAwake(playing);
   async function refresh() {
     if (refreshing || !current() || disposed) return;

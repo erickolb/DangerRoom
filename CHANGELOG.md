@@ -1,5 +1,11 @@
 # Changelog
 
+## DangerRoom 1.2.3 · 2026-11-24
+
+- Restore the slideshow’s playing or paused state alongside the selected cover. Playing slideshows resume timed rotation after restart; paused slideshows stay paused.
+- Background/lifecycle suspension pauses active rendering without overwriting the saved playback choice. Explicit Play/Pause changes checkpoint immediately. Older snapshots without playback state retain paused recovery.
+- Server-only incremental fix. Android remains 1.3.1 and iOS remains 1.3.0. No migration or special deployment steps; follow the [general container update guide](docs/updating.md).
+
 ## DangerRoom 1.2.2 · 2026-11-24
 
 - Fix [issue #5](https://github.com/erickolb/DangerRoom/issues/5): replace unavailable-cover text with a larger, subdued comic-book icon on charcoal grey. Use the same placeholder throughout the shared UI, including compact subscription thumbnails.

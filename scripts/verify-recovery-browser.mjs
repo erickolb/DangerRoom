@@ -70,8 +70,13 @@ try {
   await page.goto(origin+'/#/slideshow');await page.waitForFunction(()=>document.querySelector('#gallery-caption')?.textContent.includes(' / '));
   await page.locator('#next-cover').click();await page.waitForFunction(()=>document.querySelector('#gallery-caption')?.textContent.includes('2 /'));
   const caption=await page.locator('#gallery-caption').textContent();await restart();
-  await page.waitForFunction(()=>document.querySelector('#play-covers')?.textContent==='Play');
-  assert.equal((await page.locator('#gallery-caption').textContent()).split(' · ')[0],caption.split(' · ')[0]);console.log('PASS selected slideshow cover restored paused');
+  await page.waitForFunction(()=>document.querySelector('#play-covers')?.textContent==='Pause');
+  await page.waitForFunction(()=>document.querySelector('#gallery-caption')?.textContent.includes(' / '));
+  assert.equal((await page.locator('#gallery-caption').textContent()).split(' · ')[0],caption.split(' · ')[0]);
+  await page.evaluate(()=>document.dispatchEvent(new Event('dangerroompause')));await restart();
+  await page.waitForFunction(()=>document.querySelector('#play-covers')?.textContent==='Pause');console.log('PASS playing slideshow restored after lifecycle suspension');
+  await page.locator('#play-covers').click();await restart();
+  await page.waitForFunction(()=>document.querySelector('#play-covers')?.textContent==='Play');console.log('PASS paused slideshow remains paused');
   await page.evaluate(()=>{localStorage.setItem('fixture-scope','fixture-b');});await restart();await page.locator('.mobile-menu').waitFor();
   assert.equal(await page.locator('#gallery-stage').count(),0);console.log('PASS different device does not inherit recovery');
   const performance=await page.evaluate(()=>{const start=window.performance.now();for(let i=0;i<100;i++)window.dangerroomCheckpoint();return {averageMs:(window.performance.now()-start)/100,bytes:localStorage.getItem('dangerroom-recovery:fixture-b').length};});
