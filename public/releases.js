@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.2.2', date: '2026-11-24', title: 'Cover loading and unavailable artwork',
+  changes: ['Replace unavailable-cover text with the approved subdued comic-book icon on charcoal grey.', 'Distinguish pending subscription artwork from confirmed missing covers; show a continuous, subtly swelling three-bar loader until images load, with static artwork for paused loads and reduced motion.', 'Server-only fix for issue #5. Android Hardlight remains 1.3.1; iOS remains 1.3.0. No migration required.'],
+},{
   version: '1.2.1', date: '2026-11-24', title: 'Restore companion state',
   changes: ['Restore companion destinations, search and filter drafts, completed UPCs, selected covers, reading drafts, scroll positions, and paused slideshow position after reload or process recreation.', 'Keep recovery bounded, scoped to the instance/device, and separate from server data; never replay submitted changes. Android 1.3.1 also prevents Bluetooth scanner keyboard changes from restarting the app. iOS 1.3.0 receives shared recovery through this server update.'],
 }, {

@@ -1,3 +1,5 @@
+import {coverArtwork, installCoverStates} from './cover-art.js';
+installCoverStates();
 import {subscriptionButton,bindSubscriptionButtons,subscriptionsPage} from './subscriptions.js';
 import { createUPCScanner, validUPC, matchingEdition } from './upc-scanner.js';
 import { enrichSearchSeries } from './search-enrichment.js';
@@ -15,7 +17,7 @@ const $ = s => document.querySelector(s), app = $('#app'), notice = $('#notice')
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icon = (name, light = false) => `<img class="icon${light ? ' light-icon' : ''}" src="/${name}.png" alt="">`;
 const date = value => value ? new Date(value.length > 10 ? value : `${value}T12:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Not supplied';
-const cover = (src, title = '', cls = '') => src ? `<img class="cover ${cls}" src="${esc(src)}" alt="${esc(title)}" loading="lazy">` : '<div class="cover missing-cover">Cover unavailable</div>';
+const cover = coverArtwork;
 const localCover = edition => edition?.cover_file ? `/covers/${edition.cover_file}` : null;
 const field = (label, value) => `<div><dt>${esc(label)}</dt><dd>${esc(value || 'Not supplied')}</dd></div>`;
 let pendingSeriesNameCheck = null;

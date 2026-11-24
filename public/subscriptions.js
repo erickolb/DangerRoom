@@ -1,3 +1,4 @@
+import {coverArtwork,coverPlaceholder} from './cover-art.js';
 import {supportsSubscriptions} from './mobile.js';
 import {comicTitle,comicTitleText} from './comic-title.js';
 import {localToday} from './reading-log.js';
@@ -48,14 +49,15 @@ export async function subscriptionsPage(app,params,api,current,choose,onError,ac
   const view=['week','upcoming','missing','list'].includes(params.get('view'))?params.get('view'):'week';
   const today=localToday(),week=subscriptionWeek(today);
   const format=value=>new Date(`${value}T12:00:00`).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
-  const artwork=(row,edition)=>{
+  const artwork=(row,edition,state='missing')=>{
     const src=edition?.cover_file?`/covers/${edition.cover_file}`:edition?.source_image||row?.image;
-    return src?`<img class="cover" src="${esc(src)}" alt="${esc(row?comicTitleText(row,{year:true}):'Series cover')}" loading="lazy">`:'<div class="cover missing-cover">Cover unavailable</div>';
+    return src?coverArtwork(src,row?comicTitleText(row,{year:true}):'Series cover'):coverPlaceholder(state);
   };
   app.innerHTML=`<div class="section-heading"><div><p class="eyebrow">Your regular pulls</p><h2>Subscriptions</h2></div></div><nav class="tabs subscription-tabs" aria-label="Subscription views">${viewButtons.map(([key,label,title])=>`<a href="#/subscriptions?view=${key}" aria-label="${title}" title="${title}" ${view===key?'aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${viewIcons[key]}</svg><span>${label}</span></a>`).join('')}</nav><p class="muted">${view==='week'?`${format(week.start)} – ${format(week.end)}`:view==='upcoming'?`After ${format(week.end)}`:view==='missing'?`Before ${format(week.start)} · Issues outside your collection`:'Series you follow · Next release or most recent issue'}</p><p class="hint" id="subscription-status" role="status">Opening subscriptions…</p><div id="subscription-results"></div>`;
   const data=await api('/subscriptions');if(!current())return;
   app.querySelector('#subscription-status').textContent=data.items.length?'Loading releases…':'';
   let series=data.items;const catalogs=new Map(series.map(s=>[s.id,new Map()]));
+  const completed=new Set();
   let phase=series.length?'loading':'complete';
   function render(){
     if(!current())return;
@@ -65,7 +67,7 @@ export async function subscriptionsPage(app,params,api,current,choose,onError,ac
     if(view==='list'){
       target.innerHTML=`<ul class="subscription-list">${series.map(s=>{
         const row=subscriptionThumbnail([...catalogs.get(s.id).values()],today);
-        return `<li data-subscription-row="${s.id}"><a class="subscription-series" href="#/?${new URLSearchParams({q:s.name,year:s.year_began||''})}">${artwork(row,row?.thumbnail_edition)}<span><strong>${esc(s.name)}</strong><span class="muted">${esc(s.year_began||'')} · Volume ${esc(s.volume??'—')}</span>${row?`<span>${esc(comicTitleText(row))} · ${esc(format(row.store_date))}</span>`:'<span class="muted">No dated release loaded</span>'}</span></a>${subscriptionButton(s,true,{remove:true})}</li>`;
+        return `<li data-subscription-row="${s.id}"><a class="subscription-series" href="#/?${new URLSearchParams({q:s.name,year:s.year_began||''})}">${artwork(row,row?.thumbnail_edition,!row&&!completed.has(s.id)?(phase==='stopped'?'paused':'loading'):'missing')}<span><strong>${esc(s.name)}</strong><span class="muted">${esc(s.year_began||'')} · Volume ${esc(s.volume??'—')}</span>${row?`<span>${esc(comicTitleText(row))} · ${esc(format(row.store_date))}</span>`:'<span class="muted">No dated release loaded</span>'}</span></a>${subscriptionButton(s,true,{remove:true})}</li>`;
       }).join('')}</ul>`;
     }else{
       const visible=subscriptionIssues(rows,view,today);
@@ -94,6 +96,7 @@ export async function subscriptionsPage(app,params,api,current,choose,onError,ac
         if(!series.some(row=>row.id===s.id))break;
         const result=await api(`/subscriptions/${s.id}/issues?${new URLSearchParams({page:String(page),view,today})}`);if(!current())return;
         for(const row of result.results)catalogs.get(s.id).set(row.id,row);
+        if(!result.next)completed.add(s.id);
         render();if(!result.next)break;
         if(page===10000)throw Error('More results are available than can be loaded. Narrow your subscriptions and try again.');
       }

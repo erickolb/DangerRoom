@@ -1,5 +1,11 @@
 # Changelog
 
+## DangerRoom 1.2.2 · 2026-11-24
+
+- Fix [issue #5](https://github.com/erickolb/DangerRoom/issues/5): replace unavailable-cover text with a larger, subdued comic-book icon on charcoal grey. Use the same placeholder throughout the shared UI, including compact subscription thumbnails.
+- Show a subtle continuous three-bar loading GIF while subscription artwork is pending or an image is loading. Stop the animation when loading fails or is paused; respect reduced motion. Track each series through pagination before declaring its cover unavailable.
+- Server-only incremental update; Android Hardlight remains 1.3.1 and iOS remains 1.3.0. No migrations or special update steps. Follow the [general container update guide](docs/updating.md).
+
 ## DangerRoom 1.2.1 / Android Hardlight 1.3.1 · 2026-11-24
 
 - Fix issue #1: handle Android keyboard and navigation configuration changes in both native activities so Bluetooth HID scanner connections do not recreate the screen. Android code 25; iOS remains 1.3.0 build 4.
