@@ -9,11 +9,13 @@ Hardlight **1.3.0** supports series subscriptions and Image Cover Search on both
 | | Android | iOS |
 | --- | --- | --- |
 | Devices | Phones and tablets, Android 9 or later | iPhone and iPad, iOS 17 or later |
-| Published client | 1.3.0, version code 24 | 1.3.0, build 4 |
+| Published client | 1.3.1, version code 25 | 1.3.0, build 4 |
 | Server | DangerRoom 1.2.0 or later over HTTPS | DangerRoom 1.2.0 or later over HTTPS |
 | Distribution | GitHub APK; Obtainium updates | GitHub IPA; iOS sideloading |
 
 Server and client versions are independent. Public downloads do not authorize access to an instance. Neither platform is distributed through commercial app stores. Start with the [Hardlight download page](https://erickolb.github.io/DangerRoom/hardlight/).
+
+Android **1.3.1** fixes scanner-triggered restarts and restores native settings drafts and image-search distance. Server **1.2.1** enables [state recovery](state-recovery.md) on both companions, including existing iOS **1.3.0** installations. Android remains compatible with server 1.2.0; update the server for full recovery.
 
 ## Android beta channel
 
@@ -29,9 +31,9 @@ Server 1.1.2 displays matches immediately and fetches missing series types after
 
 ## Android
 
-Download the signed **DangerRoom.apk** from the [Android 1.3.0 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.0), alongside `SHA256SUMS.txt`. Open the APK and allow installation from your browser if prompted. Install updates over the existing signed Hardlight app to retain local configuration.
+Download the signed **DangerRoom.apk** from the [Android 1.3.1 release](https://github.com/erickolb/DangerRoom/releases/tag/v1.3.1), alongside `SHA256SUMS.txt`. Open the APK and allow installation from your browser if prompted. Install updates over the existing signed Hardlight app to retain local configuration.
 
-For automatic update tracking, install Obtainium, then use **Install with Obtainium** on the download page to add `erickolb/DangerRoom` as the release source. Track application ID `net.chateaulore.hardlight`. Version 1.3.0 is a normal release and does not require prerelease updates.
+For automatic update tracking, install Obtainium, then use **Install with Obtainium** on the download page to add `erickolb/DangerRoom` as the release source. Track application ID `net.chateaulore.hardlight`. Version 1.3.1 is a normal release and does not require prerelease updates.
 
 The older `net.chateaulore.dangerroom` client is a separate installation. It can coexist with Hardlight, but Hardlight needs its own instance and device configuration. Official updates retain the Hardlight app ID and signing key. Debug builds use a different key and cannot update an official release installation.
 
@@ -89,9 +91,9 @@ cd android
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v1.3.0`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
+For a distributable release, set `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`, then run `./gradlew :app:assembleRelease`. All four must be provided together. Without these variables, release output is unsigned and must not be published. Preserve the signing key and passwords outside Git so future APKs can update the same application. Debug APKs use a different key and cannot update a release installation. CI verifies debug builds. The manually dispatched **Publish signed Android release** workflow validates and signs release APKs using repository Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. It decodes the keystore into a temporary file, supplies `ANDROID_KEYSTORE_PATH`, verifies the signed APK, and publishes the APK, checksum, and public certificate metadata. Choose a tag matching the Android `versionName`, such as `v1.3.1`; release notes come from `docs/android-release-notes.md`. For Hardlight builds keep `applicationId=net.chateaulore.hardlight`, retain the signing key, and increment versionCode for every future published Android build.
 
-Stable version: **1.3.0**, Android version code **24**, tag `v1.3.0`; iOS build **4**, tag `ios-v1.3.0-build4`. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
+Stable Android: **1.3.1**, version code **25**, tag `v1.3.1`; stable iOS: **1.3.0**, build **4**, tag `ios-v1.3.0-build4`. APKs, checksums, release notes, and installation guides belong in **erickolb/DangerRoom**. Keep this guide and the README aligned with each published Android build; do not publish DangerRoom artifacts in QuartermasterIntake.
 
 The launcher icon matches the loading screen's red palette, thin dark circle outline, and lower-right dark-red shadow. Adaptive foreground artwork uses a transparent 1080×1080 canvas with a centered 480px badge, a 40px diagonal shadow offset, and a 3.75px outline. Legacy launcher resources cover mdpi through xxxhdpi.
 

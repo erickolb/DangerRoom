@@ -28,13 +28,17 @@ function mountCalendar(container,value,onSelect) {
   render();
 }
 export function cancelReadDialog(){const dialog=document.querySelector('#read-dialog');if(dialog?.open)dialog.close();}
-function readPrompt({logOnly=false,rating=null}={}) {
+function readPrompt({logOnly=false,rating=null,recoveryState=null}={}) {
   const dialog=document.querySelector('#read-dialog');
   if(dialog.open)return Promise.resolve(null);
   return new Promise(resolve=>{
     let result=null;
     dialog.innerHTML=`<h2 id="read-dialog-title">${logOnly?'Add Reading Log Entry':'Reading status and journal'}</h2><form id="read-log-form">${logOnly?'':'<label class="record-log-switch"><input type="checkbox" role="switch" id="read-status" checked>Mark as read</label><label class="record-log-switch" id="preserve-label" hidden><input type="checkbox" role="switch" id="preserve-journal" checked>Preserve reading journal entries</label><label class="record-log-switch"><input type="checkbox" role="switch" id="record-reading">Record a reading journal entry</label>'}<fieldset class="reading-calendar"><legend>Reading date</legend><div class="inline-calendar" id="reading-calendar"></div><input type="hidden" name="log_date" value="${localToday()}"></fieldset>${logOnly?'':ratingChoices(rating).replace('Your rating','Your rating (optional)')}<div class="actions"><button type="submit">OK</button><button type="button" class="quiet" data-cancel>Cancel</button></div></form>`;
-    dialog.addEventListener('close',()=>resolve(result),{once:true});
+    dialog.addEventListener('close',()=>{
+      document.removeEventListener('recoveryfields',refreshDraft);
+      document.dispatchEvent(new CustomEvent('recoveryread',{detail:null}));
+      resolve(result);
+    },{once:true});
     dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();
     const form=dialog.querySelector('form'),read=dialog.querySelector('#read-status'),toggle=dialog.querySelector('#record-reading'),date=form.querySelector('[name=log_date]');
     if(read)read.onchange=()=>{
@@ -44,6 +48,12 @@ function readPrompt({logOnly=false,rating=null}={}) {
       form.querySelectorAll('[name=rating]').forEach(input=>input.disabled=!read.checked);
     };
     mountCalendar(dialog.querySelector('#reading-calendar'),date.value,day=>{date.value=day;if(toggle)toggle.checked=true;});
+    function refreshDraft(){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date.value))date.value=localToday();
+      mountCalendar(dialog.querySelector('#reading-calendar'),date.value,day=>{date.value=day;if(toggle)toggle.checked=true;});
+      read?.onchange();
+    }
+    document.addEventListener('recoveryfields',refreshDraft);
     if(!logOnly)bindRatingPreview(form);
     form.onsubmit=event=>{
       event.preventDefault();result={read:logOnly||read.checked};
@@ -52,13 +62,14 @@ function readPrompt({logOnly=false,rating=null}={}) {
       dialog.close();
     };
     dialog.showModal();
+    document.dispatchEvent(new CustomEvent('recoveryread',{detail:recoveryState}));
   });
 }
 export async function changeRead(ctx,state,{logOnly=false}={}) {
   if(ctx.busy||!state.editionKey)return;
   ctx.busy=true;ctx.notify();
   try{
-    const choice=await readPrompt({logOnly,rating:ctx.issue.user_rating??null});if(choice===null)return;
+    const choice=await readPrompt({logOnly,rating:ctx.issue.user_rating??null,recoveryState:{id:Number(ctx.issue.id),edition:state.editionKey,logOnly}});if(choice===null)return;
     if(ctx.saved)ctx.sync(await ctx.api(`/issues/${ctx.issue.id}/read`,{method:'PATCH',body:JSON.stringify({edition_key:state.editionKey,...choice})}));
     else if(choice.read)ctx.sync((await ctx.api('/entries',{method:'POST',body:JSON.stringify({issue_id:ctx.issue.id,edition_key:state.editionKey,owned:false,...choice})})).issue);
   }catch(error){ctx.onError(error.message);}

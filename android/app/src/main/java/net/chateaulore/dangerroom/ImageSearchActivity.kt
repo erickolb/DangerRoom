@@ -59,7 +59,7 @@ class ImageSearchActivity : ComponentActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState);distance=savedInstanceState?.getInt("distance",14) ?: 14;home() }
+    override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState);distance=(savedInstanceState?.getInt("distance") ?: getSharedPreferences("image-search",MODE_PRIVATE).getInt("distance",14)).coerceIn(10,20);home() }
     override fun onSaveInstanceState(outState:Bundle) { outState.putInt("distance",distance);super.onSaveInstanceState(outState) }
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
     private fun screen(title:String) {
@@ -113,7 +113,7 @@ class ImageSearchActivity : ComponentActivity() {
         val value=TextView(this).apply { text="$distance";textSize=15f;setTextColor(ink);gravity=Gravity.CENTER;setPadding(dp(12),dp(5),dp(12),dp(5));background=rounded(Color.rgb(64,32,44),border,20) }
         settings.addView(value);column.addView(settings)
         column.addView(SeekBar(this).apply { min=10;max=20;progress=distance;contentDescription="Hash distance";thumbTintList=ColorStateList.valueOf(accent);progressTintList=ColorStateList.valueOf(accent);progressBackgroundTintList=ColorStateList.valueOf(border);minimumHeight=dp(48);setOnSeekBarChangeListener(object:SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(bar:SeekBar?,progress:Int,fromUser:Boolean) { distance=progress;value.text="$distance" }
+            override fun onProgressChanged(bar:SeekBar?,progress:Int,fromUser:Boolean) { distance=progress;value.text="$distance";if(fromUser)getSharedPreferences("image-search",MODE_PRIVATE).edit().putInt("distance",distance).apply() }
             override fun onStartTrackingTouch(bar:SeekBar?) {}
             override fun onStopTrackingTouch(bar:SeekBar?) {}
         }) })

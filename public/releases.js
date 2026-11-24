@@ -1,5 +1,8 @@
 // Newest first; source for the app version and visible changelog.
 export const releases = [{
+  version: '1.2.1', date: '2026-11-24', title: 'Restore companion state',
+  changes: ['Restore companion destinations, search and filter drafts, completed UPCs, selected covers, reading drafts, scroll positions, and paused slideshow position after reload or process recreation.', 'Keep recovery bounded, scoped to the instance/device, and separate from server data; never replay submitted changes. Android 1.3.1 also prevents Bluetooth scanner keyboard changes from restarting the app. iOS 1.3.0 receives shared recovery through this server update.'],
+}, {
   version: '1.2.0', date: '2026-11-22', title: 'Series subscriptions',
   changes: ['Follow series independently of ownership and Want Lists. Browse this week, upcoming releases, missing issues, and your subscription list.', 'Prefer wanted variants on release cards; show the next or latest release in each subscribed series.', 'Hide slideshow exclusions on unowned covers, show future cover dates on the Want List, fit comic controls to narrow cards, and simplify active Metron search headings.', 'Web UX approved. Android Hardlight 1.3.0-beta.1 (code 23) adds subscription menu and comic controls and requires server 1.2.0. Stable Android and iOS remain at 1.2.0; older native clients keep their existing menu.'],
 }, {

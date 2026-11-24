@@ -9,6 +9,8 @@ import { seriesRatingChart } from './series-ratings.js';
 import { releases } from './releases.js';
 import { actionButton, context, copyState, bindToggles } from './actions.js';
 import { isAndroid, supportsSubscriptions, mobileHome, mobilePage } from './mobile.js';
+import { createRecovery } from './recovery.js';
+import { showSlideshowSettings } from './slideshow.js';
 const $ = s => document.querySelector(s), app = $('#app'), notice = $('#notice'), dialog = $('#dialog');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icon = (name, light = false) => `<img class="icon${light ? ' light-icon' : ''}" src="/${name}.png" alt="">`;
@@ -20,6 +22,19 @@ let pendingSeriesNameCheck = null;
 let animateSearchWelcome=false;
 let connected = false, generation = 0, dialogGeneration = 0, collectionView = 'owned';
 let searchEnrichmentEpoch=0,stopVisibleSearchEnrichment=null;
+const recovery=createRecovery({window,document,enabled:isAndroid,
+  scope:window.DangerRoomAndroid?.recoveryScope?.() || location.origin,
+  async restoreDialogs(value,current){
+    if(value.options)showSlideshowSettings(app);
+    if(value.picker)await choose(value.picker.id,null,value.picker.edition);
+    if(!current() || !value.read)return;
+    const issue=await api(`/metron/issues/${value.read.id}`);if(!current())return;
+    if(!issue.editions.some(e=>e.key===value.read.edition))return;
+    const ctx=context(issue,api,text=>message(text,true));
+    void changeRead(ctx,copyState(ctx,value.read.edition),{logOnly:value.read.logOnly}).then(()=>{if(current())void route();});
+  }});
+document.addEventListener('recoveryread',event=>recovery.read(event.detail));
+document.addEventListener('recoverygallery',event=>recovery.gallery(event.detail));
 function interruptSearchEnrichment(){searchEnrichmentEpoch++;stopVisibleSearchEnrichment?.();}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)interruptSearchEnrichment();});
 document.addEventListener('dangerroompause',interruptSearchEnrichment);
@@ -74,16 +89,18 @@ function openCoverImage(src,issue,edition){
   lightbox.showModal();
 }
 function closeDialog() { dialogGeneration++; dialog.close(); }
-dialog.addEventListener('close', () => { dialogGeneration++; });
+dialog.addEventListener('close', () => { dialogGeneration++; recovery.picker(null); });
 async function route() {
+  recovery.begin();
   const ticket = ++generation;
+  let failed=false;
   stopVisibleSearchEnrichment=null;
   message(''); cancelReadDialog(); closeDialog(); if(lightbox.open)lightbox.close();
   const { path, params } = routeData();
   document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === `#${path}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   try {
     if(path==='/home'&&isAndroid)return mobileHome(app);
-    if(await mobilePage(path,app,api,()=>ticket===generation))return;
+    if(await mobilePage(path,app,api,()=>ticket===generation,recovery.restoredGallery))return;
     if(path==='/reading-log')return await readingLogPage(params,ticket);
     if(path==='/subscriptions'&&supportsSubscriptions)return await subscriptionsPage(app,params,api,()=>ticket===generation,choose,text=>message(text,true),actionButton);
     if (path === '/wants') return await wantList(params,ticket);
@@ -95,7 +112,10 @@ async function route() {
     await search(params, ticket);
   } catch (e) {
     if (ticket !== generation) return;
+    failed=true;
     app.innerHTML = `<a href="#/">← Search Metron</a><div class="empty-state"><h2>Couldn’t open this page</h2><p>${esc(e.message)}</p></div>`;
+  } finally {
+    try { if(failed)recovery.fail();else await recovery.complete(()=>ticket===generation); } catch { /* A stale draft must not block the fresh page. */ }
   }
 }
 
@@ -312,14 +332,17 @@ async function choose(id,savedIssue=null,selectedKey=null,{upc=null,action=null}
     if(token!==dialogGeneration || !dialog.open)return;
     const ctx=context(issue,api,text=>{const box=dialog.querySelector('.toggle-error');if(box)box.textContent=text;else message(text,true);});
     const exactKey=matchingEdition(issue.editions,upc);
-    const initial=selectedKey || exactKey || (issue.editions.length===1?issue.editions[0].key:null);
+    const initial=(issue.editions.some(e=>e.key===selectedKey)?selectedKey:null) || exactKey || (issue.editions.length===1?issue.editions[0].key:null);
     const state=copyState(ctx,initial);
+    dialog.dataset.issue=String(id);
+    recovery.picker({id:Number(id),edition:initial || ''});
     dialog.innerHTML=`<div class="dialog-heading"><div><p class="eyebrow">Your comic</p><h2 id="dialog-title">${comicTitle(issue,{year:true})}</h2></div><button type="button" class="quiet" id="close-dialog" aria-label="Close">×</button></div><p class="hint">${action ? `Confirm the cover, then use ${esc({owned:'Add to collection',wanted:'Add to Want List',read:'Mark as read'}[action]||'its action')} below.` : 'Choose a cover, then toggle its icons.'} Changes save immediately.${exactKey ? ' The exact UPC cover is preselected and highlighted.' : ''}</p><div class="variant-grid">${issue.editions.map(e=>`<label class="variant-choice ${upc && e.upc?.trim()===upc ? 'upc-exact-cover' : ''}"><input type="radio" name="edition" value="${esc(e.key)}" ${e.key===initial?'checked':''}>${cover(localCover(e)||e.source_image,e.name)}<span>${esc(e.name)}${e.upc?`<br><small>UPC ${esc(e.upc)}</small>`:''}</span></label>`).join('')}</div><div class="comic-actions" id="picker-actions"></div><p class="form-error toggle-error" role="alert"></p><div id="picker-rating"></div><div class="dialog-actions"><button class="quiet" id="close-picker">Done</button></div>`;
     $('#close-dialog').onclick=closeDialog;$('#close-picker').onclick=closeDialog;
     bindToggles($('#picker-actions'),ctx,state,{extra:true});mountRating($('#picker-rating'),ctx,state);
     dialog.querySelectorAll('[name=edition]').forEach(input=>input.onchange=()=>{
       if(ctx.busy)return;
       state.editionKey=input.value;state.copyId=ctx.issue.copies?.find(c=>c.edition_key===input.value)?.id || null;ctx.notify();
+      recovery.picker({id:Number(id),edition:input.value});
     });
     ctx.listeners.add(()=>dialog.querySelectorAll('[name=edition]').forEach(input=>input.disabled=ctx.busy));
     dialog.addEventListener('close',()=>{if(pageTicket===generation && !scanner.active)route();},{once:true});
@@ -472,6 +495,7 @@ function changelog() {
 
 const scanner=createUPCScanner({
   onStart(){
+    recovery.begin();
     ++generation;
     cancelReadDialog(); closeDialog(); if(lightbox.open)lightbox.close();
     for(const modal of document.querySelectorAll('dialog[open]'))modal.close();
@@ -484,12 +508,12 @@ const scanner=createUPCScanner({
     const params=new URLSearchParams({mode:'upc',upc});
     history.replaceState(null,'',`#/?${params}`); route();
   },
-  onError(text){message(text,true);}
+  onError(text){void route().then(()=>message(text,true));}
 });
 for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{
-  if(scanner.handle(event)){event.preventDefault();event.stopImmediatePropagation();}
+  if(scanner.handle(event)){event.preventDefault();event.stopImmediatePropagation();if(type==='keydown'&&event.key==='Escape')void route();}
 },true);
-window.addEventListener('blur',()=>scanner.reset());
+window.addEventListener('blur',()=>{const interrupted=scanner.active;scanner.reset();if(interrupted)void route();});
 document.addEventListener('click',event=>{
   const dropdown=$('#results-filter');if(dropdown?.open&&!dropdown.contains(event.target))dropdown.open=false;
 });

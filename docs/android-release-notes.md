@@ -1,17 +1,13 @@
-# Hardlight 1.3.0 for Android
+# Hardlight 1.3.1 for Android
 
-Version code **24** · Android 9+ · app ID `net.chateaulore.hardlight`.
+Version code **25** · Android 9+ · app ID `net.chateaulore.hardlight`.
 
-Follow a whole series with **Subscriptions**, independently of collection, reading status, and Want List entries. The books button toggles subscription immediately without a modal and lights up on every displayed comic in the same series.
+Fix Bluetooth barcode-scanner connections and disconnections restarting Hardlight through the splash screen (issue #1). Both native activities now handle keyboard and navigation configuration changes without recreation.
 
-Browse **List**, **Missing**, **This Week**, and **Upcoming** using the approved compact icon-and-text buttons, equally spaced across one row. Date views use store release dates and Sunday–Saturday weeks. Release cards prefer the first wanted variant; list thumbnails use the next release or latest past issue with wanted/collected variant preferences. Cached pages appear progressively and remain usable if Metron's quota stops further loading.
+With **DangerRoom server 1.2.1**, recover your active screen, searches and filters, completed UPC, selected cover, reading drafts, and scroll position after reload or process recreation. The slideshow returns to its selected eligible cover paused. Recovery fetches current server data and never replays submitted changes or partial scanner input. Android also preserves nonsecret connection-settings drafts and image-search distance; interrupted captures can be restarted safely.
 
-Includes the server's improved Want List dates, narrow comic action rows, compact active search headings, and slideshow-hide controls only on owned covers. The supplied books icon is credited to [Study icons created by riajulislam - Flaticon](https://www.flaticon.com/free-icons/study).
+The Android minimum server remains **1.2.0**; update to **1.2.1** for full shared recovery using the [general container update guide](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md). Existing **iOS 1.3.0 build 4** receives the shared web improvements through that server update; no iOS release accompanies this patch.
 
-**Requires DangerRoom server 1.2.0** for subscription endpoints. Update older instances using the [general server update guide](https://github.com/erickolb/DangerRoom/blob/main/docs/updating.md). Initial checks stay behind the branded loading screen; outdated instances show the required versions and Retry/settings. Both stable clients provide subscriptions at feature parity.
+Install this signed APK over the existing app to retain credentials and caches. Code 25 upgrades stable code 24 and all previous beta codes. Obtainium prereleases are not required.
 
-Install over the existing signed APK to retain settings. Code 24 upgrades beta code 23 without reinstalling. Artifacts: `DangerRoom.apk`, `SHA256SUMS.txt`, and `SIGNING-CERTIFICATE.txt`.
-
-Existing image cover search remains available: [walkthrough](https://erickolb.github.io/DangerRoom/hardlight/cover-image-search/). Photographs stay on device; only the perceptual hash is sent for matching. Stable downloads remain the default; the website's quiet Obtainium beta footer remains available for future testing.
-
-Validation covers Android unit tests/lint/build, iOS simulator menu and authenticated subscription transport tests, server and companion browser checks, and artifact signatures/checksums. Physical-device iOS installation acceptance is not claimed by automated tests.
+Artifacts: `DangerRoom.apk`, `SHA256SUMS.txt`, and `SIGNING-CERTIFICATE.txt`. See [recovery behavior and acceptance checks](https://github.com/erickolb/DangerRoom/blob/main/docs/state-recovery.md). Automated browser validation uses a mocked native bridge; physical scanner and iOS lifecycle acceptance remain device checks.

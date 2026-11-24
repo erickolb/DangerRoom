@@ -1,5 +1,13 @@
 # Changelog
 
+## DangerRoom 1.2.1 / Android Hardlight 1.3.1 · 2026-11-24
+
+- Fix issue #1: handle Android keyboard and navigation configuration changes in both native activities so Bluetooth HID scanner connections do not recreate the screen. Android code 25; iOS remains 1.3.0 build 4.
+- Add bounded, versioned, instance/device-scoped companion recovery for destinations, submitted searches/filters, unsaved input, completed UPCs, cover selection, reading-dialog drafts, scroll positions, and the selected slideshow cover (paused on recovery). Re-fetch server data; never replay write requests or partial scanner frames.
+- Preserve Android nonsecret connection-settings drafts and image-search distance. Interrupted captures return to a usable capture screen; photographs and device secrets are excluded from recovery.
+- Full shared recovery requires server 1.2.1; Android 1.3.1 remains compatible with server 1.2.0. Existing iOS 1.3.0 receives the shared recovery automatically after the server update. No database migration or special deployment steps. Follow the [general container update guide](docs/updating.md).
+- See [recovery behavior and acceptance checks](docs/state-recovery.md) for persistence limits and physical-device validation.
+
 ## Hardlight 1.3.0 · 2026-11-22
 
 - Promote subscriptions to stable at Android/iOS feature parity: Android code 24, iOS build 4. DangerRoom server remains 1.2.0.

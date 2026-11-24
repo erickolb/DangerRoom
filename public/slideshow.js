@@ -61,9 +61,9 @@ export function chooseCovers(items, settings, random = Math.random) {
   return rows;
 }
 
-export async function mountSlideshow(app, api, current) {
+export async function mountSlideshow(app, api, current, restoredCover=null) {
   const { key, stored, settings } = preferences();
-  let rows = [], index = 0, playing = true, loading = true, disposed = false;
+  let rows = [], index = 0, playing = !restoredCover, loading = true, disposed = false;
   let timer = null, controlsTimer = null, titleTimer = null, retryTimer = null, generation = 0;
   let refreshing = false;
   const strikes = new Map();
@@ -119,6 +119,7 @@ export async function mountSlideshow(app, api, current) {
       if (strikes.get(`${row.issue.id}:${row.edition.key}`)) strikes.clear();
       loading = false;
       caption.textContent = `${alt} · ${index + 1} / ${rows.length}`;
+      document.dispatchEvent?.(new CustomEvent('recoverygallery',{detail:`${row.issue.id}:${row.edition.key}`}));
       clearTimeout(titleTimer);
       rotationTitle.textContent = alt;
       stage.classList.remove('gallery-title-visible');
@@ -174,7 +175,8 @@ export async function mountSlideshow(app, api, current) {
   window.DangerRoomAndroid?.fullscreen(true);
   if (!window.DangerRoomAndroid) stage.requestFullscreen?.().catch(() => {});
   stage.focus(); revealControls();
-  window.DangerRoomAndroid?.keepAwake(true);
+  if(!playing)pause();
+  window.DangerRoomAndroid?.keepAwake(playing);
   async function refresh() {
     if (refreshing || !current() || disposed) return;
     refreshing = true;
@@ -191,6 +193,7 @@ export async function mountSlideshow(app, api, current) {
       rows = chooseCovers(data.items, settings);
       window.DangerRoomAndroid?.configureCoverCache?.(JSON.stringify(rows.map(row => row.edition.cover_file)), settings.cacheLimited, settings.cacheMB);
       strikes.clear(); index = 0;
+      if(restoredCover){const found=rows.findIndex(row=>`${row.issue.id}:${row.edition.key}`===restoredCover);if(found>=0)index=found;restoredCover=null;}
       window.DangerRoomAndroid?.keepAwake(playing);
       display();
     } catch (error) {

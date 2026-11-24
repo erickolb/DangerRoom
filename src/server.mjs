@@ -13,6 +13,7 @@ import { Devices } from './devices.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
+  ['/recovery.js', ['recovery.js','text/javascript; charset=utf-8']],
   ['/subscriptions.png', ['subscriptions.png','image/png']],
   ['/subscriptions.js', ['subscriptions.js','text/javascript; charset=utf-8']],
   ['/subscription-dates.js', ['subscription-dates.js','text/javascript; charset=utf-8']],

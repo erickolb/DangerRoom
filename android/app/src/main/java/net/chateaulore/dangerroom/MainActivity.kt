@@ -23,7 +23,22 @@ class MainActivity : ComponentActivity() {
     private val worker = Executors.newSingleThreadExecutor()
     private var screen = "splash"
     private var connectionGeneration = 0
+    private val recoveryPrefs by lazy { getSharedPreferences("recovery", MODE_PRIVATE) }
+    private var hostnameDraft: EditText? = null
+    private var deviceDraft: EditText? = null
+    private var imageSearchOpen = false
+    private fun recoveryScope(c: Connection): String {
+        val input = "${c.url}\n${c.device}\n${c.token}\n${recoveryPrefs.getLong("epoch", 0)}"
+        return java.security.MessageDigest.getInstance("SHA-256").digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
+    }
+    private fun checkpoint() {
+        val edit = recoveryPrefs.edit().putString("scope", connection?.let { recoveryScope(it) }).putString("screen", if(imageSearchOpen) "image" else screen)
+        if(screen == "settings") edit.putString("hostname", hostnameDraft?.text?.toString()).putString("device", deviceDraft?.text?.toString())
+        edit.apply()
+        web?.evaluateJavascript("window.dangerroomCheckpoint?.()", null)
+    }
     private val coverSearch=registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+        imageSearchOpen = false
         val hash=result.data?.getStringExtra("hash")
         val distance=result.data?.getIntExtra("distance",14) ?: 14
         if(result.resultCode==RESULT_OK && hash?.matches(Regex("[a-f0-9]{16}"))==true && distance in 10..20)
@@ -35,6 +50,8 @@ class MainActivity : ComponentActivity() {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         store = ConnectionStore(this); connection = store.load()
+        val recoveredScreen = if(recoveryPrefs.getString("scope", null) == connection?.let { recoveryScope(it) }) recoveryPrefs.getString("screen", null) else null
+        imageSearchOpen = recoveredScreen == "image"
         getSharedPreferences("scan-settings", MODE_PRIVATE).edit().clear().apply()
         java.io.File(filesDir, "captures/comic.jpg").delete()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -48,7 +65,10 @@ class MainActivity : ComponentActivity() {
         val splash = showLoading()
         splash.postDelayed({
             if (!isFinishing && !isDestroyed && screen == "splash") {
-                if (connection == null) settings() else openWeb()
+                if (connection == null || recoveredScreen == "settings") settings() else {
+                    openWeb()
+                    if(imageSearchOpen && savedInstanceState == null) coverSearch.launch(Intent(this,ImageSearchActivity::class.java))
+                }
             }
         }, 700)
     }
@@ -93,8 +113,10 @@ class MainActivity : ComponentActivity() {
         connectionGeneration++
         screen = "settings"; base("Connect to DangerRoom")
         val saved = connection
-        val hostname = field("DangerRoom hostname", saved?.url ?: "")
-        val device = field("Device ID", saved?.device ?: "")
+        val restore = recoveryPrefs.getString("screen", null) == "settings"
+        val hostname = field("DangerRoom hostname", if(restore) recoveryPrefs.getString("hostname", saved?.url ?: "") ?: "" else saved?.url ?: "")
+        val device = field("Device ID", if(restore) recoveryPrefs.getString("device", saved?.device ?: "") ?: "" else saved?.device ?: "")
+        hostnameDraft = hostname; deviceDraft = device
         val secret = field("Device secret", "", true)
         text("Ask your server administrator to issue a device ID and secret. Use your own DangerRoom hostname. HTTPS is required.")
         if (saved != null) text("Leave the secret blank to retain it for the same instance and device.")
@@ -108,13 +130,19 @@ class MainActivity : ComponentActivity() {
                 status.text = "Testing device authorization…"
                 saveButton.isEnabled = false
                 worker.execute {
-                    try { Api(next).verify(); store.save(next); connection = next; runOnUiThread { if (!isDestroyed) openWeb() } }
+                    try { Api(next).verify(); runOnUiThread { if (!isDestroyed) { try {
+                        store.save(next)
+                        if(connection != next) recoveryPrefs.edit().clear().putLong("epoch", System.currentTimeMillis()).apply()
+                        connection = next; openWeb()
+                    } catch(error:Exception) { status.text=error.message;saveButton.isEnabled=true }
+                    } } }
                     catch (error: Exception) { runOnUiThread { if (!isDestroyed) { status.text = error.message; saveButton.isEnabled = true } } }
                 }
             } catch (error: Exception) { status.text = error.message }
         }
-        if (saved != null) button("Back to menu") { openWeb() }
+        if (saved != null) button("Back to app") { openWeb() }
         text("Danger Room (Hardlight) Android · ${packageManager.getPackageInfo(packageName, 0).versionName}\nMask: Magnific / Flaticon. Cover artwork belongs to its rights holders. Full credits are in DangerRoom.", 13f)
+        checkpoint()
     }
     private fun openWeb(hash: String = "/home") {
         val c=connection ?: return settings()
@@ -135,6 +163,7 @@ class MainActivity : ComponentActivity() {
     private fun loadWeb(hash: String) {
         val c = connection ?: return settings()
         screen = "web"; destroyWeb()
+        hostnameDraft = null; deviceDraft = null
         val coverCache = CoverCache(java.io.File(cacheDir, "slideshow/${CoverCache.scope(c)}"))
         val view = WebView(this); web = view
         view.setBackgroundColor(Color.rgb(25, 12, 18)); view.settings.javaScriptEnabled = true; view.settings.domStorageEnabled = true
@@ -168,11 +197,13 @@ class MainActivity : ComponentActivity() {
         }
         view.setOnApplyWindowInsetsListener { v, insets -> v.setPadding(insets.systemWindowInsetLeft, insets.systemWindowInsetTop, insets.systemWindowInsetRight, insets.systemWindowInsetBottom); insets }
         setContentView(view); showAppBars(view); view.loadUrl("${c.url}/mobile/#$hash")
+        checkpoint()
     }
     private fun sameOrigin(address: String, origin: String): Boolean = runCatching { val a = URI(address); val b = URI(origin); a.scheme == b.scheme && a.host == b.host && a.port == b.port && a.userInfo == null }.getOrDefault(false)
     private inner class Bridge(private val c: Connection, private val owner: WebView, private val coverCache: CoverCache) {
+        @JavascriptInterface fun recoveryScope(): String = this@MainActivity.recoveryScope(c)
         @JavascriptInterface fun supportsSubscriptions(): Boolean = true
-        @JavascriptInterface fun imageCoverSearch() { runOnUiThread { if(web===owner) coverSearch.launch(Intent(this@MainActivity,ImageSearchActivity::class.java)) } }
+        @JavascriptInterface fun imageCoverSearch() { runOnUiThread { if(web===owner) { imageSearchOpen=true;checkpoint();coverSearch.launch(Intent(this@MainActivity,ImageSearchActivity::class.java)) } } }
         @JavascriptInterface fun flushCoverCache(): Boolean = coverCache.clear()
         @JavascriptInterface fun configureCoverCache(files: String, limited: Boolean, megabytes: Int) {
             val array = org.json.JSONArray(files)
@@ -192,7 +223,8 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun keepAwake(enabled: Boolean) { runOnUiThread { if (web === owner) { if (enabled) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) } } }
         @JavascriptInterface fun fullscreen(enabled: Boolean) { runOnUiThread { if (web === owner) { val controller=androidx.core.view.WindowInsetsControllerCompat(window, owner);if(enabled){controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());controller.systemBarsBehavior=androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE}else controller.show(androidx.core.view.WindowInsetsCompat.Type.systemBars()) } } }
     }
-    override fun onPause() { super.onPause(); web?.evaluateJavascript("document.dispatchEvent(new Event('dangerroompause'))", null); window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); web?.onPause() }
+    override fun onSaveInstanceState(outState: Bundle) { checkpoint(); super.onSaveInstanceState(outState) }
+    override fun onPause() { checkpoint(); super.onPause(); web?.evaluateJavascript("document.dispatchEvent(new Event('dangerroompause'))", null); window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); web?.onPause() }
     override fun onResume() { super.onResume(); web?.onResume() }
     override fun onDestroy() { destroyWeb(); worker.shutdownNow(); super.onDestroy() }
 }
